@@ -6,158 +6,53 @@ import {
   ChevronDown,
   ChevronRight,
   Command,
+  Database,
+  Grid2X2,
+  HardDrive,
   HelpCircle,
+  Layers,
   LogOut,
   Menu,
+  Monitor,
+  Network,
   Search,
   Settings2,
   ShieldCheck,
   UserRound,
+  Users,
+  Wrench,
   X,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
-import { formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { findNav, flatNav, navigation } from '@/navigation'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from '@/stores/toast'
-import type { ClusterSummary, NodeSummary, UserInfo } from '@/types'
+import type { UserInfo } from '@/types'
 import { Button, Field, IconButton, Modal, StatusDot, ToastHost, useConfirm } from '@/components/ui'
 
 /* ------------------------------------------------------------------ */
-/* Brand                                                               */
+/* Module icons                                                        */
 /* ------------------------------------------------------------------ */
-function Brand() {
-  return (
-    <div className="flex h-16 flex-none items-center gap-2.5 border-b border-[#002140] px-5">
-      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-signal text-[15px] font-bold text-white">
-        M
-      </span>
-      <div className="leading-none">
-        <div className="text-[17px] font-semibold tracking-[0.02em] text-white">MSOP</div>
-        <div className="mt-1 text-[10px] tracking-[0.08em] text-white/45">机动微服务运行框架</div>
-      </div>
-    </div>
-  )
+const moduleIcons: Record<string, LucideIcon> = {
+  '01': Monitor,
+  '02': Layers,
+  '03': Grid2X2,
+  '04': Network,
+  '05': HardDrive,
+  '06': ShieldCheck,
+  '07': Users,
+  '08': Wrench,
+  '09': Database,
 }
 
 /* ------------------------------------------------------------------ */
-/* Sidebar                                                             */
+/* Profile modal                                                       */
 /* ------------------------------------------------------------------ */
-function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const user = useAuthStore((state) => state.user)
-  const role = useAuthStore((state) => state.role)
-  const clear = useAuthStore((state) => state.clear)
-  const confirm = useConfirm()
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
-
-  async function logout() {
-    const ok = await confirm({
-      title: '退出当前会话？',
-      description: '退出后需要重新验证身份才能访问平台。',
-      confirmText: '退出登录',
-      danger: true,
-    })
-    if (!ok) return
-    try {
-      await api.post('/v1/user/logout')
-    } catch {
-      /* backend may reject if session already gone */
-    }
-    clear()
-    toast.info('会话已结束')
-    navigate('/user/login', { replace: true })
-  }
-
-  const initials = (user?.nickname || user?.username || 'MS').slice(0, 2).toUpperCase()
-  const activeNav = findNav(location.pathname)
-
-  return (
-    <div className="flex h-full flex-col bg-deck">
-      <Brand />
-      <nav className="scrollbar-thin flex-1 overflow-y-auto pb-4">
-        {navigation.map((group) => {
-          const isCollapsed = collapsed[group.index]
-          const active = group.items.some((item) => location.pathname.startsWith(item.path))
-          return (
-            <div key={group.index}>
-              <button
-                className="flex w-full items-center gap-2 px-6 pb-1.5 pt-4 text-left"
-                onClick={() => setCollapsed((prev) => ({ ...prev, [group.index]: !prev[group.index] }))}
-              >
-                <span
-                  className={cn(
-                    'flex-1 text-[11px] tracking-[0.04em]',
-                    active ? 'text-white/80' : 'text-white/40',
-                  )}
-                >
-                  {group.en}
-                </span>
-                {isCollapsed ? (
-                  <ChevronRight size={11} className="text-white/30" />
-                ) : (
-                  <ChevronDown size={11} className="text-white/30" />
-                )}
-              </button>
-              {!isCollapsed && (
-                <div className="pb-1">
-                  {group.items.map((item) => (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      onClick={onNavigate}
-                      className={() => cn('nav-item', activeNav?.path === item.path && 'active')}
-                    >
-                      <span className="flex-1 truncate">{item.label}</span>
-                    </NavLink>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </nav>
-      <div className="border-t border-[#002140] p-3">
-        <div className="flex items-center gap-2.5 rounded-md px-2 py-2 hover:bg-white/5">
-          <div className="relative flex h-8 w-8 flex-none items-center justify-center rounded-full bg-signal">
-            <span className="text-[11px] font-medium text-white">{initials}</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] text-white/85">{user?.nickname || user?.username || '未登录'}</div>
-            <div className="truncate text-[11px] text-white/40">
-              {role?.name || '未分配席位'}
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            aria-label="退出登录"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <LogOut size={13} />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* Topbar                                                              */
-/* ------------------------------------------------------------------ */
-function useClock() {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
-  return now
-}
-
 function ProfileModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const user = useAuthStore((state) => state.user)
   const setUser = useAuthStore((state) => state.setUser)
@@ -226,7 +121,7 @@ function ProfileModal({ open, onOpenChange }: { open: boolean; onOpenChange: (op
           <Button size="sm" onClick={() => onOpenChange(false)}>
             取消
           </Button>
-          <Button size="sm" variant="signal" loading={mutation.isPending} onClick={() => mutation.mutate()}>
+          <Button size="sm" variant="primary" loading={mutation.isPending} onClick={() => mutation.mutate()}>
             保存修改
           </Button>
         </>
@@ -282,23 +177,23 @@ function ProfileModal({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   )
 }
 
-function Topbar({
-  onOpenMenu,
+/* ------------------------------------------------------------------ */
+/* Platform header                                                     */
+/* ------------------------------------------------------------------ */
+function PlatformHeader({
   onOpenPalette,
+  onOpenMenu,
   onOpenQuickStart,
 }: {
-  onOpenMenu: () => void
   onOpenPalette: () => void
+  onOpenMenu: () => void
   onOpenQuickStart: () => void
 }) {
-  const location = useLocation()
   const navigate = useNavigate()
-  const now = useClock()
   const user = useAuthStore((state) => state.user)
   const role = useAuthStore((state) => state.role)
   const clear = useAuthStore((state) => state.clear)
   const confirm = useConfirm()
-  const nav = findNav(location.pathname)
   const [profileOpen, setProfileOpen] = useState(false)
   const modeQuery = useQuery({
     queryKey: ['mode-current'],
@@ -324,119 +219,205 @@ function Topbar({
     navigate('/user/login', { replace: true })
   }
 
-  const clock = now.toLocaleTimeString('zh-CN', { hour12: false })
-  const date = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')
-
   return (
-    <header className="sticky top-0 z-30 flex h-14 flex-none items-center gap-3 border-b border-line bg-white px-4 lg:px-6">
+    <header className="relative z-30 flex h-11 flex-none items-center justify-center border-b border-[#12314d] bg-[#0b1c2d] px-4">
       <button
-        className="mr-1 flex h-8 w-8 items-center justify-center rounded-md border border-line-strong text-ink-3 lg:hidden"
+        className="absolute left-3 flex h-7 w-7 items-center justify-center rounded border border-[#24405a] text-ink-3 lg:hidden"
         onClick={onOpenMenu}
         aria-label="打开菜单"
       >
-        <Menu size={15} />
+        <Menu size={14} />
       </button>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 text-[12px] text-mute">
-          <span>{nav?.group.label || '平台'}</span>
-          <ChevronRight size={11} className="text-line-strong" />
-          <span className="truncate text-ink-3">{nav?.label || '机动微服务运行框架'}</span>
-        </div>
-        <div className="mt-0.5 truncate text-[14px] font-medium text-ink">{nav?.label || '机动微服务运行框架'}</div>
-      </div>
+      <span className="select-none truncate text-[15px] font-semibold tracking-[0.08em] text-[#eaf4ff]">
+        微服务公共平台
+      </span>
 
-      <button
-        onClick={onOpenPalette}
-        className="hidden h-8 items-center gap-2 rounded-md border border-line bg-paper-2 px-3 text-mute transition-colors hover:border-signal hover:text-signal sm:flex"
-      >
-        <Search size={13} />
-        <span className="text-[12px]">搜索功能 / 页面</span>
-        <span className="key ml-2">⌘K</span>
-      </button>
-
-      {modeQuery.data?.modeName && (
-        <div className="hidden items-center gap-1.5 rounded-md bg-[#e6f4ff] px-2.5 py-1 sm:flex">
-          <span className="h-1.5 w-1.5 rounded-full bg-signal" />
-          <span className="text-[11px] text-signal">{modeQuery.data.modeName}</span>
-        </div>
-      )}
-
-      <div className="hidden items-center gap-2 border-l border-line pl-3 md:flex">
-        <div className="text-right">
-          <div className="text-[12px] leading-none tabular-nums text-ink-3">{clock}</div>
-          <div className="mt-1 text-[10px] text-mute">{date}</div>
-        </div>
-      </div>
-
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
-          <button className="flex h-8 items-center gap-2 rounded-md px-1.5 transition-colors hover:bg-paper-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-signal text-[10px] font-medium text-white">
-              {(user?.username || 'MS').slice(0, 2).toUpperCase()}
-            </span>
-            <span className="hidden max-w-[90px] truncate text-[12px] text-ink sm:block">{user?.nickname || user?.username}</span>
-            <ChevronDown size={11} className="text-mute" />
-          </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            align="end"
-            sideOffset={6}
-            className="z-[75] w-[230px] rounded-lg border border-line bg-white p-0 shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
-          >
-            <div className="border-b border-line px-3.5 py-3">
-              <div className="text-[13px] font-medium text-ink">{user?.nickname || user?.username}</div>
-              <div className="mt-1 text-[11px] text-mute">UID · {user?.id || '—'}</div>
-              <div className="mt-2 flex items-center gap-1.5">
-                <StatusDot tone="ok" />
-                <span className="text-[11px] text-ink-3">{role?.name || '未分配席位'}</span>
+      <div className="absolute right-3 flex items-center gap-3">
+        {modeQuery.data?.modeName && (
+          <span className="hidden text-[12px] text-[#52a8ff] sm:block">{modeQuery.data.modeName}</span>
+        )}
+        <button
+          onClick={onOpenPalette}
+          aria-label="搜索功能"
+          className="hidden h-7 w-7 items-center justify-center rounded text-[#7f9ab4] transition-colors hover:bg-white/5 hover:text-white sm:flex"
+        >
+          <Search size={14} />
+        </button>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button className="flex h-7 items-center gap-1.5 rounded px-1 text-[12px] text-[#c8d8e8] outline-none transition-colors hover:text-white">
+              <span>{user?.nickname || user?.username || '未登录'}</span>
+              <ChevronDown size={11} className="text-[#7f9ab4]" />
+            </button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              align="end"
+              sideOffset={6}
+              className="z-[75] w-[220px] rounded border border-line bg-paper-2 p-0 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+            >
+              <div className="border-b border-line px-3.5 py-3">
+                <div className="text-[13px] font-medium text-ink">{user?.nickname || user?.username}</div>
+                <div className="mt-1 text-[11px] text-mute">UID · {user?.id || '—'}</div>
+                <div className="mt-2 flex items-center gap-1.5">
+                  <StatusDot tone="ok" />
+                  <span className="text-[11px] text-ink-3">{role?.name || '未分配席位'}</span>
+                </div>
               </div>
-            </div>
-            <div className="py-1">
-              <DropdownMenu.Item
-                onSelect={() => navigate('/usermanage/role')}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
-              >
-                <ShieldCheck size={13} /> 席位与角色
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onSelect={() => setProfileOpen(true)}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
-              >
-                <UserRound size={13} /> 个人设置
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onSelect={onOpenQuickStart}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
-              >
-                <HelpCircle size={13} /> 快速开始
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onSelect={() => navigate('/usermanage/settingGlobal')}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
-              >
-                <Settings2 size={13} /> 全局设置
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onSelect={() => navigate('/setting/version')}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
-              >
-                <Command size={13} /> 平台版本与授权
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onSelect={logout}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-danger outline-none data-[highlighted]:bg-[#fff2f0] data-[highlighted]:text-danger"
-              >
-                <LogOut size={13} /> 退出登录
-              </DropdownMenu.Item>
-            </div>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+              <div className="py-1">
+                <DropdownMenu.Item
+                  onSelect={() => navigate('/usermanage/role')}
+                  className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white"
+                >
+                  <ShieldCheck size={13} /> 席位与角色
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onSelect={() => setProfileOpen(true)}
+                  className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white"
+                >
+                  <UserRound size={13} /> 个人设置
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onSelect={onOpenQuickStart}
+                  className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white"
+                >
+                  <HelpCircle size={13} /> 快速开始
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onSelect={() => navigate('/usermanage/settingGlobal')}
+                  className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white"
+                >
+                  <Settings2 size={13} /> 全局设置
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onSelect={() => navigate('/setting/version')}
+                  className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white"
+                >
+                  <Command size={13} /> 平台版本与授权
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onSelect={logout}
+                  className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-danger outline-none data-[highlighted]:bg-[#3a1b22] data-[highlighted]:text-danger"
+                >
+                  <LogOut size={13} /> 退出登录
+                </DropdownMenu.Item>
+              </div>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+
+        <span className="h-4 w-px bg-[#24405a]" />
+        <button
+          onClick={() => setProfileOpen(true)}
+          aria-label="平台设置"
+          className="flex h-7 w-7 items-center justify-center rounded text-[#4aa3f0] transition-colors hover:bg-white/5 hover:text-white"
+        >
+          <Settings2 size={16} />
+        </button>
+      </div>
 
       <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Module bar                                                          */
+/* ------------------------------------------------------------------ */
+function ModuleBar({ activeIndex }: { activeIndex: string }) {
+  const navigate = useNavigate()
+  return (
+    <nav className="scrollbar-thin flex flex-none items-stretch gap-1 overflow-x-auto border-b border-[#10293d] bg-[#0a1928] px-2 py-1.5">
+      {navigation.map((group) => {
+        const Icon = moduleIcons[group.index] ?? Monitor
+        const active = activeIndex === group.index
+        return (
+          <button
+            key={group.index}
+            onClick={() => navigate(group.items[0].path)}
+            className={cn(
+              'flex h-[46px] w-[88px] flex-none flex-col items-center justify-center gap-1 rounded-[3px] border text-[12px] transition-colors',
+              active
+                ? 'border-[#2f7ec4] bg-[#15395b] text-white'
+                : 'border-transparent text-[#a9c1d8] hover:border-[#1e3d5a] hover:bg-[#10293f] hover:text-white',
+            )}
+          >
+            <Icon size={17} strokeWidth={1.7} className={active ? 'text-[#5cb3ff]' : 'text-[#4791d0]'} />
+            <span className="truncate">{group.label}</span>
+          </button>
+        )
+      })}
+    </nav>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Context sidebar                                                     */
+/* ------------------------------------------------------------------ */
+function Sidebar({
+  groupIndex,
+  onNavigate,
+}: {
+  groupIndex: string
+  onNavigate?: () => void
+}) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const clear = useAuthStore((state) => state.clear)
+  const confirm = useConfirm()
+  const group = navigation.find((item) => item.index === groupIndex) ?? navigation[0]
+  const activeNav = findNav(location.pathname)
+  const [collapsed, setCollapsed] = useState(false)
+
+  async function logout() {
+    const ok = await confirm({
+      title: '退出当前会话？',
+      description: '退出后需要重新验证身份才能访问平台。',
+      confirmText: '退出登录',
+      danger: true,
+    })
+    if (!ok) return
+    try {
+      await api.post('/v1/user/logout')
+    } catch {
+      /* ignore */
+    }
+    clear()
+    navigate('/user/login', { replace: true })
+  }
+
+  return (
+    <div className="flex h-full flex-col border-r border-[#10293d] bg-[#0a1928]">
+      <nav className="scrollbar-thin flex-1 overflow-y-auto py-2">
+        <button
+          className="flex w-full items-center gap-1.5 px-3 pb-1.5 pt-1 text-left text-[12px] text-[#7f9ab4]"
+          onClick={() => setCollapsed((prev) => !prev)}
+        >
+          {collapsed ? <ChevronRight size={11} /> : <ChevronDown size={11} />}
+          <span>{group.label}</span>
+        </button>
+        {!collapsed &&
+          group.items.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              onClick={onNavigate}
+              className={() => cn('nav-item', activeNav?.path === item.path && 'active')}
+            >
+              <span className="flex-1 truncate">{item.label}</span>
+            </NavLink>
+          ))}
+      </nav>
+      <div className="border-t border-[#10293d] p-2">
+        <button
+          onClick={logout}
+          className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-[12px] text-[#7f9ab4] transition-colors hover:bg-white/5 hover:text-white"
+        >
+          <LogOut size={12} /> 退出登录
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -479,10 +460,10 @@ function CommandPalette({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[85] bg-black/25 backdrop-blur-[1px]" />
-        <Dialog.Content className="dialog-content fixed left-1/2 top-[16%] z-[86] w-[calc(100vw-32px)] max-w-[560px] -translate-x-1/2 rounded-lg border border-line bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)] outline-none">
+        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[85] bg-black/55" />
+        <Dialog.Content className="dialog-content fixed left-1/2 top-[16%] z-[86] w-[calc(100vw-32px)] max-w-[560px] -translate-x-1/2 rounded border border-line bg-paper-2 shadow-[0_18px_48px_rgba(0,0,0,0.55)] outline-none">
           <Dialog.Title className="sr-only">检索功能</Dialog.Title>
-          <div className="flex items-center gap-3 border-b border-line px-4 py-3">
+          <div className="flex items-center gap-3 border-b border-line px-4 py-2.5">
             <Search size={15} className="text-mute" />
             <input
               autoFocus
@@ -517,23 +498,18 @@ function CommandPalette({
                 onMouseEnter={() => setActive(index)}
                 onClick={() => go(item)}
                 className={cn(
-                  'mx-1 flex w-[calc(100%-8px)] items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors',
-                  index === active ? 'bg-[#e6f4ff] text-signal' : 'text-ink-3 hover:bg-paper-3',
+                  'mx-1 flex w-[calc(100%-8px)] items-center gap-3 rounded px-3 py-2 text-left transition-colors',
+                  index === active ? 'bg-[#16395a] text-white' : 'text-ink-3 hover:bg-[#142a3e]',
                 )}
               >
-                <span
-                  className={cn(
-                    'text-[10px] tracking-wider',
-                    index === active ? 'text-signal' : 'text-mute',
-                  )}
-                >
-                  {item.group.index}.{item.code}
+                <span className={cn('text-[11px]', index === active ? 'text-[#7cc4ff]' : 'text-mute')}>
+                  {item.group.label}
                 </span>
                 <span className="flex-1 text-[13px]">{item.label}</span>
-                <span className={cn('text-[10px] tracking-[0.06em]', index === active ? 'text-signal/70' : 'text-mute')}>
+                <span className={cn('text-[11px]', index === active ? 'text-[#7cc4ff]' : 'text-mute')}>
                   {item.en}
                 </span>
-                <ArrowRight size={12} className={index === active ? 'text-signal' : 'text-line-strong'} />
+                <ArrowRight size={12} className={index === active ? 'text-[#7cc4ff]' : 'text-line-strong'} />
               </button>
             ))}
           </div>
@@ -572,7 +548,7 @@ function QuickStartModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
       kicker="GUIDE / QUICK START"
       title="快速开始"
       description="四步完成一次业务应用的上线流程。点击任一步骤可直接进入对应功能页。"
-      width={620}
+      width={600}
       footer={
         <>
           <Button size="sm" onClick={() => onOpenChange(false)}>
@@ -580,7 +556,7 @@ function QuickStartModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
           </Button>
           <Button
             size="sm"
-            variant="signal"
+            variant="primary"
             loading={mutation.isPending}
             onClick={() => {
               mutation.mutate(1)
@@ -596,13 +572,13 @@ function QuickStartModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
         {quickStartSteps.map((step) => (
           <button
             key={step.code}
-            className="group flex w-full items-start gap-3 px-1 py-3 text-left transition-colors hover:bg-paper-2/60"
+            className="group flex w-full items-start gap-3 px-1 py-3 text-left transition-colors hover:bg-[#142a3e]"
             onClick={() => {
               navigate(step.path)
               onOpenChange(false)
             }}
           >
-            <span className="mono mt-0.5 flex h-6 w-6 flex-none items-center justify-center border border-line-strong text-[9px] text-ink-3">
+            <span className="mono mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded border border-line-strong text-[10px] text-ink-3">
               {step.code}
             </span>
             <span className="min-w-0 flex-1">
@@ -610,7 +586,7 @@ function QuickStartModal({ open, onOpenChange }: { open: boolean; onOpenChange: 
                 {step.title}
                 <ArrowRight size={10} className="text-mute transition-transform group-hover:translate-x-0.5" />
               </span>
-              <span className="mt-1 block text-[10.5px] leading-relaxed text-mute">{step.desc}</span>
+              <span className="mt-1 block text-[11px] leading-relaxed text-mute">{step.desc}</span>
             </span>
           </button>
         ))}
@@ -634,6 +610,8 @@ export function AppShell() {
     staleTime: Infinity,
     retry: false,
   })
+
+  const activeGroup = findNav(location.pathname)?.group ?? navigation[0]
 
   useEffect(() => {
     if (quickStartQuery.data !== false) return
@@ -659,39 +637,41 @@ export function AppShell() {
   }, [])
 
   return (
-    <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[220px] lg:block">
-        <Sidebar />
-      </aside>
+    <div className="flex h-screen flex-col overflow-hidden bg-paper">
+      <PlatformHeader
+        onOpenPalette={() => setPaletteOpen(true)}
+        onOpenMenu={() => setMobileOpen(true)}
+        onOpenQuickStart={() => setQuickOpen(true)}
+      />
+      <ModuleBar activeIndex={activeGroup.index} />
 
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/45" onClick={() => setMobileOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-[220px] animate-[reveal-up_.25s_ease]">
-            <Sidebar onNavigate={() => setMobileOpen(false)} />
-            <button
-              className="absolute -right-10 top-3 flex h-8 w-8 items-center justify-center rounded-md border border-white/30 text-white"
-              onClick={() => setMobileOpen(false)}
-              aria-label="关闭菜单"
-            >
-              <X size={14} />
-            </button>
+      <div className="flex min-h-0 flex-1">
+        <aside className="hidden w-[168px] flex-none lg:block">
+          <Sidebar groupIndex={activeGroup.index} />
+        </aside>
+
+        {mobileOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
+            <div className="absolute inset-y-0 left-0 w-[184px] border-r border-[#12314d] bg-[#0a1928]">
+              <Sidebar groupIndex={activeGroup.index} onNavigate={() => setMobileOpen(false)} />
+              <button
+                className="absolute -right-9 top-2 flex h-7 w-7 items-center justify-center rounded border border-white/25 text-white"
+                onClick={() => setMobileOpen(false)}
+                aria-label="关闭菜单"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="flex min-h-screen flex-col lg:ml-[220px]">
-        <Topbar
-          onOpenMenu={() => setMobileOpen(true)}
-          onOpenPalette={() => setPaletteOpen(true)}
-          onOpenQuickStart={() => setQuickOpen(true)}
-        />
-        <main className="flex-1 bg-paper px-4 pb-10 pt-4 lg:px-6">
+        <main className="min-w-0 flex-1 overflow-y-auto p-3">
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
+            transition={{ duration: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
           >
             <Outlet />
           </motion.div>
@@ -701,7 +681,7 @@ export function AppShell() {
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       <QuickStartModal open={quickOpen} onOpenChange={setQuickOpen} />
       <ToastHost />
-      <div className="fixed bottom-6 right-4 z-20 hidden lg:block">
+      <div className="fixed bottom-4 right-3 z-20 hidden lg:block">
         <IconButton label="检索 ⌘K" onClick={() => setPaletteOpen(true)}>
           <Command size={12} />
         </IconButton>

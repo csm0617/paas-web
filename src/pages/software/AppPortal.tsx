@@ -70,7 +70,7 @@ export default function AppPortalPage() {
         }
       />
 
-      <section className="mb-5 rounded-lg border border-line bg-white px-6 py-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+      <section className="mb-4 rounded border border-line bg-paper-2 px-5 py-4">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="text-[11px] text-mute">应用门户 / APPLICATION HALL</div>

@@ -67,7 +67,7 @@ export function IconButton({
       <button
         aria-label={label}
         className={cn(
-          'inline-flex h-8 w-8 items-center justify-center rounded-md border border-line-strong bg-white text-ink-3 transition-colors hover:border-signal hover:text-signal',
+          'inline-flex h-8 w-8 items-center justify-center rounded border border-line-strong bg-paper-2 text-ink-3 transition-colors hover:border-signal hover:text-[#7cc4ff]',
           className,
         )}
         {...rest}
@@ -150,7 +150,7 @@ export function Panel({
           {actions && <div className="flex flex-none items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={cn('p-5', bodyClassName)}>{children}</div>
+      <div className={cn('p-4', bodyClassName)}>{children}</div>
     </section>
   )
 }
@@ -170,12 +170,14 @@ export function PageHeader({
   meta?: ReactNode
 }) {
   return (
-    <div className="mb-4 flex flex-wrap items-start justify-between gap-4 rounded-lg border border-line bg-white px-5 py-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+    <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <div className="mb-1 text-[12px] text-mute">{en}</div>
-        <h1 className="text-[20px] font-semibold leading-7 text-ink">{title}</h1>
-        {description && <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-ink-3">{description}</p>}
-        {meta && <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">{meta}</div>}
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h1 className="text-[17px] font-semibold text-ink">{title}</h1>
+          <span className="text-[12px] text-mute">{en}</span>
+        </div>
+        {description && <p className="mt-1 max-w-3xl text-[12px] leading-relaxed text-mute">{description}</p>}
+        {meta && <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">{meta}</div>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -273,10 +275,10 @@ export function Tip({ content, children }: { content: ReactNode; children: React
       <Tooltip.Portal>
         <Tooltip.Content
           sideOffset={6}
-          className="z-[80] max-w-[260px] rounded-md bg-[#1f1f1f] px-2.5 py-1.5 text-[12px] leading-relaxed text-white shadow-lg"
+          className="z-[80] max-w-[260px] rounded border border-[#2b4c6d] bg-[#0b1c2d] px-2.5 py-1.5 text-[12px] leading-relaxed text-[#dbe9f7] shadow-lg"
         >
           {content}
-          <Tooltip.Arrow className="fill-[#1f1f1f]" />
+          <Tooltip.Arrow className="fill-[#0b1c2d]" />
         </Tooltip.Content>
       </Tooltip.Portal>
     </Tooltip.Root>
@@ -310,12 +312,12 @@ export function Modal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[70] bg-black/25" />
+        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[70] bg-black/55" />
         <Dialog.Content
-          className="dialog-content fixed left-1/2 top-1/2 z-[71] max-h-[88vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-lg border border-line bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)] outline-none"
+          className="dialog-content fixed left-1/2 top-1/2 z-[71] max-h-[88vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded border border-line bg-paper-2 shadow-[0_18px_48px_rgba(0,0,0,0.55)] outline-none"
           style={{ maxWidth: width }}
         >
-          <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-white px-5 py-4">
+          <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-paper-2 px-4 py-3">
             <div>
               {kicker && <div className="label mb-1">{kicker}</div>}
               <Dialog.Title className="text-[16px] font-semibold leading-6 text-ink">{title}</Dialog.Title>
@@ -325,13 +327,13 @@ export function Modal({
                 </Dialog.Description>
               )}
             </div>
-            <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-ink-3 outline-none transition-colors hover:bg-paper-3 hover:text-ink focus-visible:ring-2 focus-visible:ring-signal/30">
+            <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded text-ink-3 outline-none transition-colors hover:bg-[#16304a] hover:text-white">
               <X size={14} />
             </Dialog.Close>
           </div>
-          <div className="px-5 py-4">{children}</div>
+          <div className="px-4 py-3.5">{children}</div>
           {footer && (
-            <div className="flex items-center justify-end gap-2 border-t border-line bg-paper-2 px-5 py-3">{footer}</div>
+            <div className="flex items-center justify-end gap-2 border-t border-line bg-paper-3 px-4 py-2.5">{footer}</div>
           )}
         </Dialog.Content>
       </Dialog.Portal>
@@ -370,8 +372,8 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       {children}
       <Dialog.Root open={!!options} onOpenChange={(open) => !open && close(false)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-black/25" />
-          <Dialog.Content className="dialog-content fixed left-1/2 top-1/2 z-[81] w-[calc(100vw-32px)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-line bg-white p-0 shadow-[0_12px_32px_rgba(0,0,0,0.12)] outline-none">
+          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-black/55" />
+          <Dialog.Content className="dialog-content fixed left-1/2 top-1/2 z-[81] w-[calc(100vw-32px)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded border border-line bg-paper-2 p-0 shadow-[0_18px_48px_rgba(0,0,0,0.55)] outline-none">
             <div className="flex items-start gap-3 border-b border-line px-5 py-4">
               <AlertTriangle size={18} className={options?.danger ? 'mt-0.5 text-danger' : 'mt-0.5 text-warn'} />
               <div>
@@ -420,7 +422,7 @@ export function ActionMenu({
       <DropdownMenu.Trigger asChild>
         <button
           aria-label={label}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-paper-3 hover:text-ink"
+          className="inline-flex h-7 w-7 items-center justify-center rounded text-ink-3 transition-colors hover:bg-[#16304a] hover:text-white"
         >
           <MoreHorizontal size={15} />
         </button>
@@ -429,7 +431,7 @@ export function ActionMenu({
         <DropdownMenu.Content
           align="end"
           sideOffset={4}
-          className="z-[75] min-w-[168px] rounded-lg border border-line bg-white py-1 shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
+          className="z-[75] min-w-[168px] rounded border border-line bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
         >
           {items.map((item) => (
             <DropdownMenu.Item
@@ -437,8 +439,8 @@ export function ActionMenu({
               disabled={item.disabled}
               onSelect={item.onSelect}
               className={cn(
-                'flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink data-[disabled]:opacity-35',
-                item.danger && 'text-danger data-[highlighted]:bg-[#fff2f0] data-[highlighted]:text-danger',
+                'flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white data-[disabled]:opacity-35',
+                item.danger && 'text-danger data-[highlighted]:bg-[#3a1b22] data-[highlighted]:text-danger',
               )}
             >
               {item.icon}
@@ -529,7 +531,7 @@ export function EmptyState({
 
 export function InlineError({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-md border border-[#ffccc7] bg-[#fff2f0] px-3 py-2.5">
+    <div className="flex items-start gap-2.5 rounded border border-[#5c2a2a] bg-[#2a161b] px-3 py-2.5">
       <XCircle size={14} className="mt-0.5 flex-none text-danger" />
       <div className="min-w-0 flex-1">
         <div className="text-[12px] text-ink">{message}</div>
@@ -551,19 +553,19 @@ export function ToastHost() {
       {items.map((item) => {
         const tone =
           item.kind === 'success'
-            ? 'border-[#b7eb8f]'
+            ? 'border-[#2f6f4f]'
             : item.kind === 'error'
-              ? 'border-[#ffccc7]'
+              ? 'border-[#5c2a2a]'
               : item.kind === 'warn'
-                ? 'border-[#ffe58f]'
-                : 'border-[#91caff]'
+                ? 'border-[#6b5228]'
+                : 'border-[#2b5c86]'
         const Icon =
           item.kind === 'success' ? Check : item.kind === 'error' ? XCircle : item.kind === 'warn' ? AlertTriangle : Info
         return (
           <div
             key={item.id}
             className={cn(
-              'toast-item pointer-events-auto flex items-start gap-2.5 rounded-lg border bg-white px-3.5 py-3 shadow-[0_6px_16px_rgba(0,0,0,0.08)]',
+              'toast-item pointer-events-auto flex items-start gap-2.5 rounded border bg-paper-2 px-3.5 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)]',
               tone,
             )}
           >

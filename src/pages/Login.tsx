@@ -90,20 +90,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-10">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#071019] px-4 py-10">
       <div className="mb-6 flex flex-col items-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-signal text-[22px] font-bold text-white shadow-[0_6px_16px_rgba(22,119,255,0.28)]">
+        <span className="flex h-12 w-12 items-center justify-center rounded bg-[#1670c2] text-[22px] font-bold text-white shadow-[0_6px_20px_rgba(22,112,194,0.4)]">
           M
         </span>
-        <h1 className="mt-4 text-[24px] font-semibold text-ink">机动微服务运行框架</h1>
-        <p className="mt-1 text-[13px] text-mute">MSOP · Mobile Service Operation Platform</p>
+        <h1 className="mt-4 text-[22px] font-semibold tracking-[0.04em] text-[#eaf4ff]">微服务公共平台</h1>
+        <p className="mt-1 text-[12px] text-mute">MSOP · Microservice Service Platform</p>
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.24, ease: [0.2, 0.7, 0.2, 1] }}
-        className="w-full max-w-[400px] rounded-lg border border-line bg-white px-7 py-7 shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
+        className="w-full max-w-[400px] rounded border border-line bg-paper-2 px-6 py-6 shadow-[0_18px_48px_rgba(0,0,0,0.5)]"
       >
         <div className="mb-5">
           <h2 className="text-[18px] font-semibold text-ink">登录</h2>
@@ -180,7 +180,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="rounded-md border border-[#ffccc7] bg-[#fff2f0] px-3 py-2 text-[12px] leading-relaxed text-danger">
+            <div className="rounded border border-[#5c2a2a] bg-[#2a161b] px-3 py-2 text-[12px] leading-relaxed text-danger">
               {error}
             </div>
           )}

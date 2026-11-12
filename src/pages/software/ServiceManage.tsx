@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, Box, History, Layers, Play, Plus, RefreshCw, Search, Settings, Square, SquareTerminal, Trash2, Upload } from 'lucide-react'
+import { Activity, Box, History, Layers, Play, Plus, RefreshCw, Search, Square, SquareTerminal, Trash2, Upload } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
@@ -479,46 +479,41 @@ export default function ServiceManagePage() {
       header: '',
       align: 'right',
       cell: (row) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-end gap-2.5 text-[12px]">
           <button
-            className="inline-flex h-6 w-6 items-center justify-center border border-transparent text-ink-3 hover:border-line-strong hover:bg-paper-2 hover:text-ink"
+            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
             onClick={() =>
               navigate(`/software/application/service-params?service=${encodeURIComponent(serviceName(row))}`)
             }
-            title="服务参数配置"
           >
-            <Settings size={11} />
+            配置
           </button>
           <button
-            className="inline-flex h-6 w-6 items-center justify-center rounded border border-transparent text-ink-3 hover:border-signal hover:bg-signal hover:text-white"
+            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
             onClick={() => setConsoleState({ service: serviceName(row), mode: 'logs' })}
-            title="实时日志与容器终端"
           >
-            <SquareTerminal size={11} />
+            日志
           </button>
           <button
-            className="inline-flex h-6 w-6 items-center justify-center border border-transparent text-ink-3 hover:border-line-strong hover:bg-paper-2 hover:text-ink"
+            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
             onClick={() => actionMutation.mutate({ path: '/v1/service/start', names: [serviceName(row)] })}
-            title="启动"
           >
-            <Play size={11} />
+            启动
           </button>
           <button
-            className="inline-flex h-6 w-6 items-center justify-center border border-transparent text-ink-3 hover:border-line-strong hover:bg-paper-2 hover:text-warn"
+            className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
             onClick={() => actionMutation.mutate({ path: '/v1/service/stop', names: [serviceName(row)] })}
-            title="停止"
           >
-            <Square size={11} />
+            停止
           </button>
           <button
-            className="inline-flex h-6 w-6 items-center justify-center border border-transparent text-ink-3 hover:border-line-strong hover:bg-paper-2 hover:text-ink"
+            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
             onClick={() => {
               setScaleTarget(row)
               setScaleValue(row.deployment?.spec?.replicas ?? 1)
             }}
-            title="扩缩容"
           >
-            <Layers size={11} />
+            扩容
           </button>
         </div>
       ),
@@ -596,7 +591,7 @@ export default function ServiceManagePage() {
       </div>
 
       {selected.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-signal bg-[#e6f4ff] px-3 py-2 text-ink">
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded border border-[#2f6fa8] bg-[#12314c] px-3 py-2 text-ink">
           <span className="mono ml-1 text-[9.5px] tracking-[0.16em] text-signal">已选 {selected.length} 项</span>
           <span className="h-4 w-px bg-[#91caff]" />
           <Button size="sm" onClick={() => batch('/v1/service/start', selected, '批量启动')}>
