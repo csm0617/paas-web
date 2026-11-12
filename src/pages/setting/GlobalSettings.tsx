@@ -130,8 +130,8 @@ export default function GlobalSettingsPage() {
             className={cn(
               'mono border px-3 py-1.5 text-[9px] tracking-[0.14em] transition-colors',
               activeGroup === group
-                ? 'border-ink bg-ink text-paper'
-                : 'border-line-strong text-ink-3 hover:border-ink hover:text-ink',
+                ? 'border-signal bg-signal text-white'
+                : 'border-line-strong text-ink-3 hover:border-signal hover:text-signal',
             )}
           >
             {group === 'ALL' ? '全部' : groupLabels[group] || group.toUpperCase()}

@@ -347,7 +347,7 @@ export default function ServiceAuthPage() {
                   }
                   className={cn(
                     'flex w-full items-center gap-2 border-b border-line/60 px-3 py-2 text-left last:border-0',
-                    checked ? 'bg-ink text-paper' : 'hover:bg-paper-2/60',
+                    checked ? 'bg-signal text-white' : 'hover:bg-paper-2/60',
                   )}
                 >
                   <span
@@ -359,7 +359,7 @@ export default function ServiceAuthPage() {
                     {checked && <span className="h-1.5 w-1.5 bg-paper" />}
                   </span>
                   <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{name}</span>
-                  <span className={cn('mono text-[8px]', checked ? 'text-[#a9b0b3]' : 'text-mute')}>
+                  <span className={cn('mono text-[8px]', checked ? 'text-white/70' : 'text-mute')}>
                     {Number(service.serviceAuth?.auth) === 1 ? 'AUTHORIZED' : 'PENDING'}
                   </span>
                 </button>

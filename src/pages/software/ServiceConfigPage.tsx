@@ -700,12 +700,12 @@ export default function ServiceConfigPage() {
                   onClick={() => setSelected(name)}
                   className={cn(
                     'flex w-full items-center gap-2 px-4 py-3 text-left transition-colors',
-                    selected === name ? 'bg-ink text-paper' : 'hover:bg-paper-2/60',
+                    selected === name ? 'bg-signal text-white' : 'hover:bg-paper-2/60',
                   )}
                 >
                   <StatusDot tone={ready > 0 ? 'ok' : 'idle'} />
                   <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{name}</span>
-                  <span className={cn('mono text-[8.5px]', selected === name ? 'text-[#a9b0b3]' : 'text-mute')}>
+                  <span className={cn('mono text-[8.5px]', selected === name ? 'text-white/70' : 'text-mute')}>
                     {ready}/{service.deployment?.spec?.replicas ?? 0}
                   </span>
                 </button>
@@ -760,7 +760,7 @@ export default function ServiceConfigPage() {
                 ))}
                 <button
                   onClick={() => setEnvRows((rows) => [...rows, { name: '', value: '' }])}
-                  className="mono flex items-center gap-1 border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-ink hover:text-ink"
+                  className="mono flex items-center gap-1 rounded-md border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-signal hover:text-signal"
                 >
                   <Plus size={10} /> 添加环境变量
                 </button>
@@ -830,7 +830,7 @@ export default function ServiceConfigPage() {
                 ))}
                 <button
                   onClick={() => setPortRows((rows) => [...rows, { port: '', protocol: 'TCP', nodePort: '' }])}
-                  className="mono flex items-center gap-1 border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-ink hover:text-ink"
+                  className="mono flex items-center gap-1 rounded-md border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-signal hover:text-signal"
                 >
                   <Plus size={10} /> 添加端口
                 </button>
@@ -907,7 +907,7 @@ export default function ServiceConfigPage() {
                 ))}
                 <button
                   onClick={() => setVolumeRows((rows) => [...rows, { hostPath: '', podPath: '', readOnly: false }])}
-                  className="mono flex items-center gap-1 border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-ink hover:text-ink"
+                  className="mono flex items-center gap-1 rounded-md border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-signal hover:text-signal"
                 >
                   <Plus size={10} /> 添加 hostPath 挂载
                 </button>
@@ -1267,7 +1267,7 @@ export default function ServiceConfigPage() {
                           key={key}
                           className={cn(
                             'mono flex cursor-pointer items-center gap-1.5 border px-2.5 py-1.5 text-[9.5px] tracking-wider',
-                            checked ? 'border-ink bg-ink text-paper' : 'border-line-strong text-ink-3',
+                            checked ? 'border-signal bg-signal text-white' : 'border-line-strong text-ink-3',
                           )}
                         >
                           <input
@@ -1359,7 +1359,7 @@ export default function ServiceConfigPage() {
               ))}
               <button
                 onClick={() => setCmRows((rows) => [...rows, { key: '', value: '' }])}
-                className="mono flex items-center gap-1 border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-ink hover:text-ink"
+                className="mono flex items-center gap-1 rounded-md border border-dashed border-line-strong px-3 py-2 text-[9px] tracking-widest text-mute hover:border-signal hover:text-signal"
               >
                 <Plus size={10} /> 添加键值
               </button>

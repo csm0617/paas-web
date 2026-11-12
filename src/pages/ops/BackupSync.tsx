@@ -524,12 +524,12 @@ export default function BackupSyncPage() {
                       className={cn(
                         'border px-3 py-2.5 text-left transition-colors',
                         syncMode === option.value
-                          ? 'border-ink bg-ink text-paper'
-                          : 'border-line-strong hover:border-ink',
+                          ? 'border-signal bg-signal text-white'
+                          : 'border-line-strong hover:border-signal',
                       )}
                     >
                       <div className="text-[11.5px] font-medium">{option.label}</div>
-                      <div className={cn('mt-1 text-[9.5px]', syncMode === option.value ? 'text-[#a9b0b2]' : 'text-mute')}>
+                      <div className={cn('mt-1 text-[9.5px]', syncMode === option.value ? 'text-white/70' : 'text-mute')}>
                         {option.desc}
                       </div>
                     </button>
@@ -545,7 +545,7 @@ export default function BackupSyncPage() {
                     return (
                       <label
                         key={option.key}
-                        className="flex cursor-pointer items-center gap-3 border border-line px-3 py-2.5 transition-colors hover:border-ink"
+                        className="flex cursor-pointer items-center gap-3 rounded-md border border-line px-3 py-2.5 transition-colors hover:border-signal"
                       >
                         <input
                           type="checkbox"
@@ -746,7 +746,7 @@ export default function BackupSyncPage() {
             />
             <button
               onClick={() => restoreRef.current?.click()}
-              className="flex w-full flex-col items-center gap-2 border border-dashed border-line-strong px-4 py-8 text-mute hover:border-ink hover:text-ink"
+              className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 py-8 text-mute hover:border-signal hover:text-signal"
             >
               <Upload size={18} strokeWidth={1.4} />
               <span className="text-[11px]">{restoreFile ? restoreFile.name : '点击选择备份文件'}</span>

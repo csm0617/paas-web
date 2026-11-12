@@ -531,7 +531,7 @@ export default function UsersPage() {
           />
           <button
             onClick={() => importRef.current?.click()}
-            className="flex w-full flex-col items-center gap-2 border border-dashed border-line-strong px-4 py-8 text-mute hover:border-ink hover:text-ink"
+            className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 py-8 text-mute hover:border-signal hover:text-signal"
           >
             <Upload size={18} strokeWidth={1.4} />
             <span className="text-[11px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>

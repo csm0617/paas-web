@@ -120,7 +120,7 @@ export function DataTable<T>({
                 >
                   {column.sortValue ? (
                     <button
-                      className="inline-flex items-center gap-1 uppercase tracking-[0.16em] transition-colors hover:text-ink"
+                      className="inline-flex items-center gap-1 transition-colors hover:text-signal"
                       onClick={() =>
                         setSort((prev) =>
                           prev?.key === column.key
@@ -172,7 +172,7 @@ export function DataTable<T>({
                     onClick={() => onRowClick?.(row)}
                     className={cn(
                       onRowClick && 'cursor-pointer',
-                      selected && 'bg-signal/[0.045] shadow-[inset_2px_0_0_var(--color-signal)]',
+                      selected && 'bg-[#e6f4ff]',
                     )}
                   >
                     {selectable && (
@@ -213,32 +213,30 @@ export function DataTable<T>({
       {footer}
 
       {!hidePager && rows.length > 0 && (
-        <div className="flex items-center justify-between border-t border-line px-3 py-2.5">
-          <span className="mono text-[9.5px] tracking-widest text-mute">
-            {String((current - 1) * pageSize + 1).padStart(2, '0')}–
-            {String(Math.min(current * pageSize, sorted.length)).padStart(2, '0')} /{' '}
-            {String(sorted.length).padStart(2, '0')}
+        <div className="flex items-center justify-between border-t border-line px-4 py-3">
+          <span className="text-[12px] text-mute">
+            第 {(current - 1) * pageSize + 1}–{Math.min(current * pageSize, sorted.length)} 条，共 {sorted.length} 条
             {selectedKeys.length > 0 && ` · 已选 ${selectedKeys.length}`}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
-              className="inline-flex h-6 w-6 items-center justify-center border border-line-strong text-ink-3 transition-colors hover:border-ink hover:bg-ink hover:text-paper disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-3"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line-strong text-ink-3 transition-colors hover:border-signal hover:text-signal disabled:opacity-30 disabled:hover:border-line-strong disabled:hover:text-ink-3"
               disabled={current <= 1}
               onClick={() => setPage(current - 1)}
               aria-label="上一页"
             >
-              <ChevronLeft size={12} />
+              <ChevronLeft size={13} />
             </button>
-            <span className="mono px-2 text-[10px] text-ink-3">
-              {String(current).padStart(2, '0')} / {String(totalPages).padStart(2, '0')}
+            <span className="px-1.5 text-[12px] text-ink-3">
+              {current} / {totalPages}
             </span>
             <button
-              className="inline-flex h-6 w-6 items-center justify-center border border-line-strong text-ink-3 transition-colors hover:border-ink hover:bg-ink hover:text-paper disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-3"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line-strong text-ink-3 transition-colors hover:border-signal hover:text-signal disabled:opacity-30 disabled:hover:border-line-strong disabled:hover:text-ink-3"
               disabled={current >= totalPages}
               onClick={() => setPage(current + 1)}
               aria-label="下一页"
             >
-              <ChevronRight size={12} />
+              <ChevronRight size={13} />
             </button>
           </div>
         </div>

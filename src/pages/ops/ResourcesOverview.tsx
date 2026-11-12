@@ -152,7 +152,7 @@ export default function ResourcesOverviewPage() {
                   onClick={() => setRange(item.key)}
                   className={cn(
                     'mono px-2.5 py-1.5 text-[9px] tracking-widest transition-colors',
-                    range === item.key ? 'bg-ink text-paper' : 'text-mute hover:text-ink',
+                    range === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
                   )}
                 >
                   {item.label}
@@ -198,7 +198,7 @@ export default function ResourcesOverviewPage() {
             <span className="num text-[30px] leading-none text-ink">{formatNumber(cpuAlloc, 1)}</span>
             <span className="text-[12px] text-mute">/ {formatNumber(cpuSum, 0)} 核</span>
           </div>
-          <div className="mt-2.5 h-[3px] w-full bg-ink/[0.07]">
+          <div className="mt-2.5 h-[3px] w-full bg-line">
             <div
               className="h-full bg-signal transition-[width] duration-700"
               style={{ width: `${cpuSum ? Math.min(100, (cpuAlloc / cpuSum) * 100) : 0}%` }}
@@ -214,9 +214,9 @@ export default function ResourcesOverviewPage() {
             <span className="num text-[30px] leading-none text-ink">{formatNumber(memAlloc, 1)}</span>
             <span className="text-[12px] text-mute">/ {formatNumber(memSum, 1)} G</span>
           </div>
-          <div className="mt-2.5 h-[3px] w-full bg-ink/[0.07]">
+          <div className="mt-2.5 h-[3px] w-full bg-line">
             <div
-              className="h-full bg-ink transition-[width] duration-700"
+              className="h-full bg-signal transition-[width] duration-700"
               style={{ width: `${memSum ? Math.min(100, (memAlloc / memSum) * 100) : 0}%` }}
             />
           </div>
@@ -262,7 +262,7 @@ export default function ResourcesOverviewPage() {
               <span className="label">告警值</span>
               <span className="mono text-[10px] text-ink">{lokiQuery.data?.logMaxMemory ?? '—'} MB</span>
             </div>
-            <div className="h-[3px] w-full bg-ink/[0.07]">
+            <div className="h-[3px] w-full bg-line">
               <div
                 className="h-full bg-signal transition-[width] duration-700"
                 style={{
@@ -292,9 +292,9 @@ export default function ResourcesOverviewPage() {
                 {lokiQuery.data?.logRetainDayStatus || '—'}
               </Badge>
             </div>
-            <div className="h-[3px] w-full bg-ink/[0.07]">
+            <div className="h-[3px] w-full bg-line">
               <div
-                className="h-full bg-ink transition-[width] duration-700"
+                className="h-full bg-signal transition-[width] duration-700"
                 style={{
                   width: `${lokiQuery.data?.logRetainMaxDay ? Math.min(100, ((lokiQuery.data.logRetainDay ?? 0) / lokiQuery.data.logRetainMaxDay) * 100) : 0}%`,
                 }}

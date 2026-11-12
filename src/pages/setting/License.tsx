@@ -337,11 +337,11 @@ export default function LicensePage() {
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section className="panel-deck scanline relative xl:col-span-7">
-          <div className="flex items-start justify-between border-b border-[#2c3237] px-5 py-4">
+        <section className="panel relative xl:col-span-7">
+          <div className="flex items-start justify-between border-b border-line px-5 py-4">
             <div>
-              <div className="mono text-[8.5px] tracking-[0.24em] text-[#6f777b]">LICENCE STATUS</div>
-              <div className="serif-title mt-2 text-[24px] text-[#f4f0e6]">
+              <div className="mono text-[8.5px] tracking-[0.24em] text-mute">LICENCE STATUS</div>
+              <div className="mt-2 text-[24px] font-semibold text-ink">
                 {valid ? '授权有效' : licence?.expired ? '授权已过期' : '未激活'}
               </div>
             </div>
@@ -351,43 +351,43 @@ export default function LicensePage() {
               <ShieldAlert size={34} strokeWidth={1.1} className="text-signal" />
             )}
           </div>
-          <div className="grid grid-cols-2 divide-x divide-[#2c3237] border-b border-[#2c3237]">
+          <div className="grid grid-cols-2 divide-x divide-line border-b border-line">
             <div className="px-5 py-4">
-              <div className="mono text-[8px] tracking-[0.18em] text-[#6f777b]">EXPIRES AT</div>
-              <div className="num mt-2 text-[24px] text-[#e7e2d5]">
+              <div className="mono text-[8px] tracking-[0.18em] text-mute">EXPIRES AT</div>
+              <div className="num mt-2 text-[24px] text-ink">
                 {licence?.endIso8601?.slice(0, 10) || '—'}
               </div>
-              <div className="mono mt-1 text-[9px] tracking-wider text-[#8b9296]">
+              <div className="mono mt-1 text-[9px] tracking-wider text-mute">
                 {daysLeft !== null ? `${daysLeft} DAYS REMAINING` : 'UNLIMITED / UNKNOWN'}
               </div>
             </div>
             <div className="px-5 py-4">
-              <div className="mono text-[8px] tracking-[0.18em] text-[#6f777b]">MACHINE BINDING</div>
-              <div className="num mt-2 text-[24px] text-[#e7e2d5]">{machine?.existGis ? 'GIS + CORE' : 'CORE'}</div>
-              <div className="mono mt-1 text-[9px] tracking-wider text-[#8b9296]">HARDWARE LOCKED</div>
+              <div className="mono text-[8px] tracking-[0.18em] text-mute">MACHINE BINDING</div>
+              <div className="num mt-2 text-[24px] text-ink">{machine?.existGis ? 'GIS + CORE' : 'CORE'}</div>
+              <div className="mono mt-1 text-[9px] tracking-wider text-mute">HARDWARE LOCKED</div>
             </div>
           </div>
           <div className="px-5 py-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="mono text-[8px] tracking-[0.18em] text-[#6f777b]">LICENCE COVERAGE</span>
-              <span className="mono text-[9px] text-[#b9bfbf]">{valid ? '100%' : '0%'}</span>
+              <span className="mono text-[8px] tracking-[0.18em] text-mute">LICENCE COVERAGE</span>
+              <span className="mono text-[9px] text-ink-3">{valid ? '100%' : '0%'}</span>
             </div>
             <div className="h-[4px] w-full bg-white/10">
               <div className="h-full bg-signal transition-[width] duration-700" style={{ width: valid ? '100%' : '4%' }} />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
-                <div className="mono text-[8px] tracking-[0.16em] text-[#6f777b]">AUTHORIZATION CODE</div>
-                <div className="mono mt-1 truncate text-[10px] text-[#b9bfbf]">{licence?.code || '—'}</div>
+                <div className="mono text-[8px] tracking-[0.16em] text-mute">AUTHORIZATION CODE</div>
+                <div className="mono mt-1 truncate text-[10px] text-ink-3">{licence?.code || '—'}</div>
               </div>
               <div>
-                <div className="mono text-[8px] tracking-[0.16em] text-[#6f777b]">TRIAL PERIOD</div>
-                <div className="mono mt-1 text-[10px] text-[#b9bfbf]">{licence?.trialPeriod ? formatDate(licence.trialPeriod, false) : '—'}</div>
+                <div className="mono text-[8px] tracking-[0.16em] text-mute">TRIAL PERIOD</div>
+                <div className="mono mt-1 text-[10px] text-ink-3">{licence?.trialPeriod ? formatDate(licence.trialPeriod, false) : '—'}</div>
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-[#2c3237] px-5 py-3">
-            <span className="mono text-[8px] tracking-[0.16em] text-[#5f676b]">MSOP LICENCE SERVICE</span>
+          <div className="flex items-center justify-between border-t border-line px-5 py-3">
+            <span className="mono text-[8px] tracking-[0.16em] text-mute">MSOP LICENCE SERVICE</span>
             <Button size="sm" variant="danger" onClick={clearLicence} loading={clearMutation.isPending}>
               <Trash2 size={10} /> 清除授权
             </Button>

@@ -490,7 +490,7 @@ export default function ServiceManagePage() {
             <Settings size={11} />
           </button>
           <button
-            className="inline-flex h-6 w-6 items-center justify-center border border-transparent text-ink-3 hover:border-signal hover:bg-signal hover:text-paper"
+            className="inline-flex h-6 w-6 items-center justify-center rounded border border-transparent text-ink-3 hover:border-signal hover:bg-signal hover:text-white"
             onClick={() => setConsoleState({ service: serviceName(row), mode: 'logs' })}
             title="实时日志与容器终端"
           >
@@ -585,7 +585,7 @@ export default function ServiceManagePage() {
               onClick={() => setStatusFilter(item)}
               className={cn(
                 'mono h-9 px-4 text-[9.5px] tracking-[0.14em] transition-colors',
-                statusFilter === item ? 'bg-ink text-paper' : 'text-ink-3 hover:bg-paper-2',
+                statusFilter === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
               )}
             >
               {item === 'ALL' ? '全部' : item === 'RUNNING' ? '运行中' : '未运行'}
@@ -596,16 +596,16 @@ export default function ServiceManagePage() {
       </div>
 
       {selected.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 border border-ink bg-ink px-3 py-2 text-paper">
-          <span className="mono text-[9.5px] tracking-[0.16em] text-[#aeb4b6]">已选 {selected.length} 项</span>
-          <span className="h-4 w-px bg-[#3a4145]" />
-          <Button size="sm" className="border-[#4a5256] text-paper hover:bg-white/10" onClick={() => batch('/v1/service/start', selected, '批量启动')}>
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-signal bg-[#e6f4ff] px-3 py-2 text-ink">
+          <span className="mono ml-1 text-[9.5px] tracking-[0.16em] text-signal">已选 {selected.length} 项</span>
+          <span className="h-4 w-px bg-[#91caff]" />
+          <Button size="sm" onClick={() => batch('/v1/service/start', selected, '批量启动')}>
             <Play size={11} /> 启动
           </Button>
-          <Button size="sm" className="border-[#4a5256] text-paper hover:bg-white/10" onClick={() => batch('/v1/service/stop', selected, '批量停止')}>
+          <Button size="sm" onClick={() => batch('/v1/service/stop', selected, '批量停止')}>
             <Square size={11} /> 停止
           </Button>
-          <Button size="sm" className="border-[#4a5256] text-paper hover:bg-white/10" onClick={() => batch('/v1/service/reStart', selected, '批量重启')}>
+          <Button size="sm" onClick={() => batch('/v1/service/reStart', selected, '批量重启')}>
             <RefreshCw size={11} /> 重启
           </Button>
           <Button size="sm" variant="danger" className="ml-auto" onClick={() => batch('/v1/service', selected, '批量删除', true)}>
@@ -1131,7 +1131,7 @@ export default function ServiceManagePage() {
               onClick={() => setMonitorRange(item.key)}
               className={cn(
                 'mono px-3 py-1.5 text-[9px] tracking-widest transition-colors',
-                monitorRange === item.key ? 'bg-ink text-paper' : 'text-mute hover:text-ink',
+                monitorRange === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
               )}
             >
               {item.label}

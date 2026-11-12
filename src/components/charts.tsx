@@ -335,7 +335,7 @@ export function BarList({
                 <span className="ml-0.5 text-[9px] text-mute">{unit}</span>
               </span>
             </div>
-            <div className="h-[3px] w-full bg-ink/[0.07]">
+            <div className="h-[3px] w-full bg-line">
               <div
                 className="h-full transition-[width] duration-700 ease-out"
                 style={{ width: `${ratio * 100}%`, background: color }}

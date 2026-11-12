@@ -491,7 +491,7 @@ export default function SubRolesPage() {
                   onClick={() => toggleUser(user.id)}
                   className={cn(
                     'flex items-center gap-2 border-b border-line/60 px-3 py-2 text-left transition-colors',
-                    checked ? 'bg-ink text-paper' : 'hover:bg-paper-2/60',
+                    checked ? 'bg-signal text-white' : 'hover:bg-paper-2/60',
                   )}
                 >
                   <span
@@ -502,9 +502,9 @@ export default function SubRolesPage() {
                   >
                     {checked && <span className="h-1.5 w-1.5 bg-paper" />}
                   </span>
-                  <UserRound size={11} className={checked ? 'text-[#a9b0b3]' : 'text-mute'} />
+                  <UserRound size={11} className={checked ? 'text-white/70' : 'text-mute'} />
                   <span className="min-w-0 flex-1 truncate text-[11px]">{memberName(user)}</span>
-                  <span className={cn('mono text-[8px]', checked ? 'text-[#a9b0b3]' : 'text-mute')}>{user.username}</span>
+                  <span className={cn('mono text-[8px]', checked ? 'text-white/70' : 'text-mute')}>{user.username}</span>
                 </button>
               )
             })}
@@ -563,7 +563,7 @@ export default function SubRolesPage() {
           />
           <button
             onClick={() => importRef.current?.click()}
-            className="flex w-full flex-col items-center gap-2 border border-dashed border-line-strong px-4 py-8 text-mute hover:border-ink hover:text-ink"
+            className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 py-8 text-mute hover:border-signal hover:text-signal"
           >
             <Upload size={18} strokeWidth={1.4} />
             <span className="text-[11px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>

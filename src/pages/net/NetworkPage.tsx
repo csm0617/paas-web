@@ -832,7 +832,7 @@ export default function NetworkPage() {
             <button
               key={value}
               className={`mono h-8 flex-1 text-[9.5px] tracking-[0.14em] ${
-                createMode === value ? 'bg-ink text-paper' : 'text-ink-3 hover:bg-paper-2'
+                createMode === value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2'
               }`}
               onClick={() => {
                 if (value === 'json' && !createJson.trim()) {

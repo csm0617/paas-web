@@ -221,7 +221,7 @@ export default function AlertsPage() {
             onClick={() => toggleMutation.mutate({ id: row.id, enable: enabled ? 0 : 1 })}
             className={cn(
               'relative h-[18px] w-9 border transition-colors',
-              enabled ? 'border-ink bg-ink' : 'border-line-strong bg-transparent',
+              enabled ? 'border-signal bg-signal' : 'border-line-strong bg-transparent',
             )}
             aria-label={enabled ? '停用' : '启用'}
           >
@@ -354,7 +354,7 @@ export default function AlertsPage() {
               onClick={() => setAlertType(type.value)}
               className={cn(
                 'mono h-7 px-3 text-[9px] tracking-[0.14em] transition-colors',
-                alertType === type.value ? 'bg-ink text-paper' : 'text-ink-3 hover:bg-paper-2',
+                alertType === type.value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
               )}
             >
               {type.label}

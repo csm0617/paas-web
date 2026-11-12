@@ -660,7 +660,7 @@ export default function DatabasePage() {
                         <span className="truncate font-mono text-[10px] text-ink-3">{table.name}</span>
                         <div className="h-[4px] bg-paper-2">
                           <div
-                            className="h-full bg-ink-3"
+                            className="h-full bg-signal"
                             style={{ width: `${Math.min(((table.size ?? 0) / max) * 100, 100)}%` }}
                           />
                         </div>
@@ -930,7 +930,7 @@ export default function DatabasePage() {
               onChange={(event) => setMaintFile(event.target.files?.[0] ?? null)}
             />
             <button
-              className="flex h-9 w-full items-center gap-2 border border-line-strong px-3 text-left text-[11px] text-ink-3 transition-colors hover:border-ink"
+              className="flex h-9 w-full items-center gap-2 rounded-md border border-line-strong px-3 text-left text-[12px] text-ink-3 transition-colors hover:border-signal"
               onClick={() => maintFileRef.current?.click()}
             >
               <FileUp size={12} className="text-mute" />

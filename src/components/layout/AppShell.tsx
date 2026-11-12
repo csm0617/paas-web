@@ -32,21 +32,13 @@ import { Button, Field, IconButton, Modal, StatusDot, ToastHost, useConfirm } fr
 /* ------------------------------------------------------------------ */
 function Brand() {
   return (
-    <div className="flex h-[88px] flex-col justify-center border-b border-[#2a3034] px-5">
-      <div className="flex items-center gap-2.5">
-        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden>
-          <rect x="0.5" y="0.5" width="25" height="25" fill="none" stroke="var(--color-signal)" strokeWidth="1" />
-          <path d="M5 20V6l8 8 8-8v14" fill="none" stroke="var(--color-signal)" strokeWidth="2" />
-          <path d="M2 2h4M20 2h4M2 24h4M20 24h4" stroke="#5c6468" strokeWidth="1" />
-        </svg>
-        <div className="leading-none">
-          <div className="num text-[25px] tracking-[0.06em] text-[#f4f0e6]">MSOP</div>
-          <div className="mt-1 font-mono text-[8px] tracking-[0.22em] text-[#7c8488]">CONSOLE / v0.0.3</div>
-        </div>
-      </div>
-      <div className="mt-2.5 flex items-center gap-2">
-        <span className="h-px flex-1 bg-[#2a3034]" />
-        <span className="font-mono text-[8.5px] tracking-[0.14em] text-[#6a7175]">机动微服务运行框架</span>
+    <div className="flex h-16 flex-none items-center gap-2.5 border-b border-[#002140] px-5">
+      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-signal text-[15px] font-bold text-white">
+        M
+      </span>
+      <div className="leading-none">
+        <div className="text-[17px] font-semibold tracking-[0.02em] text-white">MSOP</div>
+        <div className="mt-1 text-[10px] tracking-[0.08em] text-white/45">机动微服务运行框架</div>
       </div>
     </div>
   )
@@ -83,6 +75,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   }
 
   const initials = (user?.nickname || user?.username || 'MS').slice(0, 2).toUpperCase()
+  const activeNav = findNav(location.pathname)
 
   return (
     <div className="flex h-full flex-col bg-deck">
@@ -92,26 +85,23 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           const isCollapsed = collapsed[group.index]
           const active = group.items.some((item) => location.pathname.startsWith(item.path))
           return (
-            <div key={group.index} className="border-b border-[#242a2e]/70">
+            <div key={group.index}>
               <button
-                className="flex w-full items-center gap-2 px-5 py-2.5 text-left transition-colors hover:bg-white/[0.025]"
+                className="flex w-full items-center gap-2 px-6 pb-1.5 pt-4 text-left"
                 onClick={() => setCollapsed((prev) => ({ ...prev, [group.index]: !prev[group.index] }))}
               >
-                <span className={cn('font-mono text-[8.5px] tracking-wider', active ? 'text-signal' : 'text-[#5d6569]')}>
-                  {group.index}
-                </span>
                 <span
                   className={cn(
-                    'flex-1 font-mono text-[9px] uppercase tracking-[0.2em]',
-                    active ? 'text-[#d8d3c6]' : 'text-[#7c8488]',
+                    'flex-1 text-[11px] tracking-[0.04em]',
+                    active ? 'text-white/80' : 'text-white/40',
                   )}
                 >
                   {group.en}
                 </span>
                 {isCollapsed ? (
-                  <ChevronRight size={11} className="text-[#5d6569]" />
+                  <ChevronRight size={11} className="text-white/30" />
                 ) : (
-                  <ChevronDown size={11} className="text-[#5d6569]" />
+                  <ChevronDown size={11} className="text-white/30" />
                 )}
               </button>
               {!isCollapsed && (
@@ -121,11 +111,9 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                       key={item.path}
                       to={item.path}
                       onClick={onNavigate}
-                      className={({ isActive }) => cn('nav-item', isActive && 'active')}
+                      className={() => cn('nav-item', activeNav?.path === item.path && 'active')}
                     >
-                      <span className="nav-index">{item.code}</span>
                       <span className="flex-1 truncate">{item.label}</span>
-                      <span className="font-mono text-[7.5px] tracking-[0.12em] text-[#525a5e]">{item.en}</span>
                     </NavLink>
                   ))}
                 </div>
@@ -134,29 +122,24 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           )
         })}
       </nav>
-      <div className="border-t border-[#2a3034] p-3">
-        <div className="flex items-center gap-2.5 border border-[#2e3539] bg-[#191d21] px-2.5 py-2">
-          <div className="relative flex h-8 w-8 flex-none items-center justify-center border border-[#3c4448] bg-[#22282c]">
-            <span className="mono text-[10px] text-[#cfc9ba]">{initials}</span>
-            <span className="absolute -bottom-px -right-px h-1.5 w-1.5 bg-ok" />
+      <div className="border-t border-[#002140] p-3">
+        <div className="flex items-center gap-2.5 rounded-md px-2 py-2 hover:bg-white/5">
+          <div className="relative flex h-8 w-8 flex-none items-center justify-center rounded-full bg-signal">
+            <span className="text-[11px] font-medium text-white">{initials}</span>
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[11.5px] text-[#e4dfd2]">{user?.nickname || user?.username || '未登录'}</div>
-            <div className="truncate font-mono text-[8px] tracking-[0.12em] text-[#6f777b]">
-              {role?.name || '—'} / {role?.key || '—'}
+            <div className="truncate text-[13px] text-white/85">{user?.nickname || user?.username || '未登录'}</div>
+            <div className="truncate text-[11px] text-white/40">
+              {role?.name || '未分配席位'}
             </div>
           </div>
           <button
             onClick={logout}
             aria-label="退出登录"
-            className="flex h-6 w-6 items-center justify-center border border-transparent text-[#6f777b] transition-colors hover:border-[#3c4448] hover:text-signal"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/10 hover:text-white"
           >
-            <LogOut size={12} />
+            <LogOut size={13} />
           </button>
-        </div>
-        <div className="mt-2 flex items-center justify-between px-1">
-          <span className="font-mono text-[8px] tracking-[0.12em] text-[#565e62]">SESSION ENCRYPTED</span>
-          <span className="font-mono text-[8px] tracking-[0.12em] text-[#565e62]">CN-SH</span>
         </div>
       </div>
     </div>
@@ -345,9 +328,9 @@ function Topbar({
   const date = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 flex-none items-center gap-3 border-b border-line-strong bg-paper/90 px-4 backdrop-blur-md lg:px-6">
+    <header className="sticky top-0 z-30 flex h-14 flex-none items-center gap-3 border-b border-line bg-white px-4 lg:px-6">
       <button
-        className="mr-1 flex h-8 w-8 items-center justify-center border border-line-strong text-ink lg:hidden"
+        className="mr-1 flex h-8 w-8 items-center justify-center rounded-md border border-line-strong text-ink-3 lg:hidden"
         onClick={onOpenMenu}
         aria-label="打开菜单"
       >
@@ -355,99 +338,97 @@ function Topbar({
       </button>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-mute">
-          <span>{nav?.group.en || 'PLATFORM'}</span>
-          <ChevronRight size={9} />
-          <span className="truncate text-ink-3">{nav?.en || 'CONSOLE'}</span>
+        <div className="flex items-center gap-1.5 text-[12px] text-mute">
+          <span>{nav?.group.label || '平台'}</span>
+          <ChevronRight size={11} className="text-line-strong" />
+          <span className="truncate text-ink-3">{nav?.label || '机动微服务运行框架'}</span>
         </div>
-        <div className="mt-0.5 truncate text-[12.5px] font-medium text-ink">{nav?.label || '机动微服务运行框架'}</div>
+        <div className="mt-0.5 truncate text-[14px] font-medium text-ink">{nav?.label || '机动微服务运行框架'}</div>
       </div>
 
       <button
         onClick={onOpenPalette}
-        className="hidden h-8 items-center gap-2 border border-line-strong bg-white/30 px-3 text-mute transition-colors hover:border-ink hover:text-ink sm:flex"
+        className="hidden h-8 items-center gap-2 rounded-md border border-line bg-paper-2 px-3 text-mute transition-colors hover:border-signal hover:text-signal sm:flex"
       >
-        <Search size={12} />
-        <span className="font-mono text-[9.5px] tracking-[0.1em]">检索功能 / 页面</span>
+        <Search size={13} />
+        <span className="text-[12px]">搜索功能 / 页面</span>
         <span className="key ml-2">⌘K</span>
       </button>
 
       {modeQuery.data?.modeName && (
-        <div className="hidden items-center gap-2 border-l border-line pl-3 sm:flex">
-          <span
-            className={cn('h-1.5 w-1.5', modeQuery.data.mode === 'TRAIN' ? 'bg-info' : 'bg-signal')}
-          />
-          <span className="mono text-[9px] tracking-[0.16em] text-ink-3">{modeQuery.data.modeName}</span>
+        <div className="hidden items-center gap-1.5 rounded-md bg-[#e6f4ff] px-2.5 py-1 sm:flex">
+          <span className="h-1.5 w-1.5 rounded-full bg-signal" />
+          <span className="text-[11px] text-signal">{modeQuery.data.modeName}</span>
         </div>
       )}
 
       <div className="hidden items-center gap-2 border-l border-line pl-3 md:flex">
         <div className="text-right">
-          <div className="mono text-[11px] leading-none tabular-nums text-ink">{clock}</div>
-          <div className="mono mt-1 text-[8.5px] tracking-widest text-mute">{date} CST</div>
+          <div className="text-[12px] leading-none tabular-nums text-ink-3">{clock}</div>
+          <div className="mt-1 text-[10px] text-mute">{date}</div>
         </div>
       </div>
 
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
-          <button className="flex h-8 items-center gap-2 border border-line-strong bg-white/25 pl-2 pr-2.5 transition-colors hover:border-ink">
-            <span className="flex h-5 w-5 items-center justify-center bg-ink text-[8px] text-paper">
+          <button className="flex h-8 items-center gap-2 rounded-md px-1.5 transition-colors hover:bg-paper-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-signal text-[10px] font-medium text-white">
               {(user?.username || 'MS').slice(0, 2).toUpperCase()}
             </span>
-            <span className="hidden max-w-[90px] truncate text-[11px] text-ink sm:block">{user?.nickname || user?.username}</span>
-            <ChevronDown size={10} className="text-mute" />
+            <span className="hidden max-w-[90px] truncate text-[12px] text-ink sm:block">{user?.nickname || user?.username}</span>
+            <ChevronDown size={11} className="text-mute" />
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Content
             align="end"
             sideOffset={6}
-            className="z-[75] w-[230px] border border-ink bg-paper p-0 shadow-[5px_5px_0_rgba(21,24,27,0.14)]"
+            className="z-[75] w-[230px] rounded-lg border border-line bg-white p-0 shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
           >
             <div className="border-b border-line px-3.5 py-3">
-              <div className="text-[12.5px] font-medium text-ink">{user?.nickname || user?.username}</div>
-              <div className="mono mt-1 text-[9px] tracking-widest text-mute">UID · {user?.id || '—'}</div>
+              <div className="text-[13px] font-medium text-ink">{user?.nickname || user?.username}</div>
+              <div className="mt-1 text-[11px] text-mute">UID · {user?.id || '—'}</div>
               <div className="mt-2 flex items-center gap-1.5">
                 <StatusDot tone="ok" />
-                <span className="text-[10px] text-ink-3">{role?.name || '未分配席位'}</span>
+                <span className="text-[11px] text-ink-3">{role?.name || '未分配席位'}</span>
               </div>
             </div>
             <div className="py-1">
               <DropdownMenu.Item
                 onSelect={() => navigate('/usermanage/role')}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[11.5px] text-ink-3 outline-none data-[highlighted]:bg-ink data-[highlighted]:text-paper"
+                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
               >
-                <ShieldCheck size={12} /> 席位与角色
+                <ShieldCheck size={13} /> 席位与角色
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => setProfileOpen(true)}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[11.5px] text-ink-3 outline-none data-[highlighted]:bg-ink data-[highlighted]:text-paper"
+                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
               >
-                <UserRound size={12} /> 个人设置
+                <UserRound size={13} /> 个人设置
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={onOpenQuickStart}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[11.5px] text-ink-3 outline-none data-[highlighted]:bg-ink data-[highlighted]:text-paper"
+                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
               >
-                <HelpCircle size={12} /> 快速开始
+                <HelpCircle size={13} /> 快速开始
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => navigate('/usermanage/settingGlobal')}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[11.5px] text-ink-3 outline-none data-[highlighted]:bg-ink data-[highlighted]:text-paper"
+                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
               >
-                <Settings2 size={12} /> 全局设置
+                <Settings2 size={13} /> 全局设置
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={() => navigate('/setting/version')}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[11.5px] text-ink-3 outline-none data-[highlighted]:bg-ink data-[highlighted]:text-paper"
+                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-ink-3 outline-none data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink"
               >
-                <Command size={12} /> 平台版本与授权
+                <Command size={13} /> 平台版本与授权
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onSelect={logout}
-                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[11.5px] text-signal outline-none data-[highlighted]:bg-signal data-[highlighted]:text-paper"
+                className="flex cursor-pointer items-center gap-2 px-3.5 py-2 text-[12px] text-danger outline-none data-[highlighted]:bg-[#fff2f0] data-[highlighted]:text-danger"
               >
-                <LogOut size={12} /> 退出登录
+                <LogOut size={13} /> 退出登录
               </DropdownMenu.Item>
             </div>
           </DropdownMenu.Content>
@@ -456,55 +437,6 @@ function Topbar({
 
       <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* Status rail                                                         */
-/* ------------------------------------------------------------------ */
-function StatusRail() {
-  const { data: summary } = useQuery({
-    queryKey: ['cluster-summary'],
-    queryFn: () => api.get<ClusterSummary>('/cloud/summary'),
-    refetchInterval: 30_000,
-    staleTime: 15_000,
-  })
-  const { data: nodes } = useQuery({
-    queryKey: ['nodes-summary'],
-    queryFn: () => api.get<NodeSummary>('/cloud/nodesummary'),
-    refetchInterval: 30_000,
-    staleTime: 15_000,
-  })
-
-  const items = [
-    'MSOP / 机动微服务运行框架',
-    `NODES ${nodes?.nodeInfo?.health ?? '—'}/${nodes?.nodeInfo?.total ?? '—'} HEALTHY`,
-    `PODS ${summary?.static?.pod?.Running ?? '—'} RUNNING`,
-    `CPU ${formatPercent(summary?.dynamic?.useRate?.cpu ?? nodes?.cpu?.[0]?.used)}`,
-    `MEM ${formatPercent(summary?.dynamic?.useRate?.mem ?? nodes?.memory?.[0]?.used)}`,
-    `SCHEDULABLE ${summary?.static?.node?.schedulable ?? '—'}`,
-    'TELEMETRY STREAM ACTIVE',
-    'API GATEWAY / ISTIO',
-  ]
-  const content = items.join('   ///   ')
-
-  return (
-    <footer className="fixed bottom-0 left-0 right-0 z-30 flex h-7 items-center border-t border-[#2c3237] bg-deck px-3 text-[#8b9296] lg:left-[252px]">
-      <span className="hidden flex-none items-center gap-1.5 border-r border-[#2c3237] pr-3 sm:flex">
-        <StatusDot tone="ok" pulse />
-        <span className="font-mono text-[8px] tracking-[0.18em] text-[#b3b8b8]">LIVE</span>
-      </span>
-      <div className="relative ml-0 flex-1 overflow-hidden">
-        <div className="ticker-track font-mono text-[8px] tracking-[0.16em]">
-          <span className="pr-10">{content}</span>
-          <span className="pr-10">{content}</span>
-        </div>
-      </div>
-      <div className="hidden flex-none items-center gap-3 border-l border-[#2c3237] pl-3 md:flex">
-        <span className="font-mono text-[8px] tracking-[0.14em]">BUILD 0.0.3</span>
-        <span className="font-mono text-[8px] tracking-[0.14em] text-[#6d7478]">172.16.209.170</span>
-      </div>
-    </footer>
   )
 }
 
@@ -547,10 +479,10 @@ function CommandPalette({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[85] bg-ink/50 backdrop-blur-[2px]" />
-        <Dialog.Content className="dialog-content fixed left-1/2 top-[16%] z-[86] w-[calc(100vw-32px)] max-w-[560px] -translate-x-1/2 border border-ink bg-paper shadow-[10px_10px_0_rgba(21,24,27,0.16)] outline-none">
+        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[85] bg-black/25 backdrop-blur-[1px]" />
+        <Dialog.Content className="dialog-content fixed left-1/2 top-[16%] z-[86] w-[calc(100vw-32px)] max-w-[560px] -translate-x-1/2 rounded-lg border border-line bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)] outline-none">
           <Dialog.Title className="sr-only">检索功能</Dialog.Title>
-          <div className="flex items-center gap-3 border-b border-line-strong px-4 py-3">
+          <div className="flex items-center gap-3 border-b border-line px-4 py-3">
             <Search size={15} className="text-mute" />
             <input
               autoFocus
@@ -577,7 +509,7 @@ function CommandPalette({
           </div>
           <div className="max-h-[52vh] overflow-y-auto py-1">
             {results.length === 0 && (
-              <div className="px-4 py-8 text-center text-[11.5px] text-mute">未找到匹配的功能</div>
+              <div className="px-4 py-8 text-center text-[12px] text-mute">未找到匹配的功能</div>
             )}
             {results.map((item, index) => (
               <button
@@ -585,29 +517,29 @@ function CommandPalette({
                 onMouseEnter={() => setActive(index)}
                 onClick={() => go(item)}
                 className={cn(
-                  'flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors',
-                  index === active ? 'bg-ink text-paper' : 'text-ink-3 hover:bg-paper-2',
+                  'mx-1 flex w-[calc(100%-8px)] items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors',
+                  index === active ? 'bg-[#e6f4ff] text-signal' : 'text-ink-3 hover:bg-paper-3',
                 )}
               >
                 <span
                   className={cn(
-                    'font-mono text-[8.5px] tracking-wider',
+                    'text-[10px] tracking-wider',
                     index === active ? 'text-signal' : 'text-mute',
                   )}
                 >
                   {item.group.index}.{item.code}
                 </span>
-                <span className="flex-1 text-[12px]">{item.label}</span>
-                <span className={cn('font-mono text-[8px] tracking-[0.14em]', index === active ? 'text-[#a9aeb0]' : 'text-mute')}>
+                <span className="flex-1 text-[13px]">{item.label}</span>
+                <span className={cn('text-[10px] tracking-[0.06em]', index === active ? 'text-signal/70' : 'text-mute')}>
                   {item.en}
                 </span>
-                <ArrowRight size={11} className={index === active ? 'text-signal' : 'text-line-strong'} />
+                <ArrowRight size={12} className={index === active ? 'text-signal' : 'text-line-strong'} />
               </button>
             ))}
           </div>
           <div className="flex items-center justify-between border-t border-line px-4 py-2">
-            <span className="font-mono text-[8.5px] tracking-widest text-mute">↑↓ 导航 · ENTER 跳转</span>
-            <span className="font-mono text-[8.5px] tracking-widest text-mute">{results.length} RESULTS</span>
+            <span className="text-[11px] text-mute">↑↓ 导航 · ENTER 跳转</span>
+            <span className="text-[11px] text-mute">{results.length} 个结果</span>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -728,17 +660,17 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[252px] lg:block">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[220px] lg:block">
         <Sidebar />
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-ink/60" onClick={() => setMobileOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-[252px] animate-[reveal-up_.25s_ease]">
+          <div className="absolute inset-0 bg-black/45" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-y-0 left-0 w-[220px] animate-[reveal-up_.25s_ease]">
             <Sidebar onNavigate={() => setMobileOpen(false)} />
             <button
-              className="absolute -right-10 top-3 flex h-8 w-8 items-center justify-center border border-paper/30 text-paper"
+              className="absolute -right-10 top-3 flex h-8 w-8 items-center justify-center rounded-md border border-white/30 text-white"
               onClick={() => setMobileOpen(false)}
               aria-label="关闭菜单"
             >
@@ -748,29 +680,28 @@ export function AppShell() {
         </div>
       )}
 
-      <div className="flex min-h-screen flex-col lg:ml-[252px]">
+      <div className="flex min-h-screen flex-col lg:ml-[220px]">
         <Topbar
           onOpenMenu={() => setMobileOpen(true)}
           onOpenPalette={() => setPaletteOpen(true)}
           onOpenQuickStart={() => setQuickOpen(true)}
         />
-        <main className="flex-1 px-4 pb-12 pt-5 lg:px-6">
+        <main className="flex-1 bg-paper px-4 pb-10 pt-4 lg:px-6">
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.34, ease: [0.2, 0.7, 0.2, 1] }}
+            transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
           >
             <Outlet />
           </motion.div>
         </main>
       </div>
 
-      <StatusRail />
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       <QuickStartModal open={quickOpen} onOpenChange={setQuickOpen} />
       <ToastHost />
-      <div className="fixed bottom-7 right-4 z-20 hidden lg:block">
+      <div className="fixed bottom-6 right-4 z-20 hidden lg:block">
         <IconButton label="检索 ⌘K" onClick={() => setPaletteOpen(true)}>
           <Command size={12} />
         </IconButton>

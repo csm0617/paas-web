@@ -344,7 +344,7 @@ export default function MirrorPage() {
             <button
               onClick={() => setProjectFilter('ALL')}
               className={`flex w-full items-center justify-between border-b border-line px-3.5 py-2.5 text-left transition-colors ${
-                projectFilter === 'ALL' ? 'bg-ink text-paper' : 'hover:bg-paper-2'
+                projectFilter === 'ALL' ? 'bg-signal text-white' : 'hover:bg-paper-2'
               }`}
             >
               <span className="text-[11.5px]">全部镜像</span>
@@ -354,7 +354,7 @@ export default function MirrorPage() {
               <div
                 key={project.project_id}
                 className={`flex items-center gap-1 border-b border-line/70 pr-2 transition-colors ${
-                  projectFilter === project.name ? 'bg-ink text-paper' : 'hover:bg-paper-2'
+                  projectFilter === project.name ? 'bg-signal text-white' : 'hover:bg-paper-2'
                 }`}
               >
                 <button
@@ -378,7 +378,7 @@ export default function MirrorPage() {
             <div className="px-3 py-2">
               <button
                 onClick={() => setProjectModal(true)}
-                className="mono flex w-full items-center justify-center gap-1 border border-dashed border-line-strong py-2 text-[9px] tracking-widest text-mute transition-colors hover:border-ink hover:text-ink"
+                className="mono flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-line-strong py-2 text-[9px] tracking-widest text-mute transition-colors hover:border-signal hover:text-signal"
               >
                 <FolderPlus size={10} /> NEW PROJECT
               </button>
@@ -413,7 +413,7 @@ export default function MirrorPage() {
                         setDetailImage(image)
                         setDetailTag(image.lastVersion || '')
                       }}
-                      className="flex h-6 w-6 items-center justify-center border border-line-strong text-ink-3 transition-colors hover:border-ink hover:bg-ink hover:text-paper"
+                      className="flex h-6 w-6 items-center justify-center rounded border border-line-strong text-ink-3 transition-colors hover:border-signal hover:bg-signal hover:text-white"
                       title="镜像详情"
                     >
                       <FileCode2 size={10} />
@@ -423,14 +423,14 @@ export default function MirrorPage() {
                         await navigator.clipboard.writeText(`${registryHost}/${image.name}:${image.lastVersion || 'latest'}`)
                         toast.success('镜像地址已复制')
                       }}
-                      className="flex h-6 w-6 items-center justify-center border border-line-strong text-ink-3 transition-colors hover:border-ink hover:bg-ink hover:text-paper"
+                      className="flex h-6 w-6 items-center justify-center rounded border border-line-strong text-ink-3 transition-colors hover:border-signal hover:bg-signal hover:text-white"
                       title="复制镜像地址"
                     >
                       <Copy size={10} />
                     </button>
                     <button
                       onClick={() => removeImage(image)}
-                      className="flex h-6 w-6 items-center justify-center border border-line-strong text-ink-3 transition-colors hover:border-signal hover:bg-signal hover:text-paper"
+                      className="flex h-6 w-6 items-center justify-center rounded border border-line-strong text-ink-3 transition-colors hover:border-signal hover:bg-signal hover:text-white"
                       title="删除镜像标签"
                     >
                       <Trash2 size={10} />
@@ -570,8 +570,8 @@ export default function MirrorPage() {
                   onClick={() => setDetailTag(tag.name)}
                   className={`mono border px-2 py-1 text-[9px] tracking-wider transition-colors ${
                     detailTag === tag.name
-                      ? 'border-ink bg-ink text-paper'
-                      : 'border-line-strong text-ink-3 hover:border-ink hover:text-ink'
+                      ? 'border-signal bg-signal text-white'
+                      : 'border-line-strong text-ink-3 hover:border-signal hover:text-signal'
                   }`}
                 >
                   {tag.name}

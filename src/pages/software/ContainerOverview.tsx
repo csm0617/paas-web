@@ -147,9 +147,9 @@ export default function ContainerOverviewPage() {
                     <td>
                       <div className="flex items-center gap-2">
                         <span className="num text-[12px] text-ink">{Math.round(cpu * 1000)}m</span>
-                        <div className="h-[3px] w-16 bg-ink/[0.07]">
+                        <div className="h-[3px] w-16 bg-line">
                           <div
-                            className={cn('h-full', cpu / maxCpu > 0.8 ? 'bg-signal' : 'bg-ink')}
+                            className={cn('h-full', cpu / maxCpu > 0.8 ? 'bg-signal' : 'bg-signal')}
                             style={{ width: `${Math.min(100, (cpu / maxCpu) * 100)}%` }}
                           />
                         </div>

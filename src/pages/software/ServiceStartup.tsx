@@ -118,7 +118,7 @@ export default function ServiceStartupPage() {
                   onClick={() => toggle(name)}
                   className={cn(
                     'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors',
-                    checked ? 'bg-ink text-paper' : 'hover:bg-paper-2/60',
+                    checked ? 'bg-signal text-white' : 'hover:bg-paper-2/60',
                   )}
                 >
                   <span
@@ -131,7 +131,7 @@ export default function ServiceStartupPage() {
                   </span>
                   <StatusDot tone={status.tone === 'ok' ? 'ok' : status.tone === 'warn' ? 'warn' : 'idle'} />
                   <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{name}</span>
-                  <span className={cn('mono text-[8.5px] tracking-widest', checked ? 'text-[#a9b0b3]' : 'text-mute')}>
+                  <span className={cn('mono text-[8.5px] tracking-widest', checked ? 'text-white/70' : 'text-mute')}>
                     {service.deployment?.status?.readyReplicas ?? 0}/{service.deployment?.spec?.replicas ?? 0}
                   </span>
                   <Badge tone={status.tone}>{status.label}</Badge>

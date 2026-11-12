@@ -67,7 +67,7 @@ export function IconButton({
       <button
         aria-label={label}
         className={cn(
-          'inline-flex h-8 w-8 items-center justify-center border border-line-strong text-ink-3 transition-all hover:border-ink hover:bg-ink hover:text-paper',
+          'inline-flex h-8 w-8 items-center justify-center rounded-md border border-line-strong bg-white text-ink-3 transition-colors hover:border-signal hover:text-signal',
           className,
         )}
         {...rest}
@@ -144,26 +144,25 @@ export function Panel({
       {(title || actions || kicker) && (
         <header className="panel-head">
           <div className="min-w-0">
-            {kicker && <div className="label mb-1">{kicker}</div>}
-            {title && <div className="truncate text-[13px] font-medium tracking-wide">{title}</div>}
+            {kicker && <div className="label mb-0.5">{kicker}</div>}
+            {title && <div className="truncate text-[14px] font-semibold text-ink">{title}</div>}
           </div>
           {actions && <div className="flex flex-none items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={cn('p-4', bodyClassName)}>{children}</div>
+      <div className={cn('p-5', bodyClassName)}>{children}</div>
     </section>
   )
 }
 
 export function PageHeader({
-  index,
   title,
   en,
   description,
   actions,
   meta,
 }: {
-  index: string
+  index?: string
   title: string
   en: string
   description?: string
@@ -171,15 +170,12 @@ export function PageHeader({
   meta?: ReactNode
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-5 border-b border-line-strong pb-5">
+    <div className="mb-4 flex flex-wrap items-start justify-between gap-4 rounded-lg border border-line bg-white px-5 py-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
       <div className="min-w-0">
-        <div className="mb-2 flex items-baseline gap-3">
-          <span className="mono text-[10px] tracking-[0.2em] text-signal">{index}</span>
-          <span className="label">{en}</span>
-        </div>
-        <h1 className="serif-title text-[30px] leading-none text-ink">{title}</h1>
-        {description && <p className="mt-3 max-w-2xl text-[12.5px] leading-relaxed text-ink-3">{description}</p>}
-        {meta && <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">{meta}</div>}
+        <div className="mb-1 text-[12px] text-mute">{en}</div>
+        <h1 className="text-[20px] font-semibold leading-7 text-ink">{title}</h1>
+        {description && <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-ink-3">{description}</p>}
+        {meta && <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">{meta}</div>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -188,9 +184,9 @@ export function PageHeader({
 
 export function SectionTitle({ children, extra }: { children: ReactNode; extra?: ReactNode }) {
   return (
-    <div className="mb-3 flex items-center gap-3">
-      <span className="h-3 w-[3px] bg-signal" />
-      <h2 className="text-[12px] font-semibold tracking-[0.06em] text-ink">{children}</h2>
+    <div className="mb-3 flex items-center gap-2.5">
+      <span className="h-3.5 w-[3px] rounded-full bg-signal" />
+      <h2 className="text-[14px] font-semibold text-ink">{children}</h2>
       <span className="h-px flex-1 bg-line" />
       {extra}
     </div>
@@ -226,9 +222,9 @@ export function Stat({
 
 export function KV({ k, v, mono = true }: { k: ReactNode; v: ReactNode; mono?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-line/70 py-2 last:border-0">
-      <span className="label pt-0.5">{k}</span>
-      <span className={cn('text-right text-[12px] text-ink', mono && 'mono')}>{v}</span>
+    <div className="flex items-start justify-between gap-4 border-b border-line py-2 last:border-0">
+      <span className="pt-0.5 text-[12px] text-mute">{k}</span>
+      <span className={cn('text-right text-[13px] text-ink', mono && 'mono')}>{v}</span>
     </div>
   )
 }
@@ -277,10 +273,10 @@ export function Tip({ content, children }: { content: ReactNode; children: React
       <Tooltip.Portal>
         <Tooltip.Content
           sideOffset={6}
-          className="z-[80] max-w-[260px] border border-ink bg-ink px-2.5 py-1.5 font-mono text-[10px] leading-relaxed tracking-wide text-paper shadow-lg"
+          className="z-[80] max-w-[260px] rounded-md bg-[#1f1f1f] px-2.5 py-1.5 text-[12px] leading-relaxed text-white shadow-lg"
         >
           {content}
-          <Tooltip.Arrow className="fill-ink" />
+          <Tooltip.Arrow className="fill-[#1f1f1f]" />
         </Tooltip.Content>
       </Tooltip.Portal>
     </Tooltip.Root>
@@ -314,28 +310,28 @@ export function Modal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[70] bg-ink/55 backdrop-blur-[2px]" />
+        <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[70] bg-black/25" />
         <Dialog.Content
-          className="dialog-content fixed left-1/2 top-1/2 z-[71] max-h-[88vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto border border-ink bg-paper shadow-[8px_8px_0_rgba(21,24,27,0.18)] outline-none"
+          className="dialog-content fixed left-1/2 top-1/2 z-[71] max-h-[88vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-lg border border-line bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)] outline-none"
           style={{ maxWidth: width }}
         >
-          <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line-strong bg-paper px-5 py-4">
+          <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-white px-5 py-4">
             <div>
               {kicker && <div className="label mb-1">{kicker}</div>}
-              <Dialog.Title className="serif-title text-[20px] leading-tight text-ink">{title}</Dialog.Title>
+              <Dialog.Title className="text-[16px] font-semibold leading-6 text-ink">{title}</Dialog.Title>
               {description && (
-                <Dialog.Description className="mt-1.5 text-[11.5px] leading-relaxed text-ink-3">
+                <Dialog.Description className="mt-1.5 text-[12px] leading-relaxed text-ink-3">
                   {description}
                 </Dialog.Description>
               )}
             </div>
-            <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center border border-line-strong text-ink-3 transition-colors hover:border-ink hover:bg-ink hover:text-paper">
-              <X size={13} />
+            <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded-md text-ink-3 outline-none transition-colors hover:bg-paper-3 hover:text-ink focus-visible:ring-2 focus-visible:ring-signal/30">
+              <X size={14} />
             </Dialog.Close>
           </div>
           <div className="px-5 py-4">{children}</div>
           {footer && (
-            <div className="flex items-center justify-end gap-2 border-t border-line bg-paper-2/40 px-5 py-3">{footer}</div>
+            <div className="flex items-center justify-end gap-2 border-t border-line bg-paper-2 px-5 py-3">{footer}</div>
           )}
         </Dialog.Content>
       </Dialog.Portal>
@@ -374,14 +370,14 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       {children}
       <Dialog.Root open={!!options} onOpenChange={(open) => !open && close(false)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-ink/55 backdrop-blur-[2px]" />
-          <Dialog.Content className="dialog-content fixed left-1/2 top-1/2 z-[81] w-[calc(100vw-32px)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 border border-ink bg-paper p-0 shadow-[8px_8px_0_rgba(21,24,27,0.18)] outline-none">
+          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-black/25" />
+          <Dialog.Content className="dialog-content fixed left-1/2 top-1/2 z-[81] w-[calc(100vw-32px)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-line bg-white p-0 shadow-[0_12px_32px_rgba(0,0,0,0.12)] outline-none">
             <div className="flex items-start gap-3 border-b border-line px-5 py-4">
-              <AlertTriangle size={18} className={options?.danger ? 'mt-0.5 text-signal' : 'mt-0.5 text-warn'} />
+              <AlertTriangle size={18} className={options?.danger ? 'mt-0.5 text-danger' : 'mt-0.5 text-warn'} />
               <div>
-                <Dialog.Title className="text-[14px] font-semibold text-ink">{options?.title}</Dialog.Title>
+                <Dialog.Title className="text-[15px] font-semibold text-ink">{options?.title}</Dialog.Title>
                 {options?.description && (
-                  <div className="mt-1.5 text-[11.5px] leading-relaxed text-ink-3">{options.description}</div>
+                  <div className="mt-1.5 text-[12px] leading-relaxed text-ink-3">{options.description}</div>
                 )}
               </div>
             </div>
@@ -424,7 +420,7 @@ export function ActionMenu({
       <DropdownMenu.Trigger asChild>
         <button
           aria-label={label}
-          className="inline-flex h-7 w-7 items-center justify-center border border-transparent text-ink-3 transition-colors hover:border-line-strong hover:bg-paper-2 hover:text-ink"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-paper-3 hover:text-ink"
         >
           <MoreHorizontal size={15} />
         </button>
@@ -433,7 +429,7 @@ export function ActionMenu({
         <DropdownMenu.Content
           align="end"
           sideOffset={4}
-          className="z-[75] min-w-[168px] border border-ink bg-paper py-1 shadow-[4px_4px_0_rgba(21,24,27,0.12)]"
+          className="z-[75] min-w-[168px] rounded-lg border border-line bg-white py-1 shadow-[0_6px_16px_rgba(0,0,0,0.08)]"
         >
           {items.map((item) => (
             <DropdownMenu.Item
@@ -441,8 +437,8 @@ export function ActionMenu({
               disabled={item.disabled}
               onSelect={item.onSelect}
               className={cn(
-                'flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-[11.5px] outline-none transition-colors data-[highlighted]:bg-ink data-[highlighted]:text-paper data-[disabled]:opacity-35',
-                item.danger && 'text-signal data-[highlighted]:bg-signal data-[highlighted]:text-paper',
+                'flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-paper-3 data-[highlighted]:text-ink data-[disabled]:opacity-35',
+                item.danger && 'text-danger data-[highlighted]:bg-[#fff2f0] data-[highlighted]:text-danger',
               )}
             >
               {item.icon}
@@ -521,11 +517,11 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-      <div className="mb-1 flex h-10 w-10 items-center justify-center border border-line-strong text-mute">
-        {icon || <span className="mono text-[14px]">∅</span>}
+      <div className="mb-1 flex h-11 w-11 items-center justify-center rounded-lg border border-line bg-paper-2 text-mute">
+        {icon || <span className="text-[16px]">∅</span>}
       </div>
-      <div className="text-[12.5px] font-medium text-ink">{title}</div>
-      {description && <div className="max-w-sm text-[11px] leading-relaxed text-mute">{description}</div>}
+      <div className="text-[13px] font-medium text-ink">{title}</div>
+      {description && <div className="max-w-sm text-[12px] leading-relaxed text-mute">{description}</div>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   )
@@ -533,13 +529,13 @@ export function EmptyState({
 
 export function InlineError({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex items-start gap-2.5 border border-signal/30 bg-signal/[0.04] px-3 py-2.5">
-      <XCircle size={14} className="mt-0.5 flex-none text-signal" />
+    <div className="flex items-start gap-2.5 rounded-md border border-[#ffccc7] bg-[#fff2f0] px-3 py-2.5">
+      <XCircle size={14} className="mt-0.5 flex-none text-danger" />
       <div className="min-w-0 flex-1">
-        <div className="text-[11.5px] text-ink">{message}</div>
+        <div className="text-[12px] text-ink">{message}</div>
       </div>
       {onRetry && (
-        <button onClick={onRetry} className="mono text-[10px] uppercase tracking-widest text-signal hover:underline">
+        <button onClick={onRetry} className="text-[12px] text-danger hover:underline">
           重试
         </button>
       )}
@@ -555,43 +551,43 @@ export function ToastHost() {
       {items.map((item) => {
         const tone =
           item.kind === 'success'
-            ? 'border-ok/40'
+            ? 'border-[#b7eb8f]'
             : item.kind === 'error'
-              ? 'border-signal/50'
+              ? 'border-[#ffccc7]'
               : item.kind === 'warn'
-                ? 'border-warn/45'
-                : 'border-line-strong'
+                ? 'border-[#ffe58f]'
+                : 'border-[#91caff]'
         const Icon =
           item.kind === 'success' ? Check : item.kind === 'error' ? XCircle : item.kind === 'warn' ? AlertTriangle : Info
         return (
           <div
             key={item.id}
             className={cn(
-              'toast-item pointer-events-auto flex items-start gap-2.5 border bg-paper px-3.5 py-3 shadow-[4px_4px_0_rgba(21,24,27,0.1)]',
+              'toast-item pointer-events-auto flex items-start gap-2.5 rounded-lg border bg-white px-3.5 py-3 shadow-[0_6px_16px_rgba(0,0,0,0.08)]',
               tone,
             )}
           >
             <Icon
-              size={14}
+              size={15}
               className={cn(
                 'mt-0.5 flex-none',
                 item.kind === 'success'
                   ? 'text-ok'
                   : item.kind === 'error'
-                    ? 'text-signal'
+                    ? 'text-danger'
                     : item.kind === 'warn'
                       ? 'text-warn'
                       : 'text-info',
               )}
             />
             <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-medium leading-tight text-ink">{item.title}</div>
+              <div className="text-[13px] font-medium leading-tight text-ink">{item.title}</div>
               {item.description && (
-                <div className="mt-1 break-words text-[10.5px] leading-relaxed text-ink-3">{item.description}</div>
+                <div className="mt-1 break-words text-[12px] leading-relaxed text-ink-3">{item.description}</div>
               )}
             </div>
             <button onClick={() => dismiss(item.id)} className="text-mute transition-colors hover:text-ink">
-              <X size={12} />
+              <X size={13} />
             </button>
           </div>
         )

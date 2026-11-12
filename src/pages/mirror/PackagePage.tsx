@@ -394,7 +394,7 @@ export default function PackagePage() {
         <input ref={fileRef} type="file" accept=".zip" className="hidden" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
         <button
           onClick={() => fileRef.current?.click()}
-          className="flex w-full flex-col items-center gap-2 border border-dashed border-line-strong bg-paper-2/30 py-10 transition-colors hover:border-ink"
+          className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong bg-paper-2/30 py-10 transition-colors hover:border-signal"
         >
           <Upload size={20} className="text-mute" />
           <span className="text-[11.5px] text-ink">{file ? file.name : '选择 zip 程序包'}</span>

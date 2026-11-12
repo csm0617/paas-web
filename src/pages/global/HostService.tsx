@@ -503,7 +503,7 @@ export default function HostServicePage() {
                   onClick={() => setSelected(name)}
                   className={cn(
                     'block w-full px-4 py-3 text-left transition-colors',
-                    selected === name ? 'bg-ink text-paper' : 'hover:bg-paper-2/60',
+                    selected === name ? 'bg-signal text-white' : 'hover:bg-paper-2/60',
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -511,13 +511,13 @@ export default function HostServicePage() {
                       <StatusDot tone={isReady ? 'ok' : 'bad'} />
                       <span className="truncate font-mono text-[11.5px]">{name}</span>
                     </div>
-                    <span className={cn('mono text-[8px] tracking-widest', selected === name ? 'text-[#a9b0b3]' : 'text-mute')}>
+                    <span className={cn('mono text-[8px] tracking-widest', selected === name ? 'text-white/70' : 'text-mute')}>
                       {isReady ? 'READY' : 'DOWN'}
                     </span>
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-3">
                     <div>
-                      <div className={cn('mb-1 flex justify-between text-[8.5px]', selected === name ? 'text-[#9aa1a4]' : 'text-mute')}>
+                      <div className={cn('mb-1 flex justify-between text-[8.5px]', selected === name ? 'text-white/60' : 'text-mute')}>
                         <span>CPU</span>
                         <span className="mono">{cpu === null ? '—' : `${formatNumber(cpu, 1)}%`}</span>
                       </div>
@@ -532,7 +532,7 @@ export default function HostServicePage() {
                       </div>
                     </div>
                     <div>
-                      <div className={cn('mb-1 flex justify-between text-[8.5px]', selected === name ? 'text-[#9aa1a4]' : 'text-mute')}>
+                      <div className={cn('mb-1 flex justify-between text-[8.5px]', selected === name ? 'text-white/60' : 'text-mute')}>
                         <span>MEM</span>
                         <span className="mono">{mem === null ? '—' : `${formatNumber(mem, 1)}%`}</span>
                       </div>
@@ -956,7 +956,7 @@ export default function HostServicePage() {
                   onClick={() => setMonitorRange(item.key)}
                   className={cn(
                     'mono border px-2.5 py-1 text-[9px] tracking-widest',
-                    monitorRange === item.key ? 'border-ink bg-ink text-paper' : 'border-line-strong text-mute',
+                    monitorRange === item.key ? 'border-signal bg-signal text-white' : 'border-line-strong text-mute',
                   )}
                 >
                   {item.label}

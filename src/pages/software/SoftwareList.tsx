@@ -511,14 +511,14 @@ export default function SoftwareListPage() {
             <div className="flex items-center border border-line">
               <button
                 onClick={() => setViewMode('card')}
-                className={cn('px-2 py-1.5', viewMode === 'card' ? 'bg-ink text-paper' : 'text-mute hover:text-ink')}
+                className={cn('px-2 py-1.5', viewMode === 'card' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
                 title="卡片视图"
               >
                 <LayoutGrid size={12} />
               </button>
               <button
                 onClick={() => setViewMode('table')}
-                className={cn('px-2 py-1.5', viewMode === 'table' ? 'bg-ink text-paper' : 'text-mute hover:text-ink')}
+                className={cn('px-2 py-1.5', viewMode === 'table' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
                 title="列表视图"
               >
                 <List size={12} />
@@ -561,7 +561,7 @@ export default function SoftwareListPage() {
               onClick={() => setType(item)}
               className={cn(
                 'mono h-9 px-4 text-[9.5px] tracking-[0.14em] transition-colors',
-                type === item ? 'bg-ink text-paper' : 'text-ink-3 hover:bg-paper-2',
+                type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
               )}
             >
               {item === 'ALL' ? '全部' : item}
@@ -877,7 +877,7 @@ export default function SoftwareListPage() {
                   <span className="num text-[16px] text-mute">{(form.name || form.key || 'A').slice(0, 1).toUpperCase()}</span>
                 )}
               </div>
-              <label className="mono cursor-pointer border border-line px-2.5 py-1.5 text-[9px] tracking-widest text-ink-3 hover:border-ink hover:text-ink">
+              <label className="mono cursor-pointer border border-line px-2.5 py-1.5 text-[9px] tracking-widest text-ink-3 hover:border-signal hover:text-signal">
                 选择图片
                 <input
                   type="file"
@@ -908,13 +908,13 @@ export default function SoftwareListPage() {
                     <img src={iconSrc(shot)} alt="" className="h-full w-full object-cover" />
                     <button
                       onClick={() => setShots((prev) => prev.filter((_, i) => i !== index))}
-                      className="absolute right-0 top-0 bg-ink/80 px-1 text-[9px] text-paper opacity-0 transition-opacity group-hover:opacity-100"
+                      className="absolute right-0 top-0 bg-black/60 px-1 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       ×
                     </button>
                   </div>
                 ))}
-                <label className="mono flex h-16 w-24 cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line-strong text-[8.5px] tracking-widest text-mute hover:border-ink hover:text-ink">
+                <label className="mono flex h-16 w-24 cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line-strong text-[8.5px] tracking-widest text-mute hover:border-signal hover:text-signal">
                   <Plus size={12} />
                   添加截图
                   <input
@@ -1144,13 +1144,13 @@ export default function SoftwareListPage() {
       >
         <div className="mb-4 flex items-center border border-line-strong">
           <button
-            className={cn('px-4 py-1.5 text-[11px]', govTab === 'auth' ? 'bg-ink text-paper' : 'text-mute hover:text-ink')}
+            className={cn('px-4 py-1.5 text-[11px]', govTab === 'auth' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
             onClick={() => setGovTab('auth')}
           >
             <KeyRound size={11} className="mr-1.5 inline" /> 应用授权
           </button>
           <button
-            className={cn('px-4 py-1.5 text-[11px]', govTab === 'gateway' ? 'bg-ink text-paper' : 'text-mute hover:text-ink')}
+            className={cn('px-4 py-1.5 text-[11px]', govTab === 'gateway' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
             onClick={() => setGovTab('gateway')}
           >
             <Network size={11} className="mr-1.5 inline" /> 网关放通

@@ -70,26 +70,25 @@ export default function AppPortalPage() {
         }
       />
 
-      <section className="panel-deck hatch relative mb-5 overflow-hidden">
-        <div className="relative z-10 flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between">
+      <section className="mb-5 rounded-lg border border-line bg-white px-6 py-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="mono text-[8.5px] tracking-[0.24em] text-[#727a7e]">MISSION APPLICATION LAUNCHER</div>
-            <h2 className="serif-title mt-3 text-[34px] leading-none text-[#f4f0e6]">
-              选择一个系统
-              <span className="text-signal">开始作业</span>
+            <div className="text-[11px] text-mute">应用门户 / APPLICATION HALL</div>
+            <h2 className="mt-1.5 text-[22px] font-semibold text-ink">
+              选择一个系统<span className="text-signal">开始作业</span>
             </h2>
-            <p className="mt-3 max-w-[520px] text-[11.5px] leading-relaxed text-[#8f9799]">
+            <p className="mt-1.5 max-w-[560px] text-[12px] leading-relaxed text-ink-3">
               应用入口已在网关侧完成鉴权与路由注册。若入口不可用，请联系平台管理员核查席位授权或服务状态。
             </p>
           </div>
           <div className="flex flex-none gap-6">
             <div>
-              <div className="mono text-[8px] tracking-[0.18em] text-[#6f777b]">AVAILABLE</div>
-              <div className="num mt-1 text-[34px] leading-none text-[#e7e2d5]">{apps.length}</div>
+              <div className="text-[11px] text-mute">可用应用</div>
+              <div className="num mt-1 text-[28px] leading-none text-ink">{apps.length}</div>
             </div>
-            <div className="border-l border-[#343b3f] pl-6">
-              <div className="mono text-[8px] tracking-[0.18em] text-[#6f777b]">SEAT</div>
-              <div className="mono mt-2 text-[12px] text-[#c6cccd]">{role?.name || '—'}</div>
+            <div className="border-l border-line pl-6">
+              <div className="text-[11px] text-mute">当前席位</div>
+              <div className="mt-2 text-[13px] text-ink">{role?.name || '—'}</div>
             </div>
           </div>
         </div>
@@ -99,27 +98,27 @@ export default function AppPortalPage() {
         <div className="relative">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
           <input
-            className="field h-9 w-[260px] pl-8 text-[12px]"
+            className="field h-8 w-[260px] pl-8 text-[12px]"
             placeholder="搜索应用名称 / 标识"
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
           />
         </div>
-        <div className="flex border border-line-strong">
+        <div className="flex overflow-hidden rounded-md border border-line-strong">
           {(['ALL', 'BS', 'CS'] as const).map((item) => (
             <button
               key={item}
               onClick={() => setType(item)}
               className={cn(
-                'mono h-9 px-4 text-[9.5px] tracking-[0.14em] transition-colors',
-                type === item ? 'bg-ink text-paper' : 'text-ink-3 hover:bg-paper-2',
+                'h-8 px-4 text-[12px] transition-colors',
+                type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
               )}
             >
               {item === 'ALL' ? '全部应用' : item}
             </button>
           ))}
         </div>
-        <span className="mono ml-auto text-[9px] tracking-widest text-mute">{filtered.length} ENTRIES</span>
+        <span className="ml-auto text-[12px] text-mute">{filtered.length} 个应用</span>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
@@ -131,13 +130,13 @@ export default function AppPortalPage() {
               onClick={() => launch(app)}
               disabled={!app.routerKey}
               className={cn(
-                'panel group relative flex min-h-[148px] flex-col p-0 text-left transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_rgba(21,24,27,0.1)] disabled:cursor-not-allowed',
+                'panel group relative flex min-h-[148px] flex-col p-0 text-left transition-all hover:-translate-y-0.5 hover:border-signal/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] disabled:cursor-not-allowed',
                 !available && 'opacity-70',
               )}
               style={{ animationDelay: `${index * 30}ms` }}
             >
               <div className="flex items-start gap-3 px-4 pt-4">
-                <div className="relative flex h-12 w-12 flex-none items-center justify-center border border-line-strong bg-paper-2">
+                <div className="relative flex h-12 w-12 flex-none items-center justify-center rounded-lg border border-line bg-paper-2">
                   {app.icon ? (
                     <img src={app.icon} alt="" className="h-8 w-8 object-contain" />
                   ) : (
@@ -153,17 +152,17 @@ export default function AppPortalPage() {
                     <span className="truncate text-[14px] font-semibold text-ink">{app.name}</span>
                     <Badge tone={app.type === 'CS' ? 'warn' : 'info'}>{app.type || 'BS'}</Badge>
                   </div>
-                  <div className="mono mt-1 truncate text-[8.5px] tracking-[0.12em] text-mute">{app.routerKey || 'NO ROUTE'}</div>
-                  <p className="mt-2 line-clamp-2 text-[10.5px] leading-relaxed text-ink-3">
+                  <div className="mt-1 truncate text-[11px] text-mute">{app.routerKey || '未登记入口'}</div>
+                  <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed text-ink-3">
                     {app.desc || '平台已登记的业务应用，点击进入。'}
                   </p>
                 </div>
               </div>
               <div className="mt-auto flex items-center justify-between border-t border-line px-4 py-2">
-                <span className="mono flex items-center gap-1 text-[8px] tracking-[0.14em] text-mute">
-                  <ShieldCheck size={9} /> {available ? 'RELEASED' : 'RESTRICTED'}
+                <span className="flex items-center gap-1 text-[11px] text-mute">
+                  <ShieldCheck size={11} /> {available ? '已发布' : '未发布'}
                 </span>
-                <span className="mono flex items-center gap-1 text-[8.5px] tracking-widest text-ink-3 transition-colors group-hover:text-signal">
+                <span className="flex items-center gap-1 text-[12px] text-ink-3 transition-colors group-hover:text-signal">
                   打开应用 <ArrowUpRight size={11} />
                 </span>
               </div>

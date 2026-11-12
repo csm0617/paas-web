@@ -833,7 +833,7 @@ export default function StoragePage() {
                     {!isFolder && (
                       <button
                         onClick={() => downloadFile(item)}
-                        className="flex h-7 w-7 items-center justify-center border border-line-strong text-ink-3 hover:border-ink hover:text-ink"
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-line-strong text-ink-3 hover:border-signal hover:text-signal"
                         title="下载"
                       >
                         <Download size={10} />
