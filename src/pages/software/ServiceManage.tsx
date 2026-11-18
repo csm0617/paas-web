@@ -528,6 +528,7 @@ export default function ServiceManagePage() {
       key: 'actions',
       header: '操作',
       align: 'right',
+      headerAlign: 'center',
       fixed: 'right',
       cell: (row) => {
         const status = statusOf(row)

@@ -9,6 +9,7 @@ export interface Column<T> {
   header: ReactNode
   cell: (row: T, index: number) => ReactNode
   align?: 'left' | 'right' | 'center'
+  headerAlign?: 'left' | 'right' | 'center'
   width?: number | string
   className?: string
   headerClassName?: string
@@ -114,8 +115,8 @@ export function DataTable<T>({
                   key={column.key}
                   style={{ width: column.width }}
                   className={cn(
-                    column.align === 'right' && 'text-right',
-                    column.align === 'center' && 'text-center',
+                    (column.headerAlign ?? column.align) === 'right' && 'text-right',
+                    (column.headerAlign ?? column.align) === 'center' && 'text-center',
                     column.fixed === 'right' && 'is-sticky-right',
                     column.headerClassName,
                   )}
