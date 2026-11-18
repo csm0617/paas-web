@@ -211,6 +211,112 @@ function MappingPopover({
   )
 }
 
+function FormRow({
+  label,
+  required,
+  children,
+}: {
+  label: string
+  required?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="w-[90px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
+        {required && <span className="text-danger">* </span>}
+        {label}：
+      </span>
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  )
+}
+
+function TagSelect({
+  value,
+  options,
+  onChange,
+  placeholder,
+}: {
+  value: string[]
+  options: Array<{ value: string; label: string }>
+  onChange: (value: string[]) => void
+  placeholder: string
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <DropdownMenu.Trigger asChild>
+        <div
+          role="button"
+          tabIndex={0}
+          className={cn(
+            'field flex min-h-8 w-full cursor-pointer flex-wrap items-center gap-1 px-1.5 py-1 text-[12px]',
+            open && 'border-signal',
+          )}
+        >
+          {value.length === 0 && <span className="text-mute">{placeholder}</span>}
+          {value.map((item) => {
+            const label = options.find((option) => option.value === item)?.label || item
+            return (
+              <span
+                key={item}
+                className="inline-flex items-center gap-1 rounded-sm border border-[#2f6392] bg-[#123a5b] px-1.5 py-[1px] text-[11px] text-[#cfe6ff]"
+              >
+                {label}
+                <span
+                  role="button"
+                  tabIndex={-1}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onChange(value.filter((current) => current !== item))
+                  }}
+                  className="text-[#7ea7cc] hover:text-white"
+                >
+                  <X size={10} />
+                </span>
+              </span>
+            )
+          })}
+          <ChevronDown size={12} className="ml-auto flex-none text-mute" />
+        </div>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          side="bottom"
+          align="start"
+          sideOffset={4}
+          className="z-[80] max-h-[220px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-auto border border-line bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+        >
+          {options.length === 0 && <div className="px-3 py-2 text-[12px] text-mute">暂无数据</div>}
+          {options.map((option) => {
+            const checked = value.includes(option.value)
+            return (
+              <DropdownMenu.CheckboxItem
+                key={option.value}
+                checked={checked}
+                onSelect={(event) => event.preventDefault()}
+                onCheckedChange={() =>
+                  onChange(
+                    checked
+                      ? value.filter((current) => current !== option.value)
+                      : [...value, option.value],
+                  )
+                }
+                className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink data-[state=checked]:text-ink"
+              >
+                <span className="truncate">{option.label}</span>
+                <DropdownMenu.ItemIndicator>
+                  <Check size={12} className="flex-none text-signal" />
+                </DropdownMenu.ItemIndicator>
+              </DropdownMenu.CheckboxItem>
+            )
+          })}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  )
+}
+
 export default function SoftwareListPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
@@ -223,6 +329,8 @@ export default function SoftwareListPage() {
   const [seatTarget, setSeatTarget] = useState<Software | null>(null)
   const [seatKeys, setSeatKeys] = useState<string[]>([])
   const [seatSelectOpen, setSeatSelectOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createSeatNames, setCreateSeatNames] = useState<string[]>([])
   const [exportOpen, setExportOpen] = useState(false)
   const [exportIds, setExportIds] = useState<string[]>([])
   const [exporting, setExporting] = useState(false)
@@ -369,11 +477,20 @@ export default function SoftwareListPage() {
         }
         return result
       }
-      return api.post('/v1/software', body)
+      const roleListKey = createSeatNames
+        .map((name) => (createRolesQuery.data?.list ?? []).find((role) => role.name === name)?.key)
+        .filter((key): key is string => !!key)
+      return api.post('/v1/software', {
+        ...body,
+        type: form.framework,
+        screenShotList: shots,
+        roleListKey,
+      })
     },
     onSuccess: () => {
       toast.success(editing ? '软件信息已更新' : '软件已创建')
       setModalOpen(false)
+      setCreateOpen(false)
       setEditing(null)
       setForm(emptyForm)
       queryClient.invalidateQueries({ queryKey: ['software'] })
@@ -410,6 +527,16 @@ export default function SoftwareListPage() {
   const roleOptions = (rolesQuery.data?.list ?? []).flatMap((role) =>
     role.key ? [{ key: role.key, name: role.name }] : [],
   )
+
+  const createRolesQuery = useQuery({
+    queryKey: ['roles-for-create'],
+    queryFn: () => api.get<{ list: RoleItem[]; total: number }>('/v1/role', { page: 1, size: 300 }),
+    enabled: createOpen,
+    staleTime: 60_000,
+  })
+  const createRoleOptions = (createRolesQuery.data?.list ?? [])
+    .filter((role) => role.type !== 2)
+    .map((role) => ({ value: role.name, label: role.name }))
 
   const detailQuery = useQuery({
     queryKey: ['software-detail', editing?.id],
@@ -670,7 +797,8 @@ export default function SoftwareListPage() {
     setForm(emptyForm)
     setShots([])
     setInitialShots([])
-    setModalOpen(true)
+    setCreateSeatNames([])
+    setCreateOpen(true)
   }
 
   async function downloadApp(item: Software) {
@@ -1271,6 +1399,156 @@ export default function SoftwareListPage() {
           ))}
         </div>
       )}
+
+      <Modal
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open)
+          if (!open) {
+            setForm(emptyForm)
+            setShots([])
+            setCreateSeatNames([])
+            setEditing(null)
+          }
+        }}
+        title="新增应用"
+        width={800}
+        footer={
+          <>
+            <Button size="sm" onClick={() => setCreateOpen(false)}>
+              取消
+            </Button>
+            <Button size="sm" variant="signal" loading={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+              确定
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3 px-2 py-1">
+          <FormRow label="应用名称" required>
+            <input
+              className="field h-8 w-full text-[12px]"
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+            />
+          </FormRow>
+          <FormRow label="英文名称">
+            <input
+              className="field h-8 w-full text-[12px]"
+              value={form.nameUs}
+              onChange={(event) => setForm({ ...form, nameUs: event.target.value })}
+            />
+          </FormRow>
+          <FormRow label="法文名称">
+            <input
+              className="field h-8 w-full text-[12px]"
+              value={form.nameFr}
+              onChange={(event) => setForm({ ...form, nameFr: event.target.value })}
+            />
+          </FormRow>
+          <FormRow label="应用类型" required>
+            <div className="flex h-8 items-center text-[12px] text-ink-3">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  name="create-framework"
+                  className="check"
+                  checked
+                  onChange={() => setForm({ ...form, framework: 'BS', type: 'BS' })}
+                />
+                容器化应用（B/S）
+              </label>
+            </div>
+          </FormRow>
+          <FormRow label="应用标识" required>
+            <input
+              className="field h-8 w-full text-[12px]"
+              value={form.key}
+              onChange={(event) => setForm({ ...form, key: event.target.value })}
+            />
+          </FormRow>
+          <FormRow label="关联席位">
+            <TagSelect
+              value={createSeatNames}
+              options={createRoleOptions}
+              onChange={setCreateSeatNames}
+              placeholder="请选择席位"
+            />
+          </FormRow>
+          <FormRow label="应用描述">
+            <textarea
+              className="field text-[12px]"
+              rows={3}
+              value={form.desc}
+              onChange={(event) => setForm({ ...form, desc: event.target.value })}
+            />
+          </FormRow>
+          <FormRow label="应用截图">
+            <div className="flex flex-wrap gap-2">
+              {shots.map((shot, index) => (
+                <div
+                  key={index}
+                  className="group relative h-[130px] w-[130px] border border-dashed border-line-strong bg-paper-2"
+                >
+                  <img src={iconSrc(shot)} alt="" className="h-full w-full object-cover" />
+                  <button
+                    onClick={() => setShots((prev) => prev.filter((_, i) => i !== index))}
+                    className="absolute right-0 top-0 bg-black/60 px-1 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <label className="flex h-[130px] w-[130px] cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line-strong text-[12px] text-ink-3 transition-colors hover:border-signal hover:text-signal">
+                <Plus size={18} />
+                上传图片
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  multiple
+                  className="hidden"
+                  onChange={(event) => {
+                    if (event.target.files?.length) addShots(event.target.files)
+                    event.target.value = ''
+                  }}
+                />
+              </label>
+            </div>
+          </FormRow>
+          <FormRow label="应用图标">
+            <div className="flex items-start gap-3">
+              <label className="flex h-[130px] w-[130px] cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line-strong text-[12px] text-ink-3 transition-colors hover:border-signal hover:text-signal">
+                {form.icon ? (
+                  <img src={iconSrc(form.icon)} alt="" className="h-full w-full object-contain p-2" />
+                ) : (
+                  <>
+                    <Plus size={18} />
+                    上传图片
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0]
+                    if (file) readImage(file)
+                    event.target.value = ''
+                  }}
+                />
+              </label>
+              {form.icon && (
+                <button
+                  onClick={() => setForm({ ...form, icon: '' })}
+                  className="text-[12px] text-mute transition-colors hover:text-danger"
+                >
+                  移除
+                </button>
+              )}
+            </div>
+          </FormRow>
+        </div>
+      </Modal>
 
       <Drawer
         open={modalOpen}
