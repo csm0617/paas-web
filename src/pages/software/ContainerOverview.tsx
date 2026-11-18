@@ -1,9 +1,9 @@
+import { RefreshCw } from 'lucide-react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Box, Cpu, RefreshCw } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import { api } from '@/lib/api'
 import { formatBytes, formatNumber } from '@/lib/format'
-import { Badge, Button, PageHeader, Panel, StatusDot } from '@/components/ui'
+import { Panel } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 interface OverView {
@@ -30,8 +30,59 @@ function rate(value?: string) {
   return `${formatNumber(num, 2)} B/s`
 }
 
+function StatusRing({
+  running,
+  stop,
+  pending,
+  size = 116,
+  stroke = 9,
+}: {
+  running: number
+  stop: number
+  pending: number
+  size?: number
+  stroke?: number
+}) {
+  const radius = (size - stroke) / 2
+  const circumference = 2 * Math.PI * radius
+  const total = Math.max(1, running + stop + pending)
+  const segments = [
+    { value: running, color: 'var(--color-ok)' },
+    { value: stop, color: 'var(--color-danger)' },
+    { value: pending, color: 'var(--color-warn)' },
+  ]
+  let offset = 0
+  return (
+    <div className="relative inline-flex flex-none items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--color-line)" strokeWidth={stroke} />
+        {segments.map((segment, index) => {
+          const length = (segment.value / total) * circumference
+          if (length <= 0) return null
+          const dash = `${length} ${circumference - length}`
+          const dashOffset = -offset
+          offset += length
+          return (
+            <circle
+              key={index}
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={segment.color}
+              strokeWidth={stroke}
+              strokeDasharray={dash}
+              strokeDashoffset={dashOffset}
+            />
+          )
+        })}
+      </svg>
+    </div>
+  )
+}
+
 export default function ContainerOverviewPage() {
-  const navigate = useNavigate()
+  const [topType, setTopType] = useState<'cpu' | 'mem'>('cpu')
 
   const overviewQuery = useQuery({
     queryKey: ['software-overview'],
@@ -39,83 +90,89 @@ export default function ContainerOverviewPage() {
     refetchInterval: 30_000,
   })
   const topQuery = useQuery({
-    queryKey: ['software-top', 'cpu'],
+    queryKey: ['software-top', topType],
     queryFn: () =>
-      api.post<ContainerMetric[]>('/v1/software/top', {}, { type: 'cpu', namespace: 'gaop-namespace' }),
+      api.post<ContainerMetric[]>('/v1/software/top', {}, { type: topType, namespace: 'gaop-namespace' }),
     refetchInterval: 30_000,
   })
 
   const data = overviewQuery.data
-  const top = topQuery.data ?? []
-  const maxCpu = Math.max(...top.map((item) => Number(item.cpuUsageRate ?? 0)), 1)
+  const top = (topQuery.data ?? []).slice(0, 5)
 
   const cards = [
-    { key: 'software', label: '应用', en: 'APPLICATIONS', value: data?.software },
-    { key: 'service', label: '服务', en: 'SERVICES', value: data?.service },
-    { key: 'pod', label: '容器', en: 'CONTAINERS', value: data?.pod },
+    { key: 'software', label: '应用', value: data?.software },
+    { key: 'service', label: '服务', value: data?.service },
+    { key: 'pod', label: '容器', value: data?.pod },
   ]
 
   return (
     <div>
-      <PageHeader
-        index="03 / 01"
-        en="SOFTWARE · CONTAINER OVERVIEW"
-        title="容器概览"
-        description="以应用、服务与容器三个维度汇总运行状态，并展示最近 5 分钟内资源用量最高的容器实例。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone={overviewQuery.isError ? 'warn' : 'ok'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
-                {overviewQuery.isError ? 'METRICS DEGRADED' : 'NAMESPACE gaop-namespace'}
-              </span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">WINDOW 5 MIN</span>
-          </>
-        }
-        actions={
-          <Button
-            size="sm"
-            loading={overviewQuery.isFetching || topQuery.isFetching}
-            onClick={() => {
-              overviewQuery.refetch()
-              topQuery.refetch()
-            }}
-          >
-            <RefreshCw size={11} /> 刷新
-          </Button>
-        }
-      />
-
       <section className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {cards.map((card) => (
-          <Panel key={card.key} bodyClassName="px-4 py-3.5">
-            <div className="flex items-center justify-between">
-              <div className="label">{card.label}</div>
-              <span className="mono text-[8.5px] tracking-widest text-mute">{card.en}</span>
-            </div>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="num text-[32px] leading-none text-ink">{card.value?.running ?? '—'}</span>
-              <span className="text-[12px] text-mute">运行中</span>
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <Badge tone="warn">STOP {card.value?.stop ?? 0}</Badge>
-              <Badge tone="info">PENDING {card.value?.pending ?? 0}</Badge>
-            </div>
-          </Panel>
-        ))}
+        {cards.map((card) => {
+          const running = card.value?.running ?? 0
+          const stop = card.value?.stop ?? 0
+          const pending = card.value?.pending ?? 0
+          const total = running + stop + pending
+          return (
+            <Panel key={card.key} bodyClassName="px-4 py-3">
+              <div className="mb-1 text-center">
+                <div className="text-[13px] text-ink">{card.label}</div>
+                <div className="mt-0.5 text-[10.5px] text-mute">
+                  全部{card.label} {total} 个
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-5">
+                <StatusRing running={running} stop={stop} pending={pending} />
+                <div className="space-y-2 text-[11.5px] text-ink-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-[1px] bg-ok" />
+                    运行中 {running} 个
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-[1px] bg-danger" />
+                    停止 {stop} 个
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-[1px] bg-warn" />
+                    未知 {pending} 个
+                  </div>
+                </div>
+              </div>
+            </Panel>
+          )
+        })}
       </section>
 
       <Panel
-        kicker="TOP 5 CONTAINERS · 5 MIN"
-        title="容器实例资源用量 Top5"
+        title={
+          <span>
+            容器实例资源用量Top5 <span className="text-mute">(5分钟内)</span>
+          </span>
+        }
         actions={
-          <button
-            onClick={() => navigate('/software/application/service')}
-            className="mono text-[8.5px] tracking-widest text-mute hover:text-signal"
-          >
-            查看全部服务
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="flex h-[30px] items-center border border-signal/60 bg-signal/10 px-3 text-[12px] text-signal">
+              资源使用量 Top5
+            </span>
+            <select
+              className="field h-[30px] w-[132px] text-[12px]"
+              value={topType}
+              onChange={(event) => setTopType(event.target.value as 'cpu' | 'mem')}
+            >
+              <option value="cpu">CPU使用量</option>
+              <option value="mem">内存使用量</option>
+            </select>
+            <button
+              onClick={() => {
+                overviewQuery.refetch()
+                topQuery.refetch()
+              }}
+              className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[3px] border border-line bg-paper-2 text-ink-3 transition-colors hover:border-signal hover:text-signal"
+              aria-label="刷新"
+            >
+              <RefreshCw size={12} className={cn(topQuery.isFetching && 'animate-spin')} />
+            </button>
+          </div>
         }
         bodyClassName="p-0"
       >
@@ -123,8 +180,8 @@ export default function ContainerOverviewPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>容器实例</th>
-                <th>CPU 使用量</th>
+                <th>Top5 容器实例</th>
+                <th>CPU使用量</th>
                 <th>内存使用量</th>
                 <th>网络流出速率</th>
                 <th>网络流入速率</th>
@@ -133,49 +190,37 @@ export default function ContainerOverviewPage() {
               </tr>
             </thead>
             <tbody>
-              {top.map((item, index) => {
+              {top.map((item) => {
                 const cpu = Number(item.cpuUsageRate ?? 0)
                 return (
                   <tr key={item.podName}>
                     <td>
-                      <div className="flex items-center gap-2.5">
-                        <span className="mono w-5 text-[9px] text-mute">{String(index + 1).padStart(2, '0')}</span>
-                        <Box size={12} className="text-mute" />
-                        <span className="font-mono text-[10.5px] text-ink">{item.podName}</span>
-                      </div>
+                      <span className="font-mono text-[11.5px] text-ink">{item.podName}</span>
                     </td>
                     <td>
-                      <div className="flex items-center gap-2">
-                        <span className="num text-[12px] text-ink">{Math.round(cpu * 1000)}m</span>
-                        <div className="h-[3px] w-16 bg-line">
-                          <div
-                            className={cn('h-full', cpu / maxCpu > 0.8 ? 'bg-signal' : 'bg-signal')}
-                            style={{ width: `${Math.min(100, (cpu / maxCpu) * 100)}%` }}
-                          />
-                        </div>
-                      </div>
+                      <span className="num text-[12px] text-ink">{Math.round(cpu * 1000)}m</span>
                     </td>
                     <td>
-                      <span className="mono text-[10px] text-ink-3">{formatBytes(Number(item.memory ?? 0))}</span>
+                      <span className="mono text-[11.5px] text-ink-3">{formatBytes(Number(item.memory ?? 0))}</span>
                     </td>
                     <td>
-                      <span className="mono text-[10px] text-ink-3">{rate(item.networkOutBound)}</span>
+                      <span className="mono text-[11.5px] text-ink-3">{rate(item.networkOutBound)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[10px] text-ink-3">{rate(item.networkInBound)}</span>
+                      <span className="mono text-[11.5px] text-ink-3">{rate(item.networkInBound)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[10px] text-mute">{rate(item.diskRead)}</span>
+                      <span className="mono text-[11.5px] text-ink-3">{rate(item.diskRead)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[10px] text-mute">{rate(item.diskWrite)}</span>
+                      <span className="mono text-[11.5px] text-ink-3">{rate(item.diskWrite)}</span>
                     </td>
                   </tr>
                 )
               })}
               {top.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-[11px] text-mute">
+                  <td colSpan={7} className="py-10 text-center text-[11.5px] text-mute">
                     {topQuery.isLoading ? '正在采集容器指标…' : '暂无容器指标，可能监控组件尚未就绪'}
                   </td>
                 </tr>
@@ -183,10 +228,36 @@ export default function ContainerOverviewPage() {
             </tbody>
           </table>
         </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-line px-4 py-2">
+          <button
+            className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30"
+            disabled
+            aria-label="上一页"
+          >
+            ‹
+          </button>
+          <span className="text-[11.5px] text-ink-3">
+            当前显示 1-{top.length} 共 {top.length} 条
+          </span>
+          <button
+            className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30"
+            disabled
+            aria-label="下一页"
+          >
+            ›
+          </button>
+          <select className="field ml-2 h-[26px] w-[112px] text-[11.5px]" defaultValue="5">
+            <option value="5">每页显示 5 条</option>
+            <option value="10">每页显示 10 条</option>
+          </select>
+        </div>
       </Panel>
 
-      <div className="mono mt-4 flex items-center gap-2 text-[8px] tracking-wider text-mute">
-        <Cpu size={10} /> 指标来源 PROMETHEUS · 容器指标按 5 分钟窗口聚合 · 单位 CPU m / 内存 B / 网络 B·s⁻¹
+      <div className="mt-4 flex items-center justify-between border border-line bg-paper-2 px-4 py-2 text-[11.5px] text-mute">
+        <span>«</span>
+        <span>内容仅显示资源使用前5名，如需查看更多，请进入容器页面</span>
+        <span>»</span>
       </div>
     </div>
   )
