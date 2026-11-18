@@ -114,6 +114,7 @@ export interface ServiceConsoleProps {
   podOverride?: string
   namespaceOverride?: string
   containerOverride?: string
+  initialPaused?: boolean
 }
 
 export function ServiceConsole({
@@ -124,6 +125,7 @@ export function ServiceConsole({
   podOverride,
   namespaceOverride,
   containerOverride,
+  initialPaused = false,
 }: ServiceConsoleProps) {
   const [mode, setMode] = useState<ConsoleMode>(initialMode)
   const [pod, setPod] = useState('')
@@ -132,7 +134,7 @@ export function ServiceConsole({
   const [reconnectKey, setReconnectKey] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [logText, setLogText] = useState('')
-  const [paused, setPaused] = useState(false)
+  const [paused, setPaused] = useState(initialPaused)
   const [autoScroll, setAutoScroll] = useState(true)
   const [wrap, setWrap] = useState(true)
   const [keyword, setKeyword] = useState('')
@@ -215,9 +217,9 @@ export function ServiceConsole({
     setConn('idle')
     seedKeyRef.current = ''
     pendingRef.current = ''
-    pausedRef.current = false
-    setPaused(false)
-  }, [open, serviceName, initialMode])
+    pausedRef.current = initialPaused
+    setPaused(initialPaused)
+  }, [open, serviceName, initialMode, initialPaused])
 
   /* auto-select pod */
   useEffect(() => {

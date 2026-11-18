@@ -111,7 +111,11 @@ export default function ServiceManagePage() {
   const [versionTag, setVersionTag] = useState('')
   const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
   const [scaleValue, setScaleValue] = useState(1)
-  const [consoleState, setConsoleState] = useState<{ service: string; mode: 'logs' | 'terminal' } | null>(null)
+  const [consoleState, setConsoleState] = useState<{
+    service: string
+    mode: 'logs' | 'terminal'
+    history?: boolean
+  } | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm, setCreateForm] = useState({
     serviceName: '',
@@ -566,19 +570,18 @@ export default function ServiceManagePage() {
             <ActionMenu
               triggerText="更多"
               items={[
-                { label: '服务详情', onSelect: () => setDetail(row) },
-                { label: '实时日志', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'logs' }) },
-                { label: '容器终端', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'terminal' }) },
+                { label: '版本切换', onSelect: () => openVersion(row) },
                 {
-                  label: '重启服务',
-                  onSelect: () => actionMutation.mutate({ path: '/v1/service/reStart', names: [serviceName(row)] }),
+                  label: '历史日志',
+                  onSelect: () => setConsoleState({ service: serviceName(row), mode: 'logs', history: true }),
                 },
+                { label: '实时日志', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'logs' }) },
+                { label: '终端登录', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'terminal' }) },
+                { label: '监控', onSelect: () => setMonitorTarget(row) },
                 {
-                  label: '扩容',
-                  onSelect: () => {
-                    setScaleTarget(row)
-                    setScaleValue(row.deployment?.spec?.replicas ?? 1)
-                  },
+                  label: '重启',
+                  danger: true,
+                  onSelect: () => actionMutation.mutate({ path: '/v1/service/reStart', names: [serviceName(row)] }),
                 },
               ]}
             />
@@ -1225,6 +1228,7 @@ export default function ServiceManagePage() {
           open={!!consoleState}
           serviceName={consoleState?.service || ''}
           initialMode={consoleState?.mode || 'logs'}
+          initialPaused={!!consoleState?.history}
           onClose={() => setConsoleState(null)}
         />
       </Suspense>
