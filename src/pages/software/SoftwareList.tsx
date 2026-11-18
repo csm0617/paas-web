@@ -120,6 +120,16 @@ function serviceStatusOf(service: ServiceItem) {
   return { text: '已停止', tone: 'text-mute', ready, desired }
 }
 
+function servicePortsOf(service: ServiceItem) {
+  const ports = [
+    ...(service.service?.spec?.ports ?? []).map((item) => item.port),
+    ...(service.deployment?.spec?.template?.spec?.containers ?? []).flatMap((container) =>
+      (container.ports ?? []).map((item) => item.containerPort),
+    ),
+  ].filter((port): port is number => typeof port === 'number' && port > 0)
+  return Array.from(new Set(ports.length ? ports : [80]))
+}
+
 function ConfigRow({
   label,
   children,
@@ -223,6 +233,9 @@ export default function SoftwareListPage() {
   const [relationOpen, setRelationOpen] = useState(false)
   const [relationSelection, setRelationSelection] = useState<string[]>([])
   const [relatedSelected, setRelatedSelected] = useState<string[]>([])
+  const [mappingTarget, setMappingTarget] = useState<{ service: ServiceItem; mapping?: GatewayPort } | null>(null)
+  const [mappingPort, setMappingPort] = useState('80')
+  const [mappingPath, setMappingPath] = useState('')
   const detailAppliedRef = useRef('')
   const [minSetOpen, setMinSetOpen] = useState(false)
   const [minSetSelected, setMinSetSelected] = useState<string[]>([])
@@ -421,6 +434,12 @@ export default function SoftwareListPage() {
   const appRunning = detailQuery.data?.status
     ? detailQuery.data.status === 'RUNNING'
     : editing?.releaseStatus === 1
+  const appStateText = appRunning
+    ? relatedServices.length > 0 &&
+      relatedServices.every((service) => serviceStatusOf(service).text === '运行中')
+      ? '运行中'
+      : '部分运行'
+    : '已停止'
 
   const seatMutation = useMutation({
     mutationFn: () => api.put('/v1/software/softwareRelateRole', seatKeys, { softwareId: seatTarget?.id }),
@@ -474,6 +493,27 @@ export default function SoftwareListPage() {
       queryClient.invalidateQueries({ queryKey: ['software-gateway'] })
     },
     onError: (error) => toast.error('入口设置失败', errorMessage(error)),
+  })
+
+  const mappingMutation = useMutation({
+    mutationFn: ({
+      softwareId,
+      serviceName,
+      port,
+      path,
+    }: {
+      softwareId: string
+      serviceName: string
+      port: number
+      path: string
+    }) => api.put(`/v1/software/${softwareId}/service/${serviceName}`, {}, { path, port }),
+    onSuccess: () => {
+      toast.success('映射路径已保存')
+      setMappingTarget(null)
+      queryClient.invalidateQueries({ queryKey: ['software-gateway-map'] })
+      queryClient.invalidateQueries({ queryKey: ['software-gateway'] })
+    },
+    onError: (error) => toast.error('映射路径保存失败', errorMessage(error)),
   })
 
   const statusMutation = useMutation({
@@ -1401,7 +1441,7 @@ export default function SoftwareListPage() {
                   <span
                     className={cn('h-1.5 w-1.5 rounded-full', appRunning ? 'bg-ok' : 'bg-mute')}
                   />
-                  {appRunning ? '运行中' : '已停止'}
+                  {appStateText}
                 </span>
               </div>
             </div>
@@ -1492,6 +1532,7 @@ export default function SoftwareListPage() {
                     </td>
                     <td>
                       <span className="whitespace-nowrap text-[12px] text-ink">{name}</span>
+                      {mapping?.web && <span className="ml-1 text-[11px] text-mute">(入口)</span>}
                     </td>
                     <td>
                       <span className="text-[12px] text-ink-3">
@@ -1517,19 +1558,17 @@ export default function SoftwareListPage() {
                     </td>
                     <td>
                       <div className="flex items-center justify-end gap-2.5 whitespace-nowrap text-[12px]">
-                        <MappingPopover
-                          mapping={mapping}
-                          text="映射路径"
-                          onToggle={() => {
-                            if (!editing || !mapping) return
-                            entryMutation.mutate({
-                              id: editing.id,
-                              port: Number(mapping.port ?? 80),
-                              serviceId: mapping.serviceId || name,
-                              type: mapping.web ? 0 : 1,
-                            })
+                        <button
+                          className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                          onClick={() => {
+                            const port = String(mapping?.port ?? servicePortsOf(service)[0])
+                            setMappingPort(port)
+                            setMappingPath(mapping?.path || `${name}-${port}`)
+                            setMappingTarget({ service, mapping })
                           }}
-                        />
+                        >
+                          映射路径
+                        </button>
                         <button
                           className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
                           onClick={async () => {
@@ -1638,6 +1677,70 @@ export default function SoftwareListPage() {
             {services.length === 0 && (
               <div className="px-2.5 py-4 text-center text-[11.5px] text-mute">暂无服务</div>
             )}
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!mappingTarget}
+        onOpenChange={(open) => !open && setMappingTarget(null)}
+        title="服务端口映射路径"
+        width={300}
+        footer={
+          <>
+            <Button size="sm" onClick={() => setMappingTarget(null)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              loading={mappingMutation.isPending}
+              onClick={() => {
+                if (!editing || !mappingTarget) return
+                if (!mappingPath.trim()) {
+                  toast.error('请填写路径')
+                  return
+                }
+                mappingMutation.mutate({
+                  softwareId: editing.id,
+                  serviceName: serviceNameOf(mappingTarget.service),
+                  port: Number(mappingPort),
+                  path: mappingPath.trim(),
+                })
+              }}
+            >
+              确定
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="flex items-start gap-2">
+            <span className="w-[48px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
+              <span className="text-danger">*</span> 端口：
+            </span>
+            <select
+              className="field h-8 flex-1 text-[12px]"
+              value={mappingPort}
+              onChange={(event) => setMappingPort(event.target.value)}
+            >
+              {mappingTarget &&
+                servicePortsOf(mappingTarget.service).map((port) => (
+                  <option key={port} value={String(port)}>
+                    {port}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="w-[48px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
+              <span className="text-danger">*</span> 路径：
+            </span>
+            <input
+              className="field h-8 flex-1 text-[12px]"
+              value={mappingPath}
+              onChange={(event) => setMappingPath(event.target.value)}
+            />
           </div>
         </div>
       </Modal>
