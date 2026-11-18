@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users } from 'lucide-react'
+import { AppWindow, Check, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -221,7 +221,7 @@ export default function SoftwareListPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [relationOpen, setRelationOpen] = useState(false)
-  const [relationService, setRelationService] = useState('')
+  const [relationSelection, setRelationSelection] = useState<string[]>([])
   const [relatedSelected, setRelatedSelected] = useState<string[]>([])
   const detailAppliedRef = useRef('')
   const [minSetOpen, setMinSetOpen] = useState(false)
@@ -335,7 +335,6 @@ export default function SoftwareListPage() {
 
   const relatedServices = editing ? appServiceList(editing) : []
   const relatedNames = relatedServices.map((service) => serviceNameOf(service))
-  const availableServices = services.filter((service) => !relatedNames.includes(serviceNameOf(service)))
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -434,14 +433,14 @@ export default function SoftwareListPage() {
   })
 
   const relateMutation = useMutation({
-    mutationFn: ({ id, list, remove }: { id: string; list: string[]; remove?: boolean }) =>
-      remove
-        ? api.del(`/v1/software/${id}/relate_service`, { list })
-        : api.post(`/v1/software/${id}/relate_service`, { list }),
+    mutationFn: async ({ id, add = [], remove = [] }: { id: string; add?: string[]; remove?: string[] }) => {
+      if (add.length) await api.post(`/v1/software/${id}/relate_service`, { list: add })
+      if (remove.length) await api.del(`/v1/software/${id}/relate_service`, { list: remove })
+    },
     onSuccess: () => {
       toast.success('关联服务已更新')
       setRelationOpen(false)
-      setRelationService('')
+      setRelationSelection([])
       setRelatedSelected([])
       queryClient.invalidateQueries({ queryKey: ['software-detail', editing?.id] })
       queryClient.invalidateQueries({ queryKey: ['software-relation-services'] })
@@ -664,7 +663,7 @@ export default function SoftwareListPage() {
     setEditField(null)
     setRelatedSelected([])
     setRelationOpen(false)
-    setRelationService('')
+    setRelationSelection([])
     detailAppliedRef.current = ''
     setForm({
       key: item.key,
@@ -1435,7 +1434,7 @@ export default function SoftwareListPage() {
               size="sm"
               variant="signal"
               onClick={() => {
-                setRelationService('')
+                setRelationSelection(relatedNames)
                 setRelationOpen(true)
               }}
             >
@@ -1452,7 +1451,7 @@ export default function SoftwareListPage() {
                   confirmText: '确定',
                   danger: true,
                 })
-                if (ok) relateMutation.mutate({ id: editing.id, list: relatedSelected, remove: true })
+                if (ok) relateMutation.mutate({ id: editing.id, remove: relatedSelected })
               }}
             >
               − 删除关联服务
@@ -1541,7 +1540,7 @@ export default function SoftwareListPage() {
                               confirmText: '确定',
                               danger: true,
                             })
-                            if (ok) relateMutation.mutate({ id: editing.id, list: [name], remove: true })
+                            if (ok) relateMutation.mutate({ id: editing.id, remove: [name] })
                           }}
                         >
                           删除
@@ -1567,10 +1566,10 @@ export default function SoftwareListPage() {
         open={relationOpen}
         onOpenChange={(open) => {
           setRelationOpen(open)
-          if (!open) setRelationService('')
+          if (!open) setRelationSelection([])
         }}
         title="选择关联服务"
-        width={340}
+        width={360}
         footer={
           <>
             <Button size="sm" onClick={() => setRelationOpen(false)}>
@@ -1579,11 +1578,16 @@ export default function SoftwareListPage() {
             <Button
               size="sm"
               variant="primary"
-              disabled={!relationService}
               loading={relateMutation.isPending}
               onClick={() => {
-                if (!editing || !relationService) return
-                relateMutation.mutate({ id: editing.id, list: [relationService] })
+                if (!editing) return
+                const add = relationSelection.filter((name) => !relatedNames.includes(name))
+                const remove = relatedNames.filter((name) => !relationSelection.includes(name))
+                if (add.length === 0 && remove.length === 0) {
+                  setRelationOpen(false)
+                  return
+                }
+                relateMutation.mutate({ id: editing.id, add, remove })
               }}
             >
               确定
@@ -1591,21 +1595,51 @@ export default function SoftwareListPage() {
           </>
         }
       >
-        <select
-          className="field h-9 w-full text-[12px]"
-          value={relationService}
-          onChange={(event) => setRelationService(event.target.value)}
-        >
-          <option value="">请选择服务</option>
-          {availableServices.map((service) => {
-            const name = serviceNameOf(service)
-            return (
-              <option key={name} value={name}>
+        <div className="border border-line bg-paper-2/40">
+          <div className="flex min-h-[36px] flex-wrap items-center gap-1 border-b border-line px-2 py-1.5">
+            {relationSelection.length === 0 && <span className="text-[11.5px] text-mute">请选择服务</span>}
+            {relationSelection.map((name) => (
+              <span
+                key={name}
+                className="inline-flex items-center gap-1 border border-line-strong bg-[#132c44] px-1.5 py-0.5 text-[11.5px] text-ink-3"
+              >
                 {name}
-              </option>
-            )
-          })}
-        </select>
+                <button
+                  aria-label={`取消 ${name}`}
+                  onClick={() => setRelationSelection((prev) => prev.filter((item) => item !== name))}
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="max-h-[200px] overflow-y-auto py-1">
+            {services.map((service) => {
+              const name = serviceNameOf(service)
+              const checked = relationSelection.includes(name)
+              return (
+                <button
+                  key={name}
+                  onClick={() =>
+                    setRelationSelection((prev) =>
+                      checked ? prev.filter((item) => item !== name) : [...prev, name],
+                    )
+                  }
+                  className={cn(
+                    'flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-[12px] transition-colors',
+                    checked ? 'bg-[#16395a] text-white' : 'text-ink-3 hover:bg-[#142a3e]',
+                  )}
+                >
+                  <span className="flex-1 truncate">{name}</span>
+                  {checked && <Check size={12} className="text-signal" />}
+                </button>
+              )
+            })}
+            {services.length === 0 && (
+              <div className="px-2.5 py-4 text-center text-[11.5px] text-mute">暂无服务</div>
+            )}
+          </div>
+        </div>
       </Modal>
 
       <Drawer
