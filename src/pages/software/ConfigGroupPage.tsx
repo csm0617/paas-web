@@ -1,33 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  ChevronDown,
-  Download,
-  FilePlus2,
-  FileText,
-  Folder,
-  FolderPlus,
-  Link2,
-  Pencil,
-  Plus,
-  Save,
-  Trash2,
-  Upload,
-  X,
-} from 'lucide-react'
+import { ChevronDown, Download, FileText, Folder, FolderPlus, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { api, API_BASE, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
-import {
-  Badge,
-  Button,
-  Drawer,
-  EmptyState,
-  Field,
-  Modal,
-  PageToolbar,
-  Panel,
-  useConfirm,
-} from '@/components/ui'
+import { Button, EmptyState, Field, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { useAuthStore } from '@/stores/auth'
 import { cn } from '@/lib/utils'
@@ -63,6 +39,34 @@ interface RelationEntry {
   config?: RelationService[]
 }
 
+function CodeEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const gutterRef = useRef<HTMLDivElement | null>(null)
+  const lines = Math.max(value.split('\n').length, 1)
+  return (
+    <div className="flex h-[360px] overflow-hidden border border-[#33506e] bg-[#0e2233]">
+      <div
+        ref={gutterRef}
+        className="w-[42px] flex-none overflow-hidden bg-[#19476f] py-2 text-right font-mono text-[11px] leading-[18px] text-[#d7e6f5]"
+      >
+        {Array.from({ length: lines }, (_, index) => (
+          <div key={index} className="pr-2">
+            {index + 1}
+          </div>
+        ))}
+      </div>
+      <textarea
+        className="h-full flex-1 resize-none bg-transparent px-2 py-2 font-mono text-[11px] leading-[18px] text-ink outline-none"
+        spellCheck={false}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onScroll={(event) => {
+          if (gutterRef.current) gutterRef.current.scrollTop = event.currentTarget.scrollTop
+        }}
+      />
+    </div>
+  )
+}
+
 export default function ConfigGroupPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
@@ -74,9 +78,11 @@ export default function ConfigGroupPage() {
   const [groupName, setGroupName] = useState('')
   const [active, setActive] = useState<GroupRow | null>(null)
   const [fileOpen, setFileOpen] = useState(false)
+  const [fileMode, setFileMode] = useState<'create' | 'edit'>('create')
+  const [fileEncoding, setFileEncoding] = useState('UTF-8')
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [fileName, setFileName] = useState('')
   const [fileValue, setFileValue] = useState('')
-  const [editing, setEditing] = useState<{ name: string; value: string } | null>(null)
   const [relationFile, setRelationFile] = useState<string | null>(null)
 
   const relationQuery = useQuery({
@@ -135,7 +141,6 @@ export default function ConfigGroupPage() {
     onSuccess: async () => {
       toast.success('配置文件已保存')
       setFileOpen(false)
-      setEditing(null)
       setFileName('')
       setFileValue('')
       await queryClient.invalidateQueries({ queryKey: ['config-maps'] })
@@ -158,7 +163,6 @@ export default function ConfigGroupPage() {
       api.del(`/v1/config_map/${payload.group}/config/${encodeURIComponent(payload.file)}`),
     onSuccess: async () => {
       toast.success('配置文件已删除')
-      setEditing(null)
       const refreshed = await query.refetch()
       const next = (refreshed.data?.items ?? []).find((item) => item.metadata?.name === active?.name)
       if (next) {
@@ -321,6 +325,7 @@ export default function ConfigGroupPage() {
                     className="inline-flex h-[26px] items-center gap-1 border border-[#2f6fa8] bg-transparent px-2.5 text-[12px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
                     onClick={() => {
                       setActive(group)
+                      setFileMode('create')
                       setFileOpen(true)
                       setFileName('')
                       setFileValue('')
@@ -333,6 +338,7 @@ export default function ConfigGroupPage() {
                     title="更多"
                     onClick={() => {
                       setActive(group)
+                      setFileMode('create')
                       setFileOpen(true)
                       setFileName('')
                       setFileValue('')
@@ -377,7 +383,10 @@ export default function ConfigGroupPage() {
                               title="编辑"
                               onClick={() => {
                                 setActive(group)
-                                setEditing({ name, value })
+                                setFileMode('edit')
+                                setFileName(name)
+                                setFileValue(value)
+                                setFileOpen(true)
                               }}
                             >
                               <Pencil size={11} />
@@ -483,25 +492,22 @@ export default function ConfigGroupPage() {
         </Field>
       </Modal>
 
-      <Drawer
+      <Modal
         open={fileOpen}
         onOpenChange={(open) => {
           setFileOpen(open)
-          if (!open) setActive(null)
+          if (!open) {
+            setActive(null)
+            setFileName('')
+            setFileValue('')
+            setFileEncoding('UTF-8')
+          }
         }}
-        kicker="CONFIG / FILE"
-        title={`新增配置文件${active ? ` · ${active.name}` : ''}`}
-        description="配置文件名称将作为 ConfigMap 的键，内容支持任意文本。"
-        width={640}
+        title={fileMode === 'edit' ? '编辑配置文件' : '创建配置文件'}
+        width={1000}
         footer={
-          <>
-            <Button
-              size="sm"
-              onClick={() => {
-                setFileOpen(false)
-                setActive(null)
-              }}
-            >
+          <div className="flex w-full items-center justify-center gap-3">
+            <Button size="sm" onClick={() => setFileOpen(false)}>
               取消
             </Button>
             <Button
@@ -511,140 +517,58 @@ export default function ConfigGroupPage() {
               loading={createFile.isPending}
               onClick={() => createFile.mutate({ name: fileName, value: fileValue })}
             >
-              保存文件
+              确定
             </Button>
-          </>
+          </div>
         }
       >
-        <div className="space-y-3">
-          <Field label="文件名称" required>
+        <div className="space-y-3 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="w-[56px] flex-none text-right text-[12px] text-ink-3">
+              <span className="text-danger">* </span>名称：
+            </span>
             <input
-              className="field font-mono text-[11px]"
+              className="field h-8 flex-1 font-mono text-[12px]"
               value={fileName}
               onChange={(event) => setFileName(event.target.value)}
-              placeholder="application.properties"
+              placeholder="init.sql"
               autoFocus
             />
-          </Field>
-          <Field label="文件内容">
-            <textarea
-              className="field min-h-[240px] font-mono text-[10.5px] leading-relaxed"
-              spellCheck={false}
-              value={fileValue}
-              onChange={(event) => setFileValue(event.target.value)}
-              placeholder="key=value"
-            />
-          </Field>
-        </div>
-      </Drawer>
-
-      <Drawer
-        open={!!active && !fileOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setActive(null)
-            setEditing(null)
-          }
-        }}
-        kicker="CONFIG / CONTENT"
-        title={active ? `${active.name} · 配置文件` : '配置文件'}
-        description="编辑文件内容后保存会覆盖配置组内的同名键，挂载该配置组的服务重启后生效。"
-        width={720}
-        footer={
-          <>
-            <Button size="sm" onClick={() => setActive(null)}>
-              关闭
-            </Button>
-            <Button size="sm" variant="signal" onClick={() => setFileOpen(true)}>
-              <FilePlus2 size={11} /> 新增文件
-            </Button>
-          </>
-        }
-      >
-        {active && (
-          <div className="space-y-2">
-            {Object.entries(active.data).map(([name, value]) => {
-              const isEditing = editing?.name === name
-              const related = relations.get(name) ?? []
-              return (
-                <div key={name} className="border border-line">
-                  <div className="flex items-center justify-between gap-2 border-b border-line bg-paper-2/50 px-3 py-1.5">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="mono truncate text-[10px] text-ink">{name}</span>
-                      <Badge tone={related.length ? 'ok' : 'default'}>{related.length} 关联</Badge>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {isEditing ? (
-                        <Button size="sm" variant="signal" loading={createFile.isPending} onClick={() => createFile.mutate({ name, value: editing.value })}>
-                          <Save size={10} /> 保存
-                        </Button>
-                      ) : (
-                        <Button size="sm" onClick={() => setEditing({ name, value })}>
-                          编辑
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        loading={deleteFile.isPending}
-                        onClick={async () => {
-                          const ok = await confirm({
-                            title: `删除配置文件「${name}」？`,
-                            description: '挂载该配置组的服务将无法读取此文件。',
-                            danger: true,
-                            confirmText: '删除文件',
-                          })
-                          if (ok) deleteFile.mutate({ group: active.name, file: name })
-                        }}
-                      >
-                        <Trash2 size={10} />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 border-b border-line px-3 py-1.5">
-                    <Link2 size={11} className="flex-none text-mute" />
-                    {related.length > 0 ? (
-                      <>
-                        <span className="mono min-w-0 truncate text-[9.5px] text-ink-3">
-                          {related[0].serviceName || '—'}
-                        </span>
-                        <span className="mono min-w-0 truncate text-[9px] text-mute">
-                          {related[0].mountPath || '—'}
-                        </span>
-                        {related.length > 1 && (
-                          <button
-                            className="mono ml-auto flex-none text-[8.5px] tracking-widest text-signal hover:underline"
-                            onClick={() => setRelationFile(name)}
-                          >
-                            查看全部 {related.length}
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      <span className="mono text-[9px] tracking-wider text-mute">未被服务挂载</span>
-                    )}
-                  </div>
-                  {isEditing ? (
-                    <textarea
-                      className="field min-h-[140px] border-0 font-mono text-[10.5px] leading-relaxed"
-                      spellCheck={false}
-                      value={editing.value}
-                      onChange={(event) => setEditing({ name, value: event.target.value })}
-                    />
-                  ) : (
-                    <pre className="max-h-[180px] overflow-auto px-3 py-2 font-mono text-[10px] leading-relaxed text-ink-3">
-                      {value || '（空）'}
-                    </pre>
-                  )}
-                </div>
-              )
-            })}
-            {Object.keys(active.data).length === 0 && (
-              <EmptyState title="配置组为空" description="该配置组还没有配置文件，可点击「新增文件」创建。" />
-            )}
           </div>
-        )}
-      </Drawer>
+          <div className="flex items-center gap-2">
+            <span className="w-[56px] flex-none text-right text-[12px] text-ink-3">内容：</span>
+            <select
+              className="field h-8 w-full text-[12px]"
+              value={fileEncoding}
+              onChange={(event) => setFileEncoding(event.target.value)}
+            >
+              <option value="UTF-8">UTF-8</option>
+              <option value="GBK">GBK</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-[56px] flex-none" />
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={async (event) => {
+                const file = event.target.files?.[0]
+                if (file) setFileValue(await file.text())
+                event.target.value = ''
+              }}
+            />
+            <button
+              className="inline-flex h-8 items-center gap-1.5 border border-[#2f6fa8] px-3 text-[12px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload size={12} /> 读取文件内容
+            </button>
+          </div>
+          <div className="pl-[64px] text-[12px] text-mute">请上传文件或直接输入内容</div>
+          <CodeEditor value={fileValue} onChange={setFileValue} />
+        </div>
+      </Modal>
 
       <Modal
         open={!!relationFile}
