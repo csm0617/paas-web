@@ -51,6 +51,20 @@ interface ConfigMapRow {
   keys: string[]
 }
 
+interface NodeAffinityRow {
+  mode: string
+  host: string
+  operator: string
+  value: string
+}
+
+interface ServiceAffinityRow {
+  mode: string
+  service: string
+  operator: string
+  value: string
+}
+
 const NAV = [
   { id: 'BaseForm', label: '基本信息' },
   { id: 'EnvValue', label: '环境变量' },
@@ -106,6 +120,52 @@ function serviceNameOf(service: ServiceItem) {
   return service.nameUs || service.nameFr
 }
 
+function affinityRowsFrom(affinity: Record<string, unknown> | null | undefined) {
+  const aff = (affinity ?? {}) as {
+    nodeAffinity?: {
+      preferredDuringSchedulingIgnoredDuringExecution?: Array<{ preference?: { matchExpressions?: Array<Record<string, unknown>> } }>
+      requiredDuringSchedulingIgnoredDuringExecution?: { nodeSelectorTerms?: Array<{ matchExpressions?: Array<Record<string, unknown>> }> }
+    }
+    podAffinity?: {
+      preferredDuringSchedulingIgnoredDuringExecution?: Array<{ podAffinityTerm?: { labelSelector?: { matchExpressions?: Array<Record<string, unknown>> } } }>
+      requiredDuringSchedulingIgnoredDuringExecution?: Array<{ labelSelector?: { matchExpressions?: Array<Record<string, unknown>> } }>
+    }
+    podAntiAffinity?: {
+      preferredDuringSchedulingIgnoredDuringExecution?: Array<{ podAffinityTerm?: { labelSelector?: { matchExpressions?: Array<Record<string, unknown>> } } }>
+      requiredDuringSchedulingIgnoredDuringExecution?: Array<{ labelSelector?: { matchExpressions?: Array<Record<string, unknown>> } }>
+    }
+  }
+  const exprRow = (expr: Record<string, unknown>, mode: string) => ({
+    mode,
+    host: String(expr.key ?? 'kubernetes.io/hostname'),
+    operator: String(expr.operator ?? 'In'),
+    value: Array.isArray(expr.values) ? String((expr.values as unknown[])[0] ?? '') : String(expr.value ?? ''),
+  })
+  const nodeRows: NodeAffinityRow[] = []
+  ;(aff.nodeAffinity?.preferredDuringSchedulingIgnoredDuringExecution ?? []).forEach((entry) => {
+    ;(entry.preference?.matchExpressions ?? []).forEach((expr) => nodeRows.push(exprRow(expr, '1')))
+  })
+  ;(aff.nodeAffinity?.requiredDuringSchedulingIgnoredDuringExecution?.nodeSelectorTerms ?? []).forEach((term) => {
+    ;(term.matchExpressions ?? []).forEach((expr) => nodeRows.push(exprRow(expr, '0')))
+  })
+  const serviceRows: ServiceAffinityRow[] = []
+  const pushPod = (expr: Record<string, unknown>, mode: string) =>
+    serviceRows.push({ ...exprRow(expr, mode), service: String(expr.key ?? '') })
+  ;(aff.podAffinity?.preferredDuringSchedulingIgnoredDuringExecution ?? []).forEach((entry) => {
+    ;(entry.podAffinityTerm?.labelSelector?.matchExpressions ?? []).forEach((expr) => pushPod(expr, '1'))
+  })
+  ;(aff.podAffinity?.requiredDuringSchedulingIgnoredDuringExecution ?? []).forEach((entry) => {
+    ;(entry.labelSelector?.matchExpressions ?? []).forEach((expr) => pushPod(expr, '0'))
+  })
+  ;(aff.podAntiAffinity?.preferredDuringSchedulingIgnoredDuringExecution ?? []).forEach((entry) => {
+    ;(entry.podAffinityTerm?.labelSelector?.matchExpressions ?? []).forEach((expr) => pushPod(expr, '2'))
+  })
+  ;(aff.podAntiAffinity?.requiredDuringSchedulingIgnoredDuringExecution ?? []).forEach((entry) => {
+    ;(entry.labelSelector?.matchExpressions ?? []).forEach((expr) => pushPod(expr, '3'))
+  })
+  return { nodeRows, serviceRows }
+}
+
 function cpuValue(value?: string | null) {
   if (!value) return ''
   return value.endsWith('m') ? String(parseFloat(value) / 1000) : value.replace(/[^\d.]/g, '')
@@ -143,6 +203,37 @@ function FieldRow({
       <div className={wide ? 'w-[420px] flex-none' : 'w-[240px] flex-none'}>{children}</div>
       <div className="flex w-[92px] flex-none items-center gap-3 text-[12px]">{action}</div>
     </div>
+  )
+}
+
+function Radio({
+  checked,
+  label,
+  onClick,
+  disabled,
+}: {
+  checked: boolean
+  label: string
+  onClick: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="flex items-center gap-1.5 text-[12px] disabled:cursor-default"
+    >
+      <span
+        className={cn(
+          'flex h-[14px] w-[14px] items-center justify-center rounded-full border',
+          checked ? 'border-[#1890ff]' : 'border-[#5b7a99]',
+        )}
+      >
+        {checked && <span className="h-[6px] w-[6px] rounded-full bg-[#1890ff]" />}
+      </span>
+      <span className={checked ? 'text-white' : 'text-[#c6dbef]'}>{label}</span>
+    </button>
   )
 }
 
@@ -255,12 +346,16 @@ export default function ServiceConfigPage() {
   const [nodeEditing, setNodeEditing] = useState(false)
   const [nodeMode, setNodeMode] = useState<'1' | '2' | '3'>('1')
   const [advNode, setAdvNode] = useState('')
-  const [advAffinity, setAdvAffinity] = useState('')
+  const [nodeAffinityRows, setNodeAffinityRows] = useState<NodeAffinityRow[]>([
+    { mode: '1', host: 'kubernetes.io/hostname', operator: 'In', value: '' },
+  ])
+  const [serviceAffinityRows, setServiceAffinityRows] = useState<ServiceAffinityRow[]>([
+    { mode: '1', service: '', operator: 'In', value: '' },
+  ])
 
   const servicesQuery = useQuery({
     queryKey: ['config-services'],
     queryFn: () => api.get<ServiceList>('/v1/service', { page: 1, size: 100 }),
-    enabled: !selected,
   })
   const services = servicesQuery.data?.services ?? []
 
@@ -282,7 +377,12 @@ export default function ServiceConfigPage() {
 
   const nodesQuery = useQuery({
     queryKey: ['config-nodes'],
-    queryFn: () => api.get<{ nodes?: { nodes?: Array<{ name?: string; ip?: string }> } }>('/cloud/nodes'),
+    queryFn: () =>
+      api.get<{
+        nodes?: {
+          nodes?: Array<{ name?: string; ip?: string; cpu?: string | number; memory?: string | number }>
+        }
+      }>('/cloud/nodes'),
     enabled: !!selected,
   })
   const nodeList = nodesQuery.data?.nodes?.nodes ?? []
@@ -381,7 +481,13 @@ export default function ServiceConfigPage() {
     const selectedNode = nodeSelector['kubernetes.io/hostname']
     setNodeMode(selectedNode ? '2' : affinity && Object.keys(affinity).length ? '3' : '1')
     setAdvNode(selectedNode || '')
-    setAdvAffinity(affinity && Object.keys(affinity).length ? JSON.stringify(affinity, null, 2) : '')
+    const parsed = affinityRowsFrom(affinity)
+    setNodeAffinityRows(
+      parsed.nodeRows.length ? parsed.nodeRows : [{ mode: '1', host: 'kubernetes.io/hostname', operator: 'In', value: '' }],
+    )
+    setServiceAffinityRows(
+      parsed.serviceRows.length ? parsed.serviceRows : [{ mode: '1', service: '', operator: 'In', value: '' }],
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detail, detailQuery.dataUpdatedAt, configMaps.length])
 
@@ -582,20 +688,80 @@ export default function ServiceConfigPage() {
 
   const scheduleMutation = useMutation({
     mutationFn: async () => {
-      let affinity: Record<string, unknown> = {}
-      if (nodeMode === '3' && advAffinity.trim()) {
-        let parsed: unknown
-        try {
-          parsed = JSON.parse(advAffinity)
-        } catch {
-          throw new Error('亲和性不是合法的 JSON')
+      const expr = (row: { host?: string; service?: string; operator: string; value: string }) => ({
+        key: row.host || row.service || 'kubernetes.io/hostname',
+        operator: row.operator,
+        ...(row.operator === 'Exists' || row.operator === 'DoesNotExist'
+          ? {}
+          : { values: row.value ? [row.value] : [] }),
+      })
+      const nodePreferred: Array<Record<string, unknown>> = []
+      const nodeRequired: Array<Record<string, unknown>> = []
+      nodeAffinityRows.forEach((row) => {
+        if (!row.host) return
+        const item = { weight: 1, preference: { matchExpressions: [expr(row)] } }
+        if (row.mode === '0') nodeRequired.push(expr(row))
+        else nodePreferred.push(item)
+      })
+      const podAffinity: { preferred: Array<Record<string, unknown>>; required: Array<Record<string, unknown>> } = {
+        preferred: [],
+        required: [],
+      }
+      const podAnti: { preferred: Array<Record<string, unknown>>; required: Array<Record<string, unknown>> } = {
+        preferred: [],
+        required: [],
+      }
+      serviceAffinityRows.forEach((row) => {
+        if (!row.service) return
+        const selector = { labelSelector: { matchExpressions: [expr(row)] } }
+        const preferred = {
+          weight: 1,
+          podAffinityTerm: { topologyKey: 'kubernetes.io/hostname', ...selector },
         }
-        affinity = (parsed ?? {}) as Record<string, unknown>
+        if (row.mode === '2') podAnti.preferred.push(preferred)
+        else if (row.mode === '3') podAnti.required.push(selector)
+        else if (row.mode === '0') podAffinity.required.push(selector)
+        else podAffinity.preferred.push(preferred)
+      })
+      const affinity: Record<string, unknown> = {}
+      if (nodePreferred.length || nodeRequired.length) {
+        affinity.nodeAffinity = {
+          ...(nodePreferred.length
+            ? { preferredDuringSchedulingIgnoredDuringExecution: nodePreferred }
+            : {}),
+          ...(nodeRequired.length
+            ? {
+                requiredDuringSchedulingIgnoredDuringExecution: {
+                  nodeSelectorTerms: [{ matchExpressions: nodeRequired }],
+                },
+              }
+            : {}),
+        }
+      }
+      if (podAffinity.preferred.length || podAffinity.required.length) {
+        affinity.podAffinity = {
+          ...(podAffinity.preferred.length
+            ? { preferredDuringSchedulingIgnoredDuringExecution: podAffinity.preferred }
+            : {}),
+          ...(podAffinity.required.length
+            ? { requiredDuringSchedulingIgnoredDuringExecution: podAffinity.required }
+            : {}),
+        }
+      }
+      if (podAnti.preferred.length || podAnti.required.length) {
+        affinity.podAntiAffinity = {
+          ...(podAnti.preferred.length
+            ? { preferredDuringSchedulingIgnoredDuringExecution: podAnti.preferred }
+            : {}),
+          ...(podAnti.required.length
+            ? { requiredDuringSchedulingIgnoredDuringExecution: podAnti.required }
+            : {}),
+        }
       }
       const nodeSelector = nodeMode === '2' && advNode ? { 'kubernetes.io/hostname': advNode } : null
       await api.put('/v1/service/patchService', {
         svcName: selected,
-        requestBody: { spec: { template: { spec: { affinity, nodeSelector } } } },
+        requestBody: { spec: { template: { spec: { affinity: nodeMode === '3' ? affinity : {}, nodeSelector } } } },
       })
       return api.post('/v1/service/tolerance', undefined, { serviceName: selected, type: 0 })
     },
@@ -630,7 +796,7 @@ export default function ServiceConfigPage() {
       辅助设置: { entryMode, commands, args },
       服务配置: { configMapList: configRows, hostPathList: volumeRows },
       健康检查: { readiness, liveness },
-      节点调度: { nodeMode, advNode, advAffinity },
+      节点调度: { nodeMode, advNode, nodeAffinityRows, serviceAffinityRows },
     }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -786,24 +952,19 @@ export default function ServiceConfigPage() {
     <div className="mb-5">
       <div className="mb-2 flex items-center gap-3">
         <span className="text-[12.5px] text-ink">{label}</span>
-        <div className="flex border border-[#2f4f6d]">
+        <div className="flex items-center gap-5">
           {[
             { value: 0, label: '无' },
             { value: 1, label: 'HTTP' },
             { value: 2, label: 'TCP' },
           ].map((option) => (
-            <button
+            <Radio
               key={option.value}
-              type="button"
+              checked={form.type === option.value}
+              label={option.label}
               disabled={!healthEditing}
               onClick={() => setForm({ ...form, type: option.value })}
-              className={cn(
-                '-ml-px border border-[#2f4f6d] px-3 py-1 text-[12px] first:ml-0',
-                form.type === option.value ? 'bg-[#1670c2] text-white' : 'text-ink-3',
-              )}
-            >
-              {option.label}
-            </button>
+            />
           ))}
         </div>
       </div>
@@ -1126,32 +1287,38 @@ export default function ServiceConfigPage() {
                   setGpuMax(res?.limits?.gpu?.replace(/[^\d.]/g, '') || '')
                 }}
               >
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="w-[110px] flex-none text-[12px] text-ink-3">选择配置</span>
-                  <div className="flex border border-[#2f4f6d]">
-                    {[
-                      { value: '1' as const, label: 'X86计算' },
-                      { value: '2' as const, label: '高性能计算GPU' },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        disabled={!resourceEditing}
-                        onClick={() => setResourceMode(option.value)}
-                        className={cn(
-                          '-ml-px border border-[#2f4f6d] px-3 py-1 text-[12px] first:ml-0',
-                          resourceMode === option.value ? 'bg-[#1670c2] text-white' : 'text-ink-3',
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+                <div className="mb-4 flex items-center gap-4">
+                  <span className="w-[60px] flex-none text-[12px] text-[#c6dbef]">选择配置：</span>
+                  <div className="flex items-center gap-5">
+                    <Radio
+                      checked={resourceMode === '1'}
+                      label="X86计算"
+                      disabled={!resourceEditing}
+                      onClick={() => setResourceMode('1')}
+                    />
+                    <Radio
+                      checked={resourceMode === '2'}
+                      label="高性能计算GPU"
+                      disabled={!resourceEditing}
+                      onClick={() => setResourceMode('2')}
+                    />
                   </div>
-                  <span className="text-[12px] text-[#ff6b6b]">剩余资源</span>
+                  <div className="group relative">
+                    <span className="cursor-default text-[12px] text-[#ff6b6b]">ⓘ 剩余资源</span>
+                    <div className="pointer-events-none absolute left-0 top-6 z-20 hidden min-w-[260px] border border-[#33506e] bg-[#0e2233] px-3 py-2 text-[11.5px] leading-[20px] text-[#c6dbef] shadow-lg group-hover:block">
+                      {nodeList.length === 0 && <div>暂无节点资源信息</div>}
+                      {nodeList.map((node) => (
+                        <div key={node.name}>
+                          节点：{node.name} cpu: {node.cpu !== undefined ? `${node.cpu} m` : '—'} 内存:{' '}
+                          {node.memory !== undefined ? `${node.memory} GB` : '—'}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                {resourceMode === '1' ? (
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
+                <div className="flex flex-wrap items-stretch gap-3">
+                  {resourceMode === '1' &&
+                    [
                       { key: '0', title: '1X', ram: '128M 内存', cpu: '0.1~0.5CPU', min: '0.1', max: '0.5', ramMin: '100', ramMax: '128' },
                       { key: '1', title: '4X', ram: '1GB 内存', cpu: '0.4~1CPU', min: '0.4', max: '1', ramMin: '400', ramMax: '1024' },
                       { key: '2', title: '8X', ram: '2GB 内存', cpu: '0.8~1CPU', min: '0.8', max: '1', ramMin: '800', ramMax: '2048' },
@@ -1170,10 +1337,10 @@ export default function ServiceConfigPage() {
                           setRamMax(preset.ramMax)
                         }}
                         className={cn(
-                          'border px-3 py-2 text-left text-[12px]',
+                          'h-[92px] w-[88px] flex-none border px-2 py-[10px] text-left text-[12px] leading-[22px] transition-colors',
                           resourcePreset === preset.key
-                            ? 'border-signal bg-[#15395c] text-white'
-                            : 'border-[#2f4f6d] text-ink-3',
+                            ? 'border-[#1890ff] text-[#c6dbef]'
+                            : 'border-[#33506e] text-[#c6dbef]',
                         )}
                       >
                         <div className="text-[13px] text-white">{preset.title}</div>
@@ -1181,14 +1348,11 @@ export default function ServiceConfigPage() {
                         <div>{preset.cpu}</div>
                       </button>
                     ))}
-                  </div>
-                ) : null}
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div>
-                    <div className="mb-1 text-[11px] text-ink-3">内存（MB）</div>
-                    <div className="flex items-center gap-2">
+                  <div className="w-[270px] flex-none border border-[#33506e] px-3 py-2">
+                    <div className="mb-1 text-[12px] text-white">自定义</div>
+                    <div className="flex items-center gap-1.5">
                       <input
-                        className={inputCls}
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={ramMin}
                         onChange={(event) => {
@@ -1196,9 +1360,9 @@ export default function ServiceConfigPage() {
                           setResourcePreset('5')
                         }}
                       />
-                      <span className="text-ink-3">~</span>
+                      <span className="text-[#c6dbef]">~</span>
                       <input
-                        className={inputCls}
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={ramMax}
                         onChange={(event) => {
@@ -1206,13 +1370,11 @@ export default function ServiceConfigPage() {
                           setResourcePreset('5')
                         }}
                       />
+                      <span className="text-[12px] text-[#c6dbef]">MB内存</span>
                     </div>
-                  </div>
-                  <div>
-                    <div className="mb-1 text-[11px] text-ink-3">CPU（核）</div>
-                    <div className="flex items-center gap-2">
+                    <div className="mt-1.5 flex items-center gap-1.5">
                       <input
-                        className={inputCls}
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={cpuMin}
                         onChange={(event) => {
@@ -1220,9 +1382,9 @@ export default function ServiceConfigPage() {
                           setResourcePreset('5')
                         }}
                       />
-                      <span className="text-ink-3">~</span>
+                      <span className="text-[#c6dbef]">~</span>
                       <input
-                        className={inputCls}
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={cpuMax}
                         onChange={(event) => {
@@ -1230,19 +1392,20 @@ export default function ServiceConfigPage() {
                           setResourcePreset('5')
                         }}
                       />
+                      <span className="text-[12px] text-[#c6dbef]">核CPU</span>
                     </div>
+                    {resourceMode === '2' && (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <input
+                          className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
+                          disabled={!resourceEditing}
+                          value={gpuMax}
+                          onChange={(event) => setGpuMax(event.target.value)}
+                        />
+                        <span className="text-[12px] text-[#c6dbef]">颗GPU</span>
+                      </div>
+                    )}
                   </div>
-                  {resourceMode === '2' && (
-                    <div>
-                      <div className="mb-1 text-[11px] text-ink-3">GPU（颗）</div>
-                      <input
-                        className={inputCls}
-                        disabled={!resourceEditing}
-                        value={gpuMax}
-                        onChange={(event) => setGpuMax(event.target.value)}
-                      />
-                    </div>
-                  )}
                 </div>
               </Section>
 
@@ -1359,24 +1522,19 @@ export default function ServiceConfigPage() {
               >
                 <div className="mb-3 flex items-center gap-3">
                   <span className="w-[110px] flex-none text-[12px] text-ink-3">NodePort</span>
-                  <div className="flex border border-[#2f4f6d]">
-                    {[
-                      { value: true, label: '启用' },
-                      { value: false, label: '禁用' },
-                    ].map((option) => (
-                      <button
-                        key={String(option.value)}
-                        type="button"
-                        disabled={!discoveryEditing}
-                        onClick={() => setNodePortEnabled(option.value)}
-                        className={cn(
-                          '-ml-px border border-[#2f4f6d] px-3 py-1 text-[12px] first:ml-0',
-                          nodePortEnabled === option.value ? 'bg-[#1670c2] text-white' : 'text-ink-3',
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-5">
+                    <Radio
+                      checked={nodePortEnabled}
+                      label="启用"
+                      disabled={!discoveryEditing}
+                      onClick={() => setNodePortEnabled(true)}
+                    />
+                    <Radio
+                      checked={!nodePortEnabled}
+                      label="禁用"
+                      disabled={!discoveryEditing}
+                      onClick={() => setNodePortEnabled(false)}
+                    />
                   </div>
                 </div>
                 {nodePortEnabled && (
@@ -1453,30 +1611,23 @@ export default function ServiceConfigPage() {
               >
                 <div className="mb-3 flex items-center gap-3">
                   <span className="w-[110px] flex-none text-[12px] text-ink-3">进入点</span>
-                  <div className="flex border border-[#2f4f6d]">
-                    {[
-                      { value: '1' as const, label: '镜像默认' },
-                      { value: '2' as const, label: '自定义' },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        disabled={!assistEditing}
-                        onClick={() => {
-                          setEntryMode(option.value)
-                          if (option.value === '2') {
-                            setCommands((rows) => (rows.length ? rows : ['']))
-                            setArgs((rows) => (rows.length ? rows : ['']))
-                          }
-                        }}
-                        className={cn(
-                          '-ml-px border border-[#2f4f6d] px-3 py-1 text-[12px] first:ml-0',
-                          entryMode === option.value ? 'bg-[#1670c2] text-white' : 'text-ink-3',
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-5">
+                    <Radio
+                      checked={entryMode === '1'}
+                      label="镜像默认"
+                      disabled={!assistEditing}
+                      onClick={() => setEntryMode('1')}
+                    />
+                    <Radio
+                      checked={entryMode === '2'}
+                      label="自定义"
+                      disabled={!assistEditing}
+                      onClick={() => {
+                        setEntryMode('2')
+                        setCommands((rows) => (rows.length ? rows : ['']))
+                        setArgs((rows) => (rows.length ? rows : ['']))
+                      }}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -1713,31 +1864,38 @@ export default function ServiceConfigPage() {
                   const selectedNode = nodeSelector['kubernetes.io/hostname']
                   setNodeMode(selectedNode ? '2' : affinity && Object.keys(affinity).length ? '3' : '1')
                   setAdvNode(selectedNode || '')
-                  setAdvAffinity(affinity && Object.keys(affinity).length ? JSON.stringify(affinity, null, 2) : '')
+                  const parsed = affinityRowsFrom(affinity)
+                  setNodeAffinityRows(
+                    parsed.nodeRows.length
+                      ? parsed.nodeRows
+                      : [{ mode: '1', host: 'kubernetes.io/hostname', operator: 'In', value: '' }],
+                  )
+                  setServiceAffinityRows(
+                    parsed.serviceRows.length
+                      ? parsed.serviceRows
+                      : [{ mode: '1', service: '', operator: 'In', value: '' }],
+                  )
                 }}
               >
-                <div className="mb-3 flex flex-wrap items-center gap-3">
-                  <span className="w-[110px] flex-none text-[12px] text-ink-3">调度方式</span>
-                  <div className="flex border border-[#2f4f6d]">
-                    {[
-                      { value: '1' as const, label: '系统默认调度' },
-                      { value: '2' as const, label: '指定主机名及IP上运行' },
-                      { value: '3' as const, label: '定义服务与节点亲和性' },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        disabled={!nodeEditing}
-                        onClick={() => setNodeMode(option.value)}
-                        className={cn(
-                          '-ml-px border border-[#2f4f6d] px-3 py-1 text-[12px] first:ml-0',
-                          nodeMode === option.value ? 'bg-[#1670c2] text-white' : 'text-ink-3',
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="mb-3 flex flex-wrap items-center gap-6">
+                  <Radio
+                    checked={nodeMode === '1'}
+                    label="系统默认调度"
+                    disabled={!nodeEditing}
+                    onClick={() => setNodeMode('1')}
+                  />
+                  <Radio
+                    checked={nodeMode === '2'}
+                    label="指定主机名及IP上运行"
+                    disabled={!nodeEditing}
+                    onClick={() => setNodeMode('2')}
+                  />
+                  <Radio
+                    checked={nodeMode === '3'}
+                    label="定义服务与节点亲和性 & 服务与服务的亲和性"
+                    disabled={!nodeEditing}
+                    onClick={() => setNodeMode('3')}
+                  />
                 </div>
                 {nodeMode === '2' && (
                   <FieldRow label="指定节点" wide>
@@ -1758,16 +1916,209 @@ export default function ServiceConfigPage() {
                   </FieldRow>
                 )}
                 {nodeMode === '3' && (
-                  <div className="mt-2">
-                    <div className="mb-1 text-[11.5px] text-ink-3">服务与节点亲和性（JSON）</div>
-                    <textarea
-                      className={cn(inputCls, 'h-[180px] w-full resize-none py-2 font-mono text-[11px] leading-[18px]')}
-                      spellCheck={false}
-                      disabled={!nodeEditing}
-                      value={advAffinity}
-                      onChange={(event) => setAdvAffinity(event.target.value)}
-                    />
-                  </div>
+                  <>
+                    <div className="mb-1 text-[12px] text-[#c6dbef]">服务与节点亲和性</div>
+                    <div className="mb-1 grid grid-cols-[110px_1fr_160px_1fr_80px] gap-3 text-[11.5px] text-ink-3">
+                      <span>方式</span>
+                      <span>主机</span>
+                      <span>操作符</span>
+                      <span>主机标签值</span>
+                      <span className="text-right">操作</span>
+                    </div>
+                    <div className="space-y-2">
+                      {nodeAffinityRows.map((row, index) => (
+                        <div key={index} className="grid grid-cols-[110px_1fr_160px_1fr_80px] items-center gap-3">
+                          <select
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            value={row.mode}
+                            onChange={(event) =>
+                              setNodeAffinityRows((rows) =>
+                                rows.map((item, i) => (i === index ? { ...item, mode: event.target.value } : item)),
+                              )
+                            }
+                          >
+                            <option value="1">最好</option>
+                            <option value="0">必须</option>
+                            <option value="2">最好不</option>
+                            <option value="3">必须不</option>
+                          </select>
+                          <select
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            value={row.host}
+                            onChange={(event) =>
+                              setNodeAffinityRows((rows) =>
+                                rows.map((item, i) => (i === index ? { ...item, host: event.target.value } : item)),
+                              )
+                            }
+                          >
+                            <option value="">请选择</option>
+                            <option value="kubernetes.io/hostname">主机名及IP</option>
+                            <option value="kubernetes.io/os">系统默认选择器</option>
+                          </select>
+                          <select
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            value={row.operator}
+                            onChange={(event) =>
+                              setNodeAffinityRows((rows) =>
+                                rows.map((item, i) =>
+                                  i === index ? { ...item, operator: event.target.value } : item,
+                                ),
+                              )
+                            }
+                          >
+                            <option value="In">In</option>
+                            <option value="NotIn">NotIn</option>
+                            <option value="Exists">Exists</option>
+                            <option value="DoesNotExist">DoesNotExist</option>
+                          </select>
+                          <input
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            placeholder="主机标签值"
+                            value={row.value}
+                            onChange={(event) =>
+                              setNodeAffinityRows((rows) =>
+                                rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)),
+                              )
+                            }
+                          />
+                          <span className="text-right">
+                            <button
+                              type="button"
+                              className="text-[12px] text-[#ff6b6b]"
+                              onClick={() => {
+                                setNodeEditing(true)
+                                setNodeAffinityRows((rows) => rows.filter((_, i) => i !== index))
+                              }}
+                            >
+                              删除
+                            </button>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-2 h-[30px] bg-[#1670c2] px-4 text-[12px] text-white"
+                      onClick={() => {
+                        setNodeEditing(true)
+                        setNodeAffinityRows((rows) => [
+                          ...rows,
+                          { mode: '1', host: 'kubernetes.io/hostname', operator: 'In', value: '' },
+                        ])
+                      }}
+                    >
+                      添加
+                    </button>
+
+                    <div className="mb-1 mt-6 text-[12px] text-[#c6dbef]">服务与服务亲和性</div>
+                    <div className="mb-1 grid grid-cols-[110px_1fr_160px_1fr_80px] gap-3 text-[11.5px] text-ink-3">
+                      <span>方式</span>
+                      <span>服务</span>
+                      <span>操作符</span>
+                      <span>服务标签值</span>
+                      <span className="text-right">操作</span>
+                    </div>
+                    <div className="space-y-2">
+                      {serviceAffinityRows.map((row, index) => (
+                        <div key={index} className="grid grid-cols-[110px_1fr_160px_1fr_80px] items-center gap-3">
+                          <select
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            value={row.mode}
+                            onChange={(event) =>
+                              setServiceAffinityRows((rows) =>
+                                rows.map((item, i) => (i === index ? { ...item, mode: event.target.value } : item)),
+                              )
+                            }
+                          >
+                            <option value="1">最好</option>
+                            <option value="0">必须</option>
+                            <option value="2">最好不</option>
+                            <option value="3">必须不</option>
+                          </select>
+                          <select
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            value={row.service}
+                            onChange={(event) =>
+                              setServiceAffinityRows((rows) =>
+                                rows.map((item, i) =>
+                                  i === index ? { ...item, service: event.target.value } : item,
+                                ),
+                              )
+                            }
+                          >
+                            <option value="">请选择</option>
+                            {services.map((service) => {
+                              const name = serviceNameOf(service)
+                              return (
+                                <option key={name} value={name}>
+                                  {name}
+                                </option>
+                              )
+                            })}
+                          </select>
+                          <select
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            value={row.operator}
+                            onChange={(event) =>
+                              setServiceAffinityRows((rows) =>
+                                rows.map((item, i) =>
+                                  i === index ? { ...item, operator: event.target.value } : item,
+                                ),
+                              )
+                            }
+                          >
+                            <option value="In">In</option>
+                            <option value="NotIn">NotIn</option>
+                            <option value="Exists">Exists</option>
+                            <option value="DoesNotExist">DoesNotExist</option>
+                          </select>
+                          <input
+                            className={inputCls}
+                            disabled={!nodeEditing}
+                            placeholder="服务标签值"
+                            value={row.value}
+                            onChange={(event) =>
+                              setServiceAffinityRows((rows) =>
+                                rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)),
+                              )
+                            }
+                          />
+                          <span className="text-right">
+                            <button
+                              type="button"
+                              className="text-[12px] text-[#ff6b6b]"
+                              onClick={() => {
+                                setNodeEditing(true)
+                                setServiceAffinityRows((rows) => rows.filter((_, i) => i !== index))
+                              }}
+                            >
+                              删除
+                            </button>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-2 h-[30px] bg-[#1670c2] px-4 text-[12px] text-white"
+                      onClick={() => {
+                        setNodeEditing(true)
+                        setServiceAffinityRows((rows) => [
+                          ...rows,
+                          { mode: '1', service: '', operator: 'In', value: '' },
+                        ])
+                      }}
+                    >
+                      添加
+                    </button>
+                  </>
                 )}
               </Section>
             </>
