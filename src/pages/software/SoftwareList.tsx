@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, Copy, Download, ExternalLink, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, Trash2, Upload, Users } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { AppWindow, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, Trash2, Upload, Users } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api, errorMessage, API_BASE } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { useConfirm } from '@/components/ui'
@@ -74,11 +75,31 @@ function authStatusText(status?: number) {
   return `状态 ${status}`
 }
 
+function serviceNameOf(service: ServiceItem) {
+  return service.nameUs || service.nameFr
+}
+
+function serviceImageOf(service: ServiceItem) {
+  if (typeof service.imageInfo === 'string') return service.imageInfo
+  if (service.imageInfo?.image) return service.imageInfo.image
+  return service.deployment?.spec?.template?.spec?.containers?.[0]?.image || '—'
+}
+
+function serviceStatusOf(service: ServiceItem) {
+  const ready = service.deployment?.status?.readyReplicas ?? 0
+  const desired = service.deployment?.spec?.replicas ?? 0
+  if (service.terminated) return { text: '已停止', tone: 'text-mute', ready, desired }
+  if (ready > 0 && desired > 0 && ready < desired) return { text: '滚动发布中', tone: 'text-[#4aa3f0]', ready, desired }
+  if (ready > 0) return { text: '运行中', tone: 'text-ok', ready, desired }
+  if (desired > 0) return { text: '启动中', tone: 'text-warn', ready, desired }
+  return { text: '已停止', tone: 'text-mute', ready, desired }
+}
+
 export default function SoftwareListPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
+  const navigate = useNavigate()
   const [keyword, setKeyword] = useState('')
-  const [type, setType] = useState('ALL')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Software | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -89,7 +110,10 @@ export default function SoftwareListPage() {
   const [exporting, setExporting] = useState(false)
   const [shots, setShots] = useState<string[]>([])
   const [initialShots, setInitialShots] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card')
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('table')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [page, setPage] = useState(1)
   const [minSetOpen, setMinSetOpen] = useState(false)
   const [minSetSelected, setMinSetSelected] = useState<string[]>([])
   const [govOpen, setGovOpen] = useState(false)
@@ -150,17 +174,54 @@ export default function SoftwareListPage() {
 
   const list = query.data?.softwareList ?? []
   const filtered = useMemo(() => {
-    return list.filter((item) => {
-      const matchType = type === 'ALL' || item.type === type || item.framework === type
-      const q = keyword.trim().toLowerCase()
-      const matchKeyword =
-        !q ||
+    const q = keyword.trim().toLowerCase()
+    if (!q) return list
+    return list.filter(
+      (item) =>
         item.name.toLowerCase().includes(q) ||
         item.key.toLowerCase().includes(q) ||
-        (item.desc || '').toLowerCase().includes(q)
-      return matchType && matchKeyword
-    })
-  }, [list, type, keyword])
+        (item.desc || '').toLowerCase().includes(q),
+    )
+  }, [list, keyword])
+
+  useEffect(() => {
+    setPage(1)
+  }, [keyword])
+
+  const pageSize = 10
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const current = Math.min(page, totalPages)
+  const pageRows = filtered.slice((current - 1) * pageSize, current * pageSize)
+
+  const relationServicesQuery = useQuery({
+    queryKey: ['software-relation-services'],
+    queryFn: () => api.get<ServiceList>('/v1/service', { page: 1, size: 100 }),
+  })
+  const services = relationServicesQuery.data?.services ?? []
+
+  const serviceAction = useMutation({
+    mutationFn: ({ path, names }: { path: string; names: string[] }) =>
+      path === '/v1/service' ? api.del('/v1/service', names) : api.put(path, names),
+    onSuccess: () => {
+      toast.success('操作已下发', '变更请求已提交至集群')
+      queryClient.invalidateQueries({ queryKey: ['software-relation-services'] })
+    },
+    onError: (error) => toast.error('操作失败', errorMessage(error)),
+  })
+
+  function appServiceList(item: Software) {
+    const keys = new Set<string>()
+    for (const value of [item.relationServiceKey, item.relationServiceName]) {
+      if (Array.isArray(value)) value.filter(Boolean).forEach((key) => keys.add(key))
+      else if (value) keys.add(value)
+    }
+    return services.filter(
+      (service) =>
+        keys.has(service.nameUs) ||
+        keys.has(service.nameFr) ||
+        (service.softwareNameList ?? []).includes(item.name),
+    )
+  }
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -473,56 +534,42 @@ export default function SoftwareListPage() {
         <Button
           size="sm"
           onClick={() => {
-            setGovTab('auth')
-            setGeneratedCode('')
-            setGovOpen(true)
-          }}
-        >
-          <ShieldCheck size={11} /> 授权与网关
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => {
             minSetTouched.current = false
             setMinSetSelected([])
             setMinSetOpen(true)
           }}
         >
-          运行最小集
+          <List size={11} /> 运行最小集
         </Button>
-        <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
-          {['ALL', 'BS', 'CS'].map((item) => (
-            <button
-              key={item}
-              onClick={() => setType(item)}
-              className={cn(
-                'h-[30px] px-3 text-[12px] transition-colors',
-                type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
-              )}
-            >
-              {item === 'ALL' ? '全部' : item}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center border border-line">
-          <button
-            onClick={() => setViewMode('card')}
-            className={cn('px-2 py-1.5', viewMode === 'card' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
-            title="卡片视图"
-          >
-            <LayoutGrid size={12} />
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={cn('px-2 py-1.5', viewMode === 'table' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
-            title="列表视图"
-          >
-            <List size={12} />
-          </button>
-        </div>
-        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-          <RefreshCw size={11} /> 刷新
+        <Button
+          size="sm"
+          onClick={() => {
+            setViewMode((prev) => (prev === 'table' ? 'card' : 'table'))
+            setExpandedId(null)
+          }}
+        >
+          <LayoutGrid size={11} /> 切换显示
         </Button>
+        {selectedIds.length > 0 && (
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={async () => {
+              const ok = await confirm({
+                title: `删除 ${selectedIds.length} 个应用？`,
+                description: '删除后应用将从门户移除，此操作不可恢复。',
+                confirmText: '删除',
+                danger: true,
+              })
+              if (!ok) return
+              const targets = list.filter((item) => selectedIds.includes(item.id))
+              targets.forEach((item) => deleteMutation.mutate(item.id))
+              setSelectedIds([])
+            }}
+          >
+            <Trash2 size={11} /> 批量删除
+          </Button>
+        )}
       </PageToolbar>
 
       {query.isLoading ? (
@@ -547,77 +594,330 @@ export default function SoftwareListPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>应用 / APPLICATION</th>
+                  <th className="w-10 pl-3 pr-0">
+                    <input
+                      type="checkbox"
+                      className="check"
+                      aria-label="全选"
+                      checked={pageRows.length > 0 && pageRows.every((item) => selectedIds.includes(item.id))}
+                      onChange={(event) => {
+                        const keys = pageRows.map((item) => item.id)
+                        setSelectedIds((prev) =>
+                          event.target.checked
+                            ? Array.from(new Set([...prev, ...keys]))
+                            : prev.filter((key) => !keys.includes(key)),
+                        )
+                      }}
+                    />
+                  </th>
+                  <th className="w-14 text-center">序号</th>
+                  <th>名称</th>
                   <th>标识</th>
-                  <th>架构</th>
-                  <th>路由入口</th>
                   <th>关联席位</th>
+                  <th>更新时间</th>
+                  <th>描述</th>
+                  <th>置顶</th>
                   <th>创建时间</th>
-                  <th>状态</th>
-                  <th />
+                  <th className="text-right">操作</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((item, index) => (
-                  <tr key={item.id}>
-                    <td>
-                      <span className="mono text-[9.5px] text-mute">{String(index + 1).padStart(2, '0')}</span>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 flex-none items-center justify-center border border-line bg-paper-2">
-                          {item.icon ? (
-                            <img src={iconSrc(item.icon)} alt="" className="h-5 w-5 object-contain" />
-                          ) : (
-                            <span className="num text-[12px] text-mute">{item.name.slice(0, 1).toUpperCase()}</span>
-                          )}
-                        </div>
-                        <span className="text-[12px] font-medium text-ink">{item.name}</span>
-                        {item.orderTop ? <Pin size={10} className="text-signal" /> : null}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="mono text-[10px] text-ink-3">{item.key}</span>
-                    </td>
-                    <td>
-                      <Badge tone={item.type === 'CS' ? 'warn' : 'info'}>{item.type || item.framework || 'BS'}</Badge>
-                    </td>
-                    <td>
-                      <span className="mono max-w-[180px] truncate text-[9.5px] text-mute">{item.routerKey || '—'}</span>
-                    </td>
-                    <td>
-                      <div className="flex flex-wrap gap-1">
-                        {(item.roleList ?? []).length === 0 && <span className="text-[10px] text-mute">—</span>}
-                        {(item.roleList ?? []).map((role) => (
-                          <Badge key={role.key || role.id} tone="info">
-                            {role.name || role.key}
-                          </Badge>
-                        ))}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="mono text-[9.5px] text-mute">{formatDate(item.createdAt, false)}</span>
-                    </td>
-                    <td>
-                      <Badge tone={item.releaseStatus === 1 ? 'ok' : 'default'}>
-                        {item.releaseStatus === 1 ? 'RELEASED' : 'RESTRICTED'}
-                      </Badge>
-                    </td>
-                    <td className="text-right">
-                      <div className="flex justify-end gap-1.5">
-                        <Button size="sm" onClick={() => openSeats(item)}>
-                          席位
-                        </Button>
-                        <Button size="sm" onClick={() => openEdit(item)}>
-                          编辑
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {pageRows.map((item, index) => {
+                  const expanded = expandedId === item.id
+                  const related = appServiceList(item)
+                  const updatedAt = (item as Software & { updatedAt?: number }).updatedAt
+                  return (
+                    <Fragment key={item.id}>
+                      <tr
+                        onClick={() => setExpandedId(expanded ? null : item.id)}
+                        className={cn('cursor-pointer', expanded && 'bg-[#16395a]')}
+                      >
+                        <td className="pl-3 pr-0" onClick={(event) => event.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            className="check"
+                            aria-label={`选择 ${item.name}`}
+                            checked={selectedIds.includes(item.id)}
+                            onChange={() =>
+                              setSelectedIds((prev) =>
+                                prev.includes(item.id) ? prev.filter((key) => key !== item.id) : [...prev, item.id],
+                              )
+                            }
+                          />
+                        </td>
+                        <td className="text-center">
+                          <span className="mono text-[11.5px] text-ink-3">{(current - 1) * pageSize + index + 1}</span>
+                        </td>
+                        <td>
+                          <span className="text-[12px] text-ink">{item.name}</span>
+                        </td>
+                        <td>
+                          <span className="mono text-[11.5px] text-ink-3">{item.key}</span>
+                        </td>
+                        <td>
+                          <div className="flex flex-wrap gap-1">
+                            {(item.roleList ?? []).length === 0 && <span className="text-[12px] text-ink-3">—</span>}
+                            {(item.roleList ?? []).map((role) => (
+                              <Badge key={role.key || role.id} tone="info">
+                                {role.name || role.key}
+                              </Badge>
+                            ))}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">{formatDate(updatedAt, true)}</span>
+                        </td>
+                        <td>
+                          <span className="block max-w-[220px] truncate text-[12px] text-ink-3">{item.desc || '—'}</span>
+                        </td>
+                        <td>
+                          <button
+                            className={cn(
+                              'inline-flex h-6 w-6 items-center justify-center rounded transition-colors',
+                              item.orderTop ? 'text-signal' : 'text-mute hover:text-ink',
+                            )}
+                            aria-label={item.orderTop ? '取消置顶' : '置顶'}
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              orderMutation.mutate({ id: item.id, top: !item.orderTop })
+                            }}
+                          >
+                            <Pin size={12} />
+                          </button>
+                        </td>
+                        <td>
+                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+                            {formatDate(item.createdAt, true)}
+                          </span>
+                        </td>
+                        <td onClick={(event) => event.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-2.5 text-[12px]">
+                            <button
+                              disabled={!item.routerKey}
+                              className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff] disabled:cursor-not-allowed disabled:text-mute"
+                              onClick={() =>
+                                window.open(`http://${platformHost}${item.routerKey}`, '_blank', 'noopener')
+                              }
+                            >
+                              访问
+                            </button>
+                            <button
+                              className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                              onClick={() => openEdit(item)}
+                            >
+                              配置
+                            </button>
+                            <ActionMenu
+                              triggerText="更多"
+                              items={[
+                                { label: '配置席位', onSelect: () => openSeats(item), icon: <Users size={12} /> },
+                                {
+                                  label: '授权与网关',
+                                  onSelect: () => {
+                                    setGovTab('auth')
+                                    setGeneratedCode('')
+                                    setGovOpen(true)
+                                  },
+                                  icon: <ShieldCheck size={12} />,
+                                },
+                                {
+                                  label: item.releaseStatus === 1 ? '禁止访问' : '放行应用',
+                                  onSelect: () => releaseMutation.mutate({ id: item.id, release: item.releaseStatus !== 1 }),
+                                  icon: <AppWindow size={12} />,
+                                },
+                                { label: '应用下载', onSelect: () => downloadApp(item), icon: <Download size={12} /> },
+                                { label: '删除应用', danger: true, onSelect: () => remove(item), icon: <Trash2 size={12} /> },
+                              ]}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                      {expanded && (
+                        <tr>
+                          <td colSpan={10} className="bg-[#0c1b2a] p-0">
+                            <div className="border-y border-line">
+                              <table className="data-table">
+                                <thead>
+                                  <tr>
+                                    <th>服务名称</th>
+                                    <th>服务标识</th>
+                                    <th>状态</th>
+                                    <th>镜像</th>
+                                    <th>版本更新时间</th>
+                                    <th>
+                                      <span className="inline-flex items-center gap-1">
+                                        授权状态 <Filter size={10} />
+                                      </span>
+                                    </th>
+                                    <th className="text-right">操作</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {related.map((service) => {
+                                    const name = serviceNameOf(service)
+                                    const status = serviceStatusOf(service)
+                                    const auth = service.serviceAuth as { auth?: number } | null | undefined
+                                    return (
+                                      <tr key={name}>
+                                        <td>
+                                          <span className="text-[12px] text-ink">{name}</span>
+                                        </td>
+                                        <td>
+                                          <span className="mono text-[11.5px] text-ink-3">{service.nameUs || service.nameFr}</span>
+                                        </td>
+                                        <td>
+                                          <div className="leading-[1.5]">
+                                            <div className={cn('flex items-center gap-1 text-[12px]', status.tone)}>
+                                              {status.text}
+                                              <Info size={10} />
+                                            </div>
+                                            <div className="text-[11.5px] text-ink-3">
+                                              {status.ready}/{status.desired}部分运行
+                                            </div>
+                                            <div className="flex items-center gap-1 text-[11.5px] text-ink-3">
+                                              已重启 {service.restartCount ?? 0} 次
+                                              <Info size={10} />
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <span className="block max-w-[200px] truncate font-mono text-[11px] text-ink-3">
+                                            {serviceImageOf(service)}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+                                            {formatDate(service.deployment?.metadata?.creationTimestamp, true)}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          {auth ? (
+                                            <span className={cn('text-[12px]', auth.auth === 1 ? 'text-ok' : 'text-ink-3')}>
+                                              {auth.auth === 1 ? '已授权' : '未授权'}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[12px] text-ink-3">—</span>
+                                          )}
+                                        </td>
+                                        <td>
+                                          <div className="flex items-center justify-end gap-2.5 text-[12px]">
+                                            <button
+                                              className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                                              onClick={() =>
+                                                navigate(
+                                                  `/software/application/service-params?service=${encodeURIComponent(name)}`,
+                                                )
+                                              }
+                                            >
+                                              配置
+                                            </button>
+                                            <button
+                                              className={cn(
+                                                'transition-colors',
+                                                status.text === '已停止'
+                                                  ? 'text-[#4aa3f0] hover:text-[#7cc4ff]'
+                                                  : 'text-[#ff7b7b] hover:text-[#ff9a9a]',
+                                              )}
+                                              onClick={() =>
+                                                serviceAction.mutate({
+                                                  path:
+                                                    status.text === '已停止'
+                                                      ? '/v1/service/start'
+                                                      : '/v1/service/stop',
+                                                  names: [name],
+                                                })
+                                              }
+                                            >
+                                              {status.text === '已停止' ? '启动' : '停止'}
+                                            </button>
+                                            <ActionMenu
+                                              triggerText="更多"
+                                              items={[
+                                                {
+                                                  label: '重启服务',
+                                                  onSelect: () =>
+                                                    serviceAction.mutate({ path: '/v1/service/reStart', names: [name] }),
+                                                },
+                                                {
+                                                  label: '查看服务',
+                                                  onSelect: () => navigate('/software/application/service'),
+                                                },
+                                                {
+                                                  label: '删除服务',
+                                                  danger: true,
+                                                  onSelect: async () => {
+                                                    const ok = await confirm({
+                                                      title: `删除服务「${name}」？`,
+                                                      description: '删除后将从集群移除对应工作负载，此操作不可恢复。',
+                                                      confirmText: '删除',
+                                                      danger: true,
+                                                    })
+                                                    if (ok) serviceAction.mutate({ path: '/v1/service', names: [name] })
+                                                  },
+                                                },
+                                              ]}
+                                            />
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
+                                  {related.length === 0 && (
+                                    <tr>
+                                      <td colSpan={7} className="py-6 text-center text-[11.5px] text-mute">
+                                        该应用暂未关联服务
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 border-t border-line px-4 py-2">
+            <button
+              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30"
+              disabled={current <= 1}
+              onClick={() => setPage(1)}
+              aria-label="首页"
+            >
+              «
+            </button>
+            <button
+              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30"
+              disabled={current <= 1}
+              onClick={() => setPage(current - 1)}
+              aria-label="上一页"
+            >
+              ‹
+            </button>
+            <span className="text-[11.5px] text-ink-3">
+              当前第 {current} / {totalPages} 页
+            </span>
+            <button
+              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30"
+              disabled={current >= totalPages}
+              onClick={() => setPage(current + 1)}
+              aria-label="下一页"
+            >
+              ›
+            </button>
+            <button
+              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30"
+              disabled={current >= totalPages}
+              onClick={() => setPage(totalPages)}
+              aria-label="末页"
+            >
+              »
+            </button>
           </div>
         </Panel>
       ) : (
