@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { Download, RefreshCw, Search, X } from 'lucide-react'
+import { Download, RefreshCw, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { api } from '@/lib/api'
 import { formatDate, relativeTime } from '@/lib/format'
 import type { AuditItem } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
 import { Badge, Button, PageHeader, Panel, StatusDot } from '@/components/ui'
-import { cn } from '@/lib/utils'
 
 interface AuditDictItem {
   id?: number
@@ -132,6 +131,55 @@ export default function AuditPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">RETENTION / PLATFORM DEFAULT</span>
           </>
         }
+        toolbar={
+          <>
+            <select
+              className="field h-[30px] w-[132px] font-mono text-[10.5px]"
+              value={moduleName}
+              onChange={(event) => setModuleName(event.target.value)}
+            >
+              <option value="">全部行为类型</option>
+              {moduleOptions.map((item) => (
+                <option key={item.dictionaryKey} value={item.dictionaryKey}>
+                  {item.dictionaryName || item.dictionaryKey}
+                </option>
+              ))}
+            </select>
+            <input
+              type="date"
+              className="field h-[30px] w-[134px] font-mono text-[10px]"
+              value={startDate}
+              max={endDate || undefined}
+              onChange={(event) => setStartDate(event.target.value)}
+              title="开始时间"
+            />
+            <span className="mono text-[9px] text-mute">~</span>
+            <input
+              type="date"
+              className="field h-[30px] w-[134px] font-mono text-[10px]"
+              value={endDate}
+              min={startDate || undefined}
+              onChange={(event) => setEndDate(event.target.value)}
+              title="结束时间"
+            />
+            {hasFilter && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setKeyword('')
+                  setModuleName('')
+                  setStartDate('')
+                  setEndDate('')
+                }}
+              >
+                <X size={10} /> 清除
+              </Button>
+            )}
+            <span className="mono text-[9px] tracking-widest text-mute">{filtered.length} 条</span>
+          </>
+        }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索用户 / 操作 / 模块 / IP', width: 260 }}
         actions={
           <>
             <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
@@ -187,61 +235,6 @@ export default function AuditPage() {
       </section>
 
       <Panel bodyClassName="p-0">
-        <div className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-2.5">
-          <div className="relative min-w-[180px] flex-1">
-            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-            <input
-              className={cn('field h-8 border-0 bg-transparent pl-8 text-[12px] shadow-none focus:shadow-none')}
-              placeholder="搜索用户 / 操作 / 模块 / IP"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-            />
-          </div>
-          <select
-            className="field h-8 w-[150px] font-mono text-[10.5px]"
-            value={moduleName}
-            onChange={(event) => setModuleName(event.target.value)}
-          >
-            <option value="">全部行为类型</option>
-            {moduleOptions.map((item) => (
-              <option key={item.dictionaryKey} value={item.dictionaryKey}>
-                {item.dictionaryName || item.dictionaryKey}
-              </option>
-            ))}
-          </select>
-          <input
-            type="date"
-            className="field h-8 w-[140px] font-mono text-[10px]"
-            value={startDate}
-            max={endDate || undefined}
-            onChange={(event) => setStartDate(event.target.value)}
-            title="开始时间"
-          />
-          <span className="mono text-[9px] text-mute">~</span>
-          <input
-            type="date"
-            className="field h-8 w-[140px] font-mono text-[10px]"
-            value={endDate}
-            min={startDate || undefined}
-            onChange={(event) => setEndDate(event.target.value)}
-            title="结束时间"
-          />
-          {hasFilter && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setKeyword('')
-                setModuleName('')
-                setStartDate('')
-                setEndDate('')
-              }}
-            >
-              <X size={10} /> 清除
-            </Button>
-          )}
-          <span className="mono text-[9px] tracking-widest text-mute">{filtered.length} 条</span>
-        </div>
         <DataTable
           columns={columns}
           rows={filtered}

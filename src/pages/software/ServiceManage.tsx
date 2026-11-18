@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, Box, History, Layers, Play, Plus, RefreshCw, Search, Square, SquareTerminal, Trash2, Upload } from 'lucide-react'
+import { Activity, Box, History, Layers, Play, Plus, RefreshCw, Square, SquareTerminal, Trash2, Upload } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
@@ -537,6 +537,23 @@ export default function ServiceManagePage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">{restarts} RESTARTS</span>
           </>
         }
+        toolbar={
+          <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
+            {(['ALL', 'RUNNING', 'STOPPED'] as const).map((item) => (
+              <button
+                key={item}
+                onClick={() => setStatusFilter(item)}
+                className={cn(
+                  'h-[30px] px-3 text-[12px] transition-colors',
+                  statusFilter === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
+                )}
+              >
+                {item === 'ALL' ? '全部' : item === 'RUNNING' ? '运行中' : '未运行'}
+              </button>
+            ))}
+          </div>
+        }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入服务名/服务标识搜索' }}
         actions={
           <>
             <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
@@ -562,33 +579,6 @@ export default function ServiceManagePage() {
           </>
         }
       />
-
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-          <input
-            className="field h-9 w-[240px] pl-8 text-[12px]"
-            placeholder="搜索服务名 / 镜像"
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-          />
-        </div>
-        <div className="flex border border-line-strong">
-          {(['ALL', 'RUNNING', 'STOPPED'] as const).map((item) => (
-            <button
-              key={item}
-              onClick={() => setStatusFilter(item)}
-              className={cn(
-                'mono h-9 px-4 text-[9.5px] tracking-[0.14em] transition-colors',
-                statusFilter === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
-              )}
-            >
-              {item === 'ALL' ? '全部' : item === 'RUNNING' ? '运行中' : '未运行'}
-            </button>
-          ))}
-        </div>
-        <span className="mono ml-auto text-[9px] tracking-widest text-mute">{filtered.length} 条记录</span>
-      </div>
 
       {selected.length > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded border border-[#2f6fa8] bg-[#12314c] px-3 py-2 text-ink">

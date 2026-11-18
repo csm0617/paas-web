@@ -97,6 +97,27 @@ export default function GlobalSettingsPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">SETTINGS / GLOBAL</span>
           </>
         }
+        toolbar={
+          <div className="flex flex-wrap items-center gap-2">
+            {groups.map((group) => (
+              <button
+                key={group}
+                onClick={() => setActiveGroup(group)}
+                className={cn(
+                  'mono border px-3 py-1.5 text-[9px] tracking-[0.14em] transition-colors',
+                  activeGroup === group
+                    ? 'border-signal bg-signal text-white'
+                    : 'border-line-strong text-ink-3 hover:border-signal hover:text-signal',
+                )}
+              >
+                {group === 'ALL' ? '全部' : groupLabels[group] || group.toUpperCase()}
+                <span className="ml-2 opacity-60">
+                  {group === 'ALL' ? settings.length : settings.filter((item) => groupOf(item.key) === group).length}
+                </span>
+              </button>
+            ))}
+          </div>
+        }
         actions={
           <>
             <Button
@@ -121,26 +142,6 @@ export default function GlobalSettingsPage() {
           </>
         }
       />
-
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {groups.map((group) => (
-          <button
-            key={group}
-            onClick={() => setActiveGroup(group)}
-            className={cn(
-              'mono border px-3 py-1.5 text-[9px] tracking-[0.14em] transition-colors',
-              activeGroup === group
-                ? 'border-signal bg-signal text-white'
-                : 'border-line-strong text-ink-3 hover:border-signal hover:text-signal',
-            )}
-          >
-            {group === 'ALL' ? '全部' : groupLabels[group] || group.toUpperCase()}
-            <span className="ml-2 opacity-60">
-              {group === 'ALL' ? settings.length : settings.filter((item) => groupOf(item.key) === group).length}
-            </span>
-          </button>
-        ))}
-      </div>
 
       <Panel kicker="PARAMETER REGISTRY" title="参数清单" bodyClassName="p-0">
         <div className="divide-y divide-line/70">

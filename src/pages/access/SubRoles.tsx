@@ -326,6 +326,7 @@ export default function SubRolesPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">ROLE CHAIN / USER → SEAT → SUB ROLE</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索名称 / 标识', width: 200 }}
         actions={
           <>
             <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
@@ -362,22 +363,7 @@ export default function SubRolesPage() {
         ))}
       </div>
 
-      <Panel
-        kicker="SUB ROLE INVENTORY"
-        title="子角色清单"
-        bodyClassName="p-0"
-        actions={
-          <div className="flex items-center gap-1.5 border border-line-strong bg-paper px-2">
-            <Search size={11} className="text-mute" />
-            <input
-              className="h-7 w-40 bg-transparent font-mono text-[10px] text-ink outline-none placeholder:text-mute"
-              placeholder="搜索名称 / 标识"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-            />
-          </div>
-        }
-      >
+      <Panel kicker="SUB ROLE INVENTORY" title="子角色清单" bodyClassName="p-0">
         <DataTable
           columns={columns}
           rows={filtered}

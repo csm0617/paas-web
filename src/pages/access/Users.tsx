@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, FileDown, Plus, RefreshCw, Search, Trash2, Upload, UserCog, Users } from 'lucide-react'
+import { Download, FileDown, Plus, RefreshCw, Trash2, Upload, UserCog, Users } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { api, API_BASE, errorMessage } from '@/lib/api'
 import { formatDate, relativeTime } from '@/lib/format'
@@ -318,6 +318,7 @@ export default function UsersPage() {
             </span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索用户名 / 昵称 / 邮箱', width: 260 }}
         actions={
           <>
             <Button size="sm" loading={usersQuery.isFetching} onClick={() => usersQuery.refetch()}>
@@ -341,18 +342,6 @@ export default function UsersPage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
         <Panel className="xl:col-span-9" bodyClassName="p-0">
-          <div className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-2.5">
-            <div className="relative flex-1">
-              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-              <input
-                className="field h-8 border-0 bg-transparent pl-8 text-[12px] shadow-none focus:shadow-none"
-                placeholder="搜索用户名 / 昵称 / 邮箱"
-                value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
-              />
-            </div>
-            <span className="mono text-[9px] tracking-widest text-mute">{filtered.length} RESULTS</span>
-          </div>
           <DataTable
             columns={columns}
             rows={filtered}

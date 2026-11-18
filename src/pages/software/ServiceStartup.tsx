@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Play, RefreshCw, Search, Square, TimerReset } from 'lucide-react'
+import { Play, RefreshCw, Square, TimerReset } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import type { ServiceItem, ServiceList } from '@/types'
@@ -82,6 +82,7 @@ export default function ServiceStartupPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">DELAY {delay || 0}s</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索服务' }}
         actions={
           <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
             <RefreshCw size={11} /> 刷新
@@ -90,23 +91,7 @@ export default function ServiceStartupPage() {
       />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <Panel
-          className="lg:col-span-8"
-          kicker="SERVICE QUEUE"
-          title="服务清单"
-          bodyClassName="p-0"
-          actions={
-            <div className="flex items-center gap-1.5 border border-line-strong bg-paper px-2">
-              <Search size={11} className="text-mute" />
-              <input
-                className="h-7 w-40 bg-transparent font-mono text-[10px] text-ink outline-none placeholder:text-mute"
-                placeholder="搜索服务"
-                value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
-              />
-            </div>
-          }
-        >
+        <Panel className="lg:col-span-8" kicker="SERVICE QUEUE" title="服务清单" bodyClassName="p-0">
           <div className="max-h-[62vh] divide-y divide-line/70 overflow-y-auto">
             {filtered.map((service) => {
               const name = service.nameUs || service.nameFr

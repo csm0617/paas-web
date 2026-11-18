@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, Copy, Download, ExternalLink, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, Search, ShieldCheck, Trash2, Upload, Users } from 'lucide-react'
+import { AppWindow, Copy, Download, ExternalLink, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, Trash2, Upload, Users } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, errorMessage, API_BASE } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -463,6 +463,23 @@ export default function SoftwareListPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">GATEWAY {platformHost}</span>
           </>
         }
+        toolbar={
+          <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
+            {['ALL', 'BS', 'CS'].map((item) => (
+              <button
+                key={item}
+                onClick={() => setType(item)}
+                className={cn(
+                  'h-[30px] px-3 text-[12px] transition-colors',
+                  type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
+                )}
+              >
+                {item === 'ALL' ? '全部' : item}
+              </button>
+            ))}
+          </div>
+        }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索名称 / 标识 / 描述' }}
         actions={
           <>
             <input
@@ -543,35 +560,6 @@ export default function SoftwareListPage() {
           </div>
         ))}
       </section>
-
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-          <input
-            className="field h-9 w-[240px] pl-8 text-[12px]"
-            placeholder="搜索名称 / 标识 / 描述"
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-          />
-        </div>
-        <div className="flex border border-line-strong">
-          {['ALL', 'BS', 'CS'].map((item) => (
-            <button
-              key={item}
-              onClick={() => setType(item)}
-              className={cn(
-                'mono h-9 px-4 text-[9.5px] tracking-[0.14em] transition-colors',
-                type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
-              )}
-            >
-              {item === 'ALL' ? '全部' : item}
-            </button>
-          ))}
-        </div>
-        <span className="mono ml-auto text-[9px] tracking-widest text-mute">
-          {filtered.length} / {list.length} 条记录
-        </span>
-      </div>
 
       {query.isLoading ? (
         <Panel>

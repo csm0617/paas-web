@@ -8,6 +8,7 @@ import {
   Info,
   Loader2,
   MoreHorizontal,
+  Search,
   X,
   XCircle,
 } from 'lucide-react'
@@ -157,29 +158,58 @@ export function Panel({
 
 export function PageHeader({
   title,
-  en,
   description,
   actions,
   meta,
+  toolbar,
+  search,
 }: {
   index?: string
   title: string
-  en: string
+  en?: string
   description?: string
   actions?: ReactNode
   meta?: ReactNode
+  toolbar?: ReactNode
+  search?: {
+    value: string
+    onChange: (value: string) => void
+    placeholder?: string
+    width?: number
+  }
 }) {
   return (
-    <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <h1 className="text-[17px] font-semibold text-ink">{title}</h1>
-          <span className="text-[12px] text-mute">{en}</span>
-        </div>
-        {description && <p className="mt-1 max-w-3xl text-[12px] leading-relaxed text-mute">{description}</p>}
-        {meta && <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">{meta}</div>}
+    <div className="mb-2.5 flex flex-wrap items-center gap-2">
+      <h1 className="flex-none text-[15px] font-semibold text-ink">{title}</h1>
+      {meta && <div className="hidden flex-wrap items-center gap-x-3 gap-y-1 lg:flex">{meta}</div>}
+      {description && (
+        <span className="hidden max-w-[420px] truncate text-[12px] text-mute 2xl:inline">{description}</span>
+      )}
+      <div className="ml-auto flex flex-wrap items-center gap-2">
+        {toolbar}
+        {search && (
+          <div className="flex h-[30px]">
+            <div className="relative">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-mute" />
+              <input
+                className="field h-[30px] rounded-r-none pl-8 text-[12px]"
+                style={{ width: search.width ?? 220 }}
+                placeholder={search.placeholder ?? '请输入关键字搜索'}
+                value={search.value}
+                onChange={(event) => search.onChange(event.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              aria-label="搜索"
+              className="flex w-9 items-center justify-center rounded-r-[3px] border border-l-0 border-[#1a7ad1] bg-[#1670c2] text-white transition-colors hover:bg-[#1a82dd]"
+            >
+              <Search size={13} />
+            </button>
+          </div>
+        )}
+        {actions}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
   )
 }

@@ -1,12 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Box, RefreshCw, ScrollText, Search, SquareTerminal, Trash2 } from 'lucide-react'
+import { Box, RefreshCw, ScrollText, SquareTerminal, Trash2 } from 'lucide-react'
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { DataTable, type Column } from '@/components/DataTable'
 import { Badge, Button, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
-import { cn } from '@/lib/utils'
 
 const ServiceConsole = lazy(() =>
   import('@/components/console/ServiceConsole').then((module) => ({ default: module.ServiceConsole })),
@@ -210,21 +209,11 @@ export default function PodsPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">AUTO REFRESH 20S</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索容器 / 服务 / 镜像' }}
         actions={
-          <>
-            <div className="relative">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-              <input
-                className={cn('field h-8 w-[220px] pl-8')}
-                placeholder="搜索容器 / 服务 / 镜像"
-                value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
-              />
-            </div>
-            <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-              <RefreshCw size={11} /> 刷新
-            </Button>
-          </>
+          <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
+            <RefreshCw size={11} /> 刷新
+          </Button>
         }
       />
 

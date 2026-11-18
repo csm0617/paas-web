@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Plus, RefreshCw, Tags, Trash2 } from 'lucide-react'
+import { Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import { Badge, Button, Field, Input, Modal, PageHeader, Panel, StatusDot } from '@/components/ui'
@@ -146,6 +146,7 @@ export default function LabelsPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">{userDefined} USER DEFINED</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索标签键 / 值' }}
         actions={
           <div className="flex items-center gap-2">
             <Button size="sm" variant="primary" onClick={() => openEditor()}>
@@ -173,22 +174,7 @@ export default function LabelsPage() {
         ))}
       </div>
 
-      <Panel
-        kicker="LABEL INVENTORY"
-        title="标签清单"
-        bodyClassName="p-0"
-        actions={
-          <div className="flex items-center gap-1.5 border border-line-strong bg-paper px-2">
-            <Tags size={11} className="text-mute" />
-            <input
-              className="h-7 w-44 bg-transparent font-mono text-[10px] text-ink outline-none placeholder:text-mute"
-              placeholder="搜索标签键 / 值"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-            />
-          </div>
-        }
-      >
+      <Panel kicker="LABEL INVENTORY" title="标签清单" bodyClassName="p-0">
         <DataTable
           columns={columns}
           rows={filtered}

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowUpRight, Grid2X2, RefreshCw, Search, ShieldCheck } from 'lucide-react'
+import { ArrowUpRight, Grid2X2, RefreshCw, ShieldCheck } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
@@ -63,6 +63,23 @@ export default function AppPortalPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">{user?.nickname || user?.username} · {released.length} RELEASED</span>
           </>
         }
+        toolbar={
+          <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
+            {(['ALL', 'BS', 'CS'] as const).map((item) => (
+              <button
+                key={item}
+                onClick={() => setType(item)}
+                className={cn(
+                  'h-[30px] px-3 text-[12px] transition-colors',
+                  type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
+                )}
+              >
+                {item === 'ALL' ? '全部应用' : item}
+              </button>
+            ))}
+          </div>
+        }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索应用名称 / 标识' }}
         actions={
           <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
             <RefreshCw size={11} /> 刷新应用
@@ -93,33 +110,6 @@ export default function AppPortalPage() {
           </div>
         </div>
       </section>
-
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-          <input
-            className="field h-8 w-[260px] pl-8 text-[12px]"
-            placeholder="搜索应用名称 / 标识"
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-          />
-        </div>
-        <div className="flex overflow-hidden rounded-md border border-line-strong">
-          {(['ALL', 'BS', 'CS'] as const).map((item) => (
-            <button
-              key={item}
-              onClick={() => setType(item)}
-              className={cn(
-                'h-8 px-4 text-[12px] transition-colors',
-                type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
-              )}
-            >
-              {item === 'ALL' ? '全部应用' : item}
-            </button>
-          ))}
-        </div>
-        <span className="ml-auto text-[12px] text-mute">{filtered.length} 个应用</span>
-      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
         {filtered.map((app, index) => {

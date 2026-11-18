@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Boxes, Hammer, Plus, RefreshCw, Search, TerminalSquare, Trash2 } from 'lucide-react'
+import { Boxes, Hammer, Plus, RefreshCw, TerminalSquare, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import SockJS from 'sockjs-client'
 import { api, errorMessage } from '@/lib/api'
@@ -297,6 +297,7 @@ export default function ContinuousIntegrationPage() {
             </span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索镜像 / 描述' }}
         actions={
           <>
             <Button size="sm" loading={listQuery.isFetching} onClick={() => listQuery.refetch()}>
@@ -335,22 +336,7 @@ export default function ContinuousIntegrationPage() {
         </Panel>
       </div>
 
-      <Panel
-        kicker="BUILD QUEUE"
-        title="构建任务"
-        bodyClassName="p-0"
-        actions={
-          <div className="flex items-center gap-1.5 border border-line-strong bg-paper px-2">
-            <Search size={11} className="text-mute" />
-            <input
-              className="h-7 w-44 bg-transparent font-mono text-[10px] text-ink outline-none placeholder:text-mute"
-              placeholder="搜索镜像 / 描述"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-            />
-          </div>
-        }
-      >
+      <Panel kicker="BUILD QUEUE" title="构建任务" bodyClassName="p-0">
         <DataTable
           columns={columns}
           rows={tasks}

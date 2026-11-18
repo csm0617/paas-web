@@ -228,14 +228,9 @@ export default function BaseServicesPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">RESTARTS {restarts}</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索框架服务' }}
         actions={
           <>
-            <input
-              className="field h-8 w-[200px]"
-              placeholder="搜索框架服务"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-            />
             <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
               <RefreshCw size={11} /> 刷新
             </Button>

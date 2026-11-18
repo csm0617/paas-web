@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, FilePlus2, Files, FolderPlus, Link2, RefreshCw, Save, Search, Trash2, Upload } from 'lucide-react'
+import { Download, FilePlus2, Files, FolderPlus, Link2, RefreshCw, Save, Trash2, Upload } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { api, API_BASE, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -261,6 +261,7 @@ export default function ConfigGroupPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">KUBE / CONFIGMAP</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索配置组' }}
         actions={
           <>
             <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
@@ -292,15 +293,6 @@ export default function ConfigGroupPage() {
 
       <Panel kicker="CONFIG MAPS" title="配置组清单" bodyClassName="p-0">
         <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
-          <div className="relative flex-1 sm:max-w-[320px]">
-            <Search size={12} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-mute" />
-            <input
-              className="field h-8 pl-7 font-mono text-[11px]"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-              placeholder="搜索配置组"
-            />
-          </div>
           <span className="mono text-[8.5px] tracking-widest text-mute">
             {selected.length > 0 ? `已选 ${selected.length} 项` : '勾选后可批量导出或删除'}
           </span>

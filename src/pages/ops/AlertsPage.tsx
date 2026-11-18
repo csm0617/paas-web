@@ -320,6 +320,22 @@ export default function AlertsPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">{typeLabel}</span>
           </>
         }
+        toolbar={
+          <div className="flex border border-line-strong">
+            {alertTypes.map((type) => (
+              <button
+                key={type.value}
+                onClick={() => setAlertType(type.value)}
+                className={cn(
+                  'mono h-[30px] px-3 text-[9px] tracking-[0.14em] transition-colors',
+                  alertType === type.value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
+                )}
+              >
+                {type.label}
+              </button>
+            ))}
+          </div>
+        }
         actions={
           <>
             <Button
@@ -338,7 +354,7 @@ export default function AlertsPage() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line-strong">
+      <div className="mb-4">
         <TabStrip
           value={mode}
           onChange={(value) => navigate(value === 'rules' ? '/ops/alert-setting' : '/ops/alert-record')}
@@ -347,20 +363,6 @@ export default function AlertsPage() {
             { value: 'records', label: '告警记录', count: mode === 'records' ? records.length : undefined },
           ]}
         />
-        <div className="mb-2 flex border border-line-strong">
-          {alertTypes.map((type) => (
-            <button
-              key={type.value}
-              onClick={() => setAlertType(type.value)}
-              className={cn(
-                'mono h-7 px-3 text-[9px] tracking-[0.14em] transition-colors',
-                alertType === type.value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
-              )}
-            >
-              {type.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <Panel bodyClassName="p-0">

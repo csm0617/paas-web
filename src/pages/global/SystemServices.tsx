@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '@/lib/api'
 import { formatDate, formatNumber } from '@/lib/format'
-import { Badge, Button, EmptyState, Modal, PageHeader, Panel, StatusDot, TabStrip } from '@/components/ui'
+import { Badge, Button, EmptyState, Modal, PageHeader, Panel, StatusDot } from '@/components/ui'
 import { DataTable, type Column } from '@/components/DataTable'
 import { cn } from '@/lib/utils'
 
@@ -267,6 +267,42 @@ export default function SystemServicesPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">KUBE / SYSTEM</span>
           </>
         }
+        toolbar={
+          <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
+            {[
+              { value: 'ALL' as const, label: '全部', count: rows.length },
+              {
+                value: 'Deployment' as const,
+                label: 'Deployment',
+                count: rows.filter((row) => row.kind === 'Deployment').length,
+              },
+              {
+                value: 'DaemonSet' as const,
+                label: 'DaemonSet',
+                count: rows.filter((row) => row.kind === 'DaemonSet').length,
+              },
+              {
+                value: 'StatefulSet' as const,
+                label: 'StatefulSet',
+                count: rows.filter((row) => row.kind === 'StatefulSet').length,
+              },
+            ].map((item) => (
+              <button
+                key={item.value}
+                onClick={() => setFilter(item.value)}
+                className={cn(
+                  'h-[30px] px-3 text-[12px] transition-colors',
+                  filter === item.value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
+                )}
+              >
+                {item.label}
+                <span className={cn('ml-1.5 text-[9px]', filter === item.value ? 'text-white/70' : 'text-mute')}>
+                  {item.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        }
         actions={
           <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
             <RefreshCw size={11} /> 刷新
@@ -325,19 +361,6 @@ export default function SystemServicesPage() {
           )}
         </div>
       </Panel>
-
-      <div className="mb-4">
-        <TabStrip
-          value={filter}
-          onChange={setFilter}
-          tabs={[
-            { value: 'ALL', label: '全部', count: rows.length },
-            { value: 'Deployment', label: 'Deployment', count: rows.filter((row) => row.kind === 'Deployment').length },
-            { value: 'DaemonSet', label: 'DaemonSet', count: rows.filter((row) => row.kind === 'DaemonSet').length },
-            { value: 'StatefulSet', label: 'StatefulSet', count: rows.filter((row) => row.kind === 'StatefulSet').length },
-          ]}
-        />
-      </div>
 
       <Panel kicker="CLUSTER WORKLOADS" title="组件清单" bodyClassName="p-0">
         <DataTable

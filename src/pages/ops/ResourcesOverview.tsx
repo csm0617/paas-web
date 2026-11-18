@@ -143,22 +143,24 @@ export default function ResourcesOverviewPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">STEP 1 MIN</span>
           </>
         }
+        toolbar={
+          <div className="flex flex-wrap items-center gap-1 border border-line">
+            {RANGES.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setRange(item.key)}
+                className={cn(
+                  'mono h-[30px] px-2.5 text-[9px] tracking-widest transition-colors',
+                  range === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        }
         actions={
           <>
-            <div className="flex flex-wrap items-center gap-1 border border-line">
-              {RANGES.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setRange(item.key)}
-                  className={cn(
-                    'mono px-2.5 py-1.5 text-[9px] tracking-widest transition-colors',
-                    range === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
             <Button
               size="sm"
               loading={refreshing}

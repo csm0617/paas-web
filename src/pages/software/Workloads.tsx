@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowUpRight, Boxes, Layers, RefreshCw, RotateCw, Search } from 'lucide-react'
+import { ArrowUpRight, Boxes, Layers, RefreshCw, RotateCw } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
@@ -85,6 +85,7 @@ export default function WorkloadsPage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">{services.length} DEPLOYMENTS</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索 Deployment / 镜像 / 命名空间' }}
         actions={
           <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
             <RefreshCw size={11} /> 刷新
@@ -106,19 +107,6 @@ export default function WorkloadsPage() {
           </div>
         ))}
       </section>
-
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-          <input
-            className="field h-9 w-[260px] pl-8 text-[12px]"
-            placeholder="搜索 Deployment / 镜像 / 命名空间"
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-          />
-        </div>
-        <span className="mono ml-auto text-[9px] tracking-widest text-mute">{filtered.length} WORKLOADS</span>
-      </div>
 
       <div className="space-y-2.5">
         {filtered.map((service, index) => {

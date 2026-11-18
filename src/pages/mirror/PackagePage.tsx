@@ -297,6 +297,7 @@ export default function PackagePage() {
             <span className="mono text-[9.5px] tracking-widest text-mute">ZIP / ROLLBACK</span>
           </>
         }
+        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索文件名' }}
         actions={
           <>
             <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
@@ -334,22 +335,7 @@ export default function PackagePage() {
         ))}
       </div>
 
-      <Panel
-        kicker="PACKAGE STORE"
-        title="程序包清单"
-        bodyClassName="p-0"
-        actions={
-          <div className="flex items-center gap-1.5 border border-line-strong bg-paper px-2">
-            <Search size={11} className="text-mute" />
-            <input
-              className="h-7 w-44 bg-transparent font-mono text-[10px] text-ink outline-none placeholder:text-mute"
-              placeholder="搜索文件名"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-            />
-          </div>
-        }
-      >
+      <Panel kicker="PACKAGE STORE" title="程序包清单" bodyClassName="p-0">
         <DataTable
           columns={columns}
           rows={packages}
