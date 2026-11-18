@@ -78,12 +78,13 @@ function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
           point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)),
       )
       .map((point) => {
+        const value = Number(point.floatValue) * factor
         const date = point.timestamp ? new Date(point.timestamp) : null
-        const label =
-          date && !Number.isNaN(date.getTime())
-            ? `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-            : ''
-        return { label, value: Number(point.floatValue) * factor }
+        if (!date || Number.isNaN(date.getTime())) return { label: '', value, tip: '' }
+        const pad = (n: number) => String(n).padStart(2, '0')
+        const label = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+        const tip = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+        return { label, value, tip }
       }),
   }))
 }
@@ -523,6 +524,7 @@ export default function PodsPage() {
                   <div className="mb-4 flex items-center gap-2 text-[12px] text-ink-3">
                     <input
                       type="datetime-local"
+                      step={1}
                       className="field h-8 w-[210px]"
                       value={rangeStart}
                       onChange={(event) => setRangeStart(event.target.value)}
@@ -530,6 +532,7 @@ export default function PodsPage() {
                     <span>至</span>
                     <input
                       type="datetime-local"
+                      step={1}
                       className="field h-8 w-[210px]"
                       value={rangeEnd}
                       onChange={(event) => setRangeEnd(event.target.value)}
@@ -559,11 +562,11 @@ export default function PodsPage() {
                         series={[
                           ...monitorTrend(podMonitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
                             ...series,
-                            name: `${series.name} IN`,
+                            name: `${series.name}-入站`,
                           })),
                           ...monitorTrend(podMonitorQuery.data?.outboundNetwork, 1 / 1024).map((series) => ({
                             ...series,
-                            name: `${series.name} OUT`,
+                            name: `${series.name}-出站`,
                           })),
                         ]}
                         height={200}
@@ -576,11 +579,11 @@ export default function PodsPage() {
                         series={[
                           ...monitorTrend(podMonitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
                             ...series,
-                            name: `${series.name} READ`,
+                            name: `${series.name}-读`,
                           })),
                           ...monitorTrend(podMonitorQuery.data?.diskWriteIo, 1 / 1024).map((series) => ({
                             ...series,
-                            name: `${series.name} WRITE`,
+                            name: `${series.name}-写`,
                           })),
                         ]}
                         height={200}

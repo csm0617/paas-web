@@ -83,12 +83,13 @@ function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
     points: (series.metrics ?? [])
       .filter((point) => point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)))
       .map((point) => {
+        const value = Number(point.floatValue) * factor
         const date = point.timestamp ? new Date(point.timestamp) : null
-        const label =
-          date && !Number.isNaN(date.getTime())
-            ? `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-            : ''
-        return { label, value: Number(point.floatValue) * factor }
+        if (!date || Number.isNaN(date.getTime())) return { label: '', value, tip: '' }
+        const pad = (n: number) => String(n).padStart(2, '0')
+        const label = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+        const tip = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+        return { label, value, tip }
       }),
   }))
 }
@@ -1191,11 +1192,11 @@ export default function ServiceManagePage() {
                 series={[
                   ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
                     ...series,
-                    name: `${series.name} IN`,
+                    name: `${series.name}-入站`,
                   })),
                   ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024).map((series) => ({
                     ...series,
-                    name: `${series.name} OUT`,
+                    name: `${series.name}-出站`,
                   })),
                 ]}
                 height={170}
@@ -1208,11 +1209,11 @@ export default function ServiceManagePage() {
                 series={[
                   ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
                     ...series,
-                    name: `${series.name} READ`,
+                    name: `${series.name}-读`,
                   })),
                   ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024).map((series) => ({
                     ...series,
-                    name: `${series.name} WRITE`,
+                    name: `${series.name}-写`,
                   })),
                 ]}
                 height={170}

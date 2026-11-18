@@ -80,6 +80,8 @@ export function Sparkline({
 export interface TrendPoint {
   label: string
   value: number
+  /** Tooltip 中的完整时间描述，未提供时使用 label */
+  tip?: string
 }
 
 export function AreaTrend({
@@ -275,7 +277,9 @@ export function AreaTrend({
             top: 18,
           }}
         >
-          <div className="mono text-[9px] tracking-wider text-mute">{labels[hover]}</div>
+          <div className="mono text-[9px] tracking-wider text-mute">
+            {series[0]?.points[hover]?.tip ?? labels[hover]}
+          </div>
           {series.map((s, si) => (
             <div key={s.name} className="mt-0.5 flex items-center gap-1.5 whitespace-nowrap">
               <span className="h-1.5 w-1.5" style={{ background: s.color || colors[si % colors.length] }} />
