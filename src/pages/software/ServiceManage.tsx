@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, Box, History, Layers, Play, Plus, RefreshCw, Square, SquareTerminal, Trash2, Upload } from 'lucide-react'
+import { Activity, Box, Filter, History, Info, Layers, Plus, RefreshCw, SquareTerminal, Trash2, Upload } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
@@ -15,9 +15,8 @@ import {
   Drawer,
   Field,
   KV,
-  PageHeader,
+  PageToolbar,
   Panel,
-  StatusDot,
   useConfirm,
 } from '@/components/ui'
 import { toast } from '@/stores/toast'
@@ -99,7 +98,6 @@ export default function ServiceManagePage() {
   const confirm = useConfirm()
   const navigate = useNavigate()
   const [keyword, setKeyword] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'RUNNING' | 'STOPPED'>('ALL')
   const [selected, setSelected] = useState<string[]>([])
   const [importing, setImporting] = useState(false)
   const importRef = useRef<HTMLInputElement | null>(null)
@@ -272,22 +270,17 @@ export default function ServiceManagePage() {
   }, [createOpen, tagOptions, createForm.imageTagName])
 
   const filtered = useMemo(() => {
+    const q = keyword.trim().toLowerCase()
+    if (!q) return services
     return services.filter((service) => {
       const name = serviceName(service).toLowerCase()
-      const q = keyword.trim().toLowerCase()
-      const matchKeyword =
-        !q ||
+      return (
         name.includes(q) ||
         imageOf(service).toLowerCase().includes(q) ||
         (service.softwareNameList ?? []).some((item) => item.toLowerCase().includes(q))
-      const status = statusOf(service)
-      const matchStatus =
-        statusFilter === 'ALL' ||
-        (statusFilter === 'RUNNING' && status.label === 'RUNNING') ||
-        (statusFilter === 'STOPPED' && status.label !== 'RUNNING')
-      return matchKeyword && matchStatus
+      )
     })
-  }, [services, keyword, statusFilter])
+  }, [services, keyword])
 
   const actionMutation = useMutation({
     mutationFn: async ({ path, names, body }: { path: string; names: string[]; body?: unknown }) => {
@@ -389,10 +382,6 @@ export default function ServiceManagePage() {
     if (ok) actionMutation.mutate({ path, names })
   }
 
-  const running = services.filter((item) => statusOf(item).label === 'RUNNING').length
-  const pods = services.reduce((sum, item) => sum + (item.deployment?.status?.readyReplicas ?? 0), 0)
-  const restarts = services.reduce((sum, item) => sum + (item.restartCount ?? 0), 0)
-
   const columns: Array<Column<ServiceItem>> = [
     {
       key: 'index',
@@ -437,7 +426,13 @@ export default function ServiceManagePage() {
       cell: (row) => {
         const apps = (row.softwareNameList ?? []).filter(Boolean)
         return apps.length > 0 ? (
-          <span className="text-[12px] text-ink-3">{apps.join('、')}</span>
+          <div className="flex flex-wrap gap-1">
+            {apps.map((app) => (
+              <Badge key={app} tone="ok">
+                {app}
+              </Badge>
+            ))}
+          </div>
         ) : (
           <span className="text-[12px] text-mute">暂无关联应用</span>
         )
@@ -448,18 +443,36 @@ export default function ServiceManagePage() {
       header: '状态',
       cell: (row) => {
         const status = statusOf(row)
+        const partial = status.label === 'RUNNING' && status.ready < status.desired
+        const text =
+          status.label === 'PENDING'
+            ? '启动中'
+            : partial
+              ? '滚动发布中'
+              : status.label === 'RUNNING'
+                ? '运行中'
+                : '已停止'
+        const tone =
+          status.label === 'PENDING'
+            ? 'text-warn'
+            : partial
+              ? 'text-[#4aa3f0]'
+              : status.label === 'RUNNING'
+                ? 'text-ok'
+                : 'text-mute'
         return (
-          <div className="leading-tight">
-            <div className="flex items-center gap-1.5 text-[12px] text-ink">
-              <StatusDot tone={status.tone === 'ok' ? 'ok' : status.tone === 'warn' ? 'warn' : 'idle'} />
-              <span>
-                {status.ready}/{status.desired}
-              </span>
-              <span className="text-[11px] text-mute">
-                {status.label === 'RUNNING' ? '全部运行中' : status.label === 'PENDING' ? '启动中' : '已停止'}
-              </span>
+          <div className="leading-[1.5]">
+            <div className={cn('flex items-center gap-1 text-[12px]', tone)}>
+              {text}
+              <Info size={10} />
             </div>
-            <div className="mt-0.5 pl-[18px] text-[11px] text-mute">运行中 : {status.ready}</div>
+            <div className="text-[11.5px] text-ink-3">
+              {status.ready}/{status.desired}部分运行
+            </div>
+            <div className="flex items-center gap-1 text-[11.5px] text-ink-3">
+              已重启 {row.restartCount ?? 0} 次
+              <Info size={10} />
+            </div>
           </div>
         )
       },
@@ -475,13 +488,21 @@ export default function ServiceManagePage() {
     },
     {
       key: 'auth',
-      header: '授权状态',
-      sortValue: (row) => (authOf(row) ? 1 : 0),
-      cell: (row) => (
-        <span className={cn('text-[12px]', authOf(row) ? 'text-ok' : 'text-mute')}>
-          {authOf(row) ? '已授权' : '未授权'}
+      header: (
+        <span className="inline-flex items-center gap-1">
+          授权状态 <Filter size={10} />
         </span>
       ),
+      sortValue: (row) => (authOf(row) ? 1 : 0),
+      cell: (row) => {
+        const auth = row.serviceAuth as { auth?: number } | null | undefined
+        if (!auth) return <span className="text-[12px] text-ink-3">—</span>
+        return (
+          <span className={cn('text-[12px]', auth.auth === 1 ? 'text-ok' : 'text-ink-3')}>
+            {auth.auth === 1 ? '已授权' : '未授权'}
+          </span>
+        )
+      },
     },
     {
       key: 'updatedAt',
@@ -567,82 +588,61 @@ export default function ServiceManagePage() {
 
   return (
     <div>
-      <PageHeader
-        index="02 / 02"
-        en="SOFTWARE · SERVICE ORCHESTRATION"
-        title="服务管理"
-        description="管理平台内注册的微服务实例：启停、重启、副本编排与镜像版本切换。所有变更实时下发至 Kubernetes。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone="ok" pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{running} RUNNING</span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">{services.length} SERVICES · {pods} READY REPLICAS</span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">{restarts} RESTARTS</span>
-          </>
-        }
-        toolbar={
-          <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
-            {(['ALL', 'RUNNING', 'STOPPED'] as const).map((item) => (
-              <button
-                key={item}
-                onClick={() => setStatusFilter(item)}
-                className={cn(
-                  'h-[30px] px-3 text-[12px] transition-colors',
-                  statusFilter === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
-                )}
-              >
-                {item === 'ALL' ? '全部' : item === 'RUNNING' ? '运行中' : '未运行'}
-              </button>
-            ))}
-          </div>
-        }
-        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入服务名/服务标识搜索' }}
-        actions={
-          <>
-            <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-              <RefreshCw size={11} /> 刷新
-            </Button>
-            <input
-              ref={importRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0]
-                if (file) importConfig(file)
-                event.target.value = ''
-              }}
-            />
-            <Button size="sm" loading={importing} onClick={() => importRef.current?.click()}>
-              <Upload size={11} /> 配置导入
-            </Button>
-            <Button size="sm" variant="signal" onClick={() => setCreateOpen(true)}>
-              <Plus size={11} /> 新建服务
-            </Button>
-          </>
-        }
-      />
-
-      {selected.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded border border-[#2f6fa8] bg-[#12314c] px-3 py-2 text-ink">
-          <span className="mono ml-1 text-[9.5px] tracking-[0.16em] text-signal">已选 {selected.length} 项</span>
-          <span className="h-4 w-px bg-[#91caff]" />
-          <Button size="sm" onClick={() => batch('/v1/service/start', selected, '批量启动')}>
-            <Play size={11} /> 启动
-          </Button>
-          <Button size="sm" onClick={() => batch('/v1/service/stop', selected, '批量停止')}>
-            <Square size={11} /> 停止
-          </Button>
-          <Button size="sm" onClick={() => batch('/v1/service/reStart', selected, '批量重启')}>
-            <RefreshCw size={11} /> 重启
-          </Button>
-          <Button size="sm" variant="danger" className="ml-auto" onClick={() => batch('/v1/service', selected, '批量删除', true)}>
-            <Trash2 size={11} /> 删除
-          </Button>
+      <PageToolbar
+        search={{
+          value: keyword,
+          onChange: setKeyword,
+          placeholder: '请输入服务名/服务标识搜索',
+          width: 240,
+          onSubmit: () => query.refetch(),
+        }}
+      >
+        <Button size="sm" variant="signal" onClick={() => setCreateOpen(true)}>
+          <Plus size={11} /> 创建服务
+        </Button>
+        <input
+          ref={importRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            if (file) importConfig(file)
+            event.target.value = ''
+          }}
+        />
+        <Button size="sm" loading={importing} onClick={() => importRef.current?.click()}>
+          <Upload size={11} /> 配置导入
+        </Button>
+        <Button
+          size="sm"
+          disabled={selected.length === 0}
+          onClick={() => batch('/v1/service', selected, '删除服务', true)}
+        >
+          <Trash2 size={11} /> 删除服务
+        </Button>
+        <div className="flex h-[30px] items-center border border-line-strong">
+          <ActionMenu
+            items={[
+              {
+                label: '批量启动',
+                disabled: selected.length === 0,
+                onSelect: () => batch('/v1/service/start', selected, '批量启动'),
+              },
+              {
+                label: '批量停止',
+                disabled: selected.length === 0,
+                onSelect: () => batch('/v1/service/stop', selected, '批量停止'),
+              },
+              {
+                label: '批量重启',
+                disabled: selected.length === 0,
+                onSelect: () => batch('/v1/service/reStart', selected, '批量重启'),
+              },
+            ]}
+          />
         </div>
-      )}
+      </PageToolbar>
 
       <Panel bodyClassName="p-0">
         <DataTable

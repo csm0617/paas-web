@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import type { ServiceItem, ServiceList } from '@/types'
 import { toast } from '@/stores/toast'
-import { Badge, Button, Field, PageHeader, Panel, StatusDot } from '@/components/ui'
+import { Badge, Button, Field, PageToolbar, Panel, StatusDot } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 export default function ServiceStartupPage() {
@@ -66,29 +66,11 @@ export default function ServiceStartupPage() {
 
   return (
     <div>
-      <PageHeader
-        index="02 / 05"
-        en="SOFTWARE · STARTUP ORCHESTRATION"
-        title="启动编排"
-        description="按依赖顺序拉起服务。可设置批次间隔，避免数据库、缓存等基础服务尚未就绪导致业务启动失败。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone={selected.length ? 'warn' : 'ok'} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
-                {selected.length} SELECTED / {services.length} SERVICES
-              </span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">DELAY {delay || 0}s</span>
-          </>
-        }
-        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索服务' }}
-        actions={
-          <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-            <RefreshCw size={11} /> 刷新
-          </Button>
-        }
-      />
+      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入服务名称搜索' }}>
+        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <Panel className="lg:col-span-8" kicker="SERVICE QUEUE" title="服务清单" bodyClassName="p-0">

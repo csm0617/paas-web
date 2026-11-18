@@ -10,9 +10,8 @@ import {
   Drawer,
   Field,
   Modal,
-  PageHeader,
+  PageToolbar,
   Panel,
-  StatusDot,
   useConfirm,
 } from '@/components/ui'
 import { toast } from '@/stores/toast'
@@ -114,6 +113,7 @@ export default function ServiceConfigPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const targetService = searchParams.get('service') || ''
   const [selected, setSelected] = useState('')
+  const [keyword, setKeyword] = useState('')
   const [tab, setTab] = useState<ConfigTab>('env')
   const bodyRef = useRef<HTMLDivElement>(null)
   const [envRows, setEnvRows] = useState<EnvRow[]>([{ name: '', value: '' }])
@@ -676,61 +676,55 @@ export default function ServiceConfigPage() {
     </div>
   )
 
+  const visibleServices = useMemo(() => {
+    const q = keyword.trim().toLowerCase()
+    if (!q) return services
+    return services.filter((service) => serviceNameOf(service).toLowerCase().includes(q))
+  }, [services, keyword])
+
   return (
     <div>
-      <PageHeader
-        index="02 / 04"
-        en="SOFTWARE · SERVICE CONFIGURATION"
-        title="服务配置"
-        description="集中维护环境变量、端口暴露、健康检查与存储挂载。保存后由平台下发至 Deployment。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{services.length} SERVICES</span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">
-              {selected ? `TARGET / ${selected}` : 'SELECT A SERVICE'}
-            </span>
-          </>
-        }
-        actions={
-          <Button
-            size="sm"
-            loading={servicesQuery.isFetching || detailQuery.isFetching}
-            onClick={() => {
-              servicesQuery.refetch()
-              detailQuery.refetch()
-              configMapQuery.refetch()
-            }}
-          >
-            <RefreshCw size={11} /> 刷新
-          </Button>
-        }
-      />
+      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入服务名/服务标识搜索' }}>
+        <Button
+          size="sm"
+          loading={servicesQuery.isFetching || detailQuery.isFetching}
+          onClick={() => {
+            servicesQuery.refetch()
+            detailQuery.refetch()
+            configMapQuery.refetch()
+          }}
+        >
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
-      <Panel kicker="SERVICES" title="服务" bodyClassName="p-0">
+      <Panel bodyClassName="p-0">
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>
-                <th>服务名称 / SERVICE</th>
-                <th>就绪副本 / READY</th>
+                <th className="w-14 text-center">序号</th>
+                <th>服务名称</th>
+                <th>服务标识</th>
+                <th>就绪副本</th>
                 <th className="text-right">操作</th>
               </tr>
             </thead>
             <tbody>
-              {services.map((service) => {
+              {visibleServices.map((service, index) => {
                 const name = serviceNameOf(service)
                 const ready = service.deployment?.status?.readyReplicas ?? 0
                 const replicas = service.deployment?.spec?.replicas ?? 0
                 return (
                   <tr key={name} onClick={() => setSelected(name)} className="cursor-pointer">
+                    <td className="text-center">
+                      <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>
+                    </td>
                     <td>
-                      <div className="flex items-center gap-2">
-                        <StatusDot tone={ready > 0 ? 'ok' : 'idle'} />
-                        <span className="font-mono text-[12px] text-ink">{name}</span>
-                      </div>
+                      <span className="text-[12px] text-ink">{name}</span>
+                    </td>
+                    <td>
+                      <span className="mono text-[11.5px] text-ink-3">{service.nameUs || service.nameFr || '—'}</span>
                     </td>
                     <td>
                       <span className="mono text-[12px] text-ink-3">
@@ -743,9 +737,9 @@ export default function ServiceConfigPage() {
                   </tr>
                 )
               })}
-              {services.length === 0 && (
+              {visibleServices.length === 0 && (
                 <tr>
-                  <td colSpan={3}>
+                  <td colSpan={5}>
                     <div className="py-10 text-center text-[12px] text-mute">暂无服务</div>
                   </td>
                 </tr>

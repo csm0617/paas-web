@@ -4,7 +4,7 @@ import { lazy, Suspense, useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, PageToolbar, Panel, StatusDot, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 
 const ServiceConsole = lazy(() =>
@@ -99,8 +99,6 @@ export default function PodsPage() {
     if (ok) deleteMutation.mutate(name)
   }
 
-  const running = pods.filter((pod) => pod.status?.phase === 'Running').length
-
   const columns: Array<Column<PodItem>> = [
     {
       key: 'index',
@@ -193,29 +191,13 @@ export default function PodsPage() {
 
   return (
     <div>
-      <PageHeader
-        index="03 / 07"
-        en="SOFTWARE · CONTAINERS"
-        title="容器"
-        description="命名空间 gaop-namespace 内的全部容器实例。可查看状态、镜像与 IP，并直接进入终端或日志。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone={running === pods.length ? 'ok' : 'warn'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
-                {running}/{pods.length} RUNNING
-              </span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">AUTO REFRESH 20S</span>
-          </>
-        }
-        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索容器 / 服务 / 镜像' }}
-        actions={
-          <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-            <RefreshCw size={11} /> 刷新
-          </Button>
-        }
-      />
+      <PageToolbar
+        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入容器/服务/镜像搜索' }}
+      >
+        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
       <Panel kicker="POD INVENTORY" title="容器清单" bodyClassName="p-0">
         <DataTable

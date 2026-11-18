@@ -3,6 +3,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowRight,
+  Boxes,
   ChevronDown,
   ChevronRight,
   Command,
@@ -355,6 +356,12 @@ function ModuleBar({ activeIndex }: { activeIndex: string }) {
 /* ------------------------------------------------------------------ */
 /* Context sidebar                                                     */
 /* ------------------------------------------------------------------ */
+const navIcons: Record<string, LucideIcon> = {
+  容器概览: Boxes,
+  应用配置: Grid2X2,
+  工作负载: Layers,
+}
+
 function Sidebar({
   groupIndex,
   onNavigate,
@@ -369,6 +376,13 @@ function Sidebar({
   const group = navigation.find((item) => item.index === groupIndex) ?? navigation[0]
   const activeNav = findNav(location.pathname)
   const [collapsed, setCollapsed] = useState(false)
+  const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    const parent = group.items.find((item) => item.children?.some((child) => child.path === activeNav?.path))
+    if (!parent) return
+    setClosedGroups((prev) => (prev[parent.label] ? { ...prev, [parent.label]: false } : prev))
+  }, [activeNav?.path, group.items])
 
   async function logout() {
     const ok = await confirm({
@@ -398,16 +412,53 @@ function Sidebar({
           <span>{group.label}</span>
         </button>
         {!collapsed &&
-          group.items.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onNavigate}
-              className={() => cn('nav-item', activeNav?.path === item.path && 'active')}
-            >
-              <span className="flex-1 truncate">{item.label}</span>
-            </NavLink>
-          ))}
+          group.items
+            .filter((item) => !item.hidden)
+            .map((item) => {
+              const Icon = navIcons[item.label]
+              if (item.children?.length) {
+                const activeInside = item.children.some((child) => child.path === activeNav?.path)
+                const open = closedGroups[item.label] === undefined ? activeInside : !closedGroups[item.label]
+                return (
+                  <div key={item.label}>
+                    <button
+                      onClick={() => setClosedGroups((prev) => ({ ...prev, [item.label]: open }))}
+                      className="flex h-10 w-full items-center gap-2 px-3 text-left text-[13px] text-[#a9bfd4] transition-colors hover:text-white"
+                    >
+                      {Icon && <Icon size={13} className="flex-none text-[#4791d0]" />}
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                    </button>
+                    {open &&
+                      item.children
+                        .filter((child) => !child.hidden)
+                        .map((child) => (
+                          <NavLink
+                            key={child.path + child.label}
+                            to={child.path}
+                            onClick={onNavigate}
+                            className={() =>
+                              cn('nav-item pl-8', activeNav?.path === child.path && 'active')
+                            }
+                          >
+                            <span className="flex-1 truncate">{child.label}</span>
+                          </NavLink>
+                        ))}
+                  </div>
+                )
+              }
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={onNavigate}
+                  className={() => cn('nav-item', activeNav?.path === item.path && 'active')}
+                >
+                  {Icon && <Icon size={13} className="flex-none text-[#4791d0]" />}
+                  <span className="flex-1 truncate">{item.label}</span>
+                </NavLink>
+              )
+            })}
       </nav>
       <div className="border-t border-[#10293d] p-2">
         <button

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem, ServiceList } from '@/types'
-import { Badge, Button, Drawer, Field, PageHeader, Panel, StatusDot } from '@/components/ui'
+import { Badge, Button, Drawer, Field, PageToolbar, Panel, StatusDot } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -63,50 +63,13 @@ export default function WorkloadsPage() {
     onError: (error) => toast.error('更新失败', errorMessage(error)),
   })
 
-  const totalReady = services.reduce((sum, service) => sum + (service.deployment?.status?.readyReplicas ?? 0), 0)
-  const totalDesired = services.reduce((sum, service) => sum + (service.deployment?.spec?.replicas ?? 0), 0)
-  const images = new Set(services.map(imageOf)).size
-
   return (
     <div>
-      <PageHeader
-        index="02 / 03"
-        en="SOFTWARE · WORKLOADS"
-        title="工作负载"
-        description="以 Deployment 视角审视微服务编排：副本就绪度、镜像版本与滚动更新结果。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone={totalReady >= totalDesired ? 'ok' : 'warn'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
-                {totalReady}/{totalDesired} REPLICAS READY
-              </span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">{services.length} DEPLOYMENTS</span>
-          </>
-        }
-        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索 Deployment / 镜像 / 命名空间' }}
-        actions={
-          <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-            <RefreshCw size={11} /> 刷新
-          </Button>
-        }
-      />
-
-      <section className="panel mb-4 grid grid-cols-2 divide-line md:grid-cols-4 md:divide-x">
-        {[
-          ['Deployment', services.length, 'WORKLOADS'],
-          ['就绪副本', `${totalReady}/${totalDesired}`, 'REPLICAS'],
-          ['镜像版本', images, 'IMAGE TAGS'],
-          ['异常重启', services.reduce((sum, s) => sum + (s.restartCount ?? 0), 0), 'RESTARTS'],
-        ].map(([label, value, hint]) => (
-          <div key={label} className="px-4 py-3.5">
-            <div className="label">{label}</div>
-            <div className="num mt-1.5 text-[30px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
-          </div>
-        ))}
-      </section>
+      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入工作负载名称/镜像搜索' }}>
+        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
       <div className="space-y-2.5">
         {filtered.map((service, index) => {

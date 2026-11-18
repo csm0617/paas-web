@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import type { ServiceItem, ServiceList } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, Drawer, Field, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, Drawer, Field, PageToolbar, Panel, StatusDot, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 
 const NAMESPACE = 'gaop-namespace'
@@ -204,39 +204,22 @@ export default function AutoscalePage() {
 
   return (
     <div>
-      <PageHeader
-        index="03 / 10"
-        en="SOFTWARE · AUTOSCALING"
-        title="自动伸缩策略"
-        description="基于 CPU 使用率的水平伸缩（HPA）策略。策略生效后，工作负载将在最小与最大实例数之间自动调整。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone={items.length ? 'ok' : 'idle'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{items.length} POLICIES</span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">autoscaling/v2</span>
-          </>
-        }
-        actions={
-          <>
-            <Button size="sm" loading={hpaQuery.isFetching} onClick={() => hpaQuery.refetch()}>
-              <RefreshCw size={11} /> 刷新
-            </Button>
-            <Button
-              size="sm"
-              variant="signal"
-              onClick={() => {
-                setEditing(null)
-                setForm({ service: '', min: '1', max: '3', cpu: '80' })
-                setCreateOpen(true)
-              }}
-            >
-              <Plus size={12} /> 新建策略
-            </Button>
-          </>
-        }
-      />
+      <PageToolbar>
+        <Button
+          size="sm"
+          variant="signal"
+          onClick={() => {
+            setEditing(null)
+            setForm({ service: '', min: '1', max: '3', cpu: '80' })
+            setCreateOpen(true)
+          }}
+        >
+          <Plus size={12} /> 新建策略
+        </Button>
+        <Button size="sm" loading={hpaQuery.isFetching} onClick={() => hpaQuery.refetch()}>
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
       <Panel kicker="HORIZONTAL POD AUTOSCALER" title="策略清单" bodyClassName="p-0">
         <DataTable

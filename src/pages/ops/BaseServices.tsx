@@ -5,7 +5,7 @@ import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, Drawer, KV, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, Drawer, KV, Modal, PageToolbar, Panel, StatusDot, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -112,9 +112,6 @@ export default function BaseServicesPage() {
     actionMutation.mutate({ path: stopping ? '/v1/service/stop' : '/v1/service/start', name: k8sName(service) })
   }
 
-  const running = services.filter((item) => statusOf(item).label === 'RUNNING').length
-  const restarts = services.reduce((sum, item) => sum + (item.restartCount ?? 0), 0)
-
   const columns: Array<Column<ServiceItem>> = [
     {
       key: 'index',
@@ -212,31 +209,11 @@ export default function BaseServicesPage() {
 
   return (
     <div>
-      <PageHeader
-        index="04 / 05"
-        en="OPERATIONS · BASE SERVICES"
-        title="框架服务"
-        description="平台自身运行所依赖的基础组件：鉴权、后端、网关、数据库、缓存与前端。此处提供状态核查与启停处置。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone={running === services.length ? 'ok' : 'warn'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
-                {running}/{services.length} RUNNING
-              </span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">RESTARTS {restarts}</span>
-          </>
-        }
-        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索框架服务' }}
-        actions={
-          <>
-            <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-              <RefreshCw size={11} /> 刷新
-            </Button>
-          </>
-        }
-      />
+      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入基础服务名称搜索' }}>
+        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
       <Panel kicker="FRAMEWORK COMPONENTS" title="组件清单" bodyClassName="p-0">
         <DataTable

@@ -3,6 +3,8 @@ export interface NavItem {
   en: string
   path: string
   code: string
+  children?: NavItem[]
+  hidden?: boolean
 }
 
 export interface NavGroup {
@@ -15,7 +17,7 @@ export interface NavGroup {
 export const navigation: NavGroup[] = [
   {
     index: '01',
-    label: '全局总览',
+    label: '全局概览',
     en: 'GLOBAL',
     items: [
       { label: '系统总览', en: 'SYSTEM OVERVIEW', path: '/global/system-overview', code: 'OVW' },
@@ -39,18 +41,31 @@ export const navigation: NavGroup[] = [
     label: '应用管理',
     en: 'SOFTWARE',
     items: [
-      { label: '应用门户', en: 'APPLICATION HALL', path: '/operate/home', code: 'HALL' },
+      { label: '应用门户', en: 'APPLICATION HALL', path: '/operate/home', code: 'HALL', hidden: true },
       { label: '容器概览', en: 'CONTAINER OVERVIEW', path: '/software/overview', code: 'OVW' },
-      { label: '应用配置', en: 'APP CONFIG', path: '/software/application/config', code: 'CFG' },
-      { label: '应用', en: 'APPLICATIONS', path: '/software/application', code: 'APP' },
-      { label: '服务', en: 'SERVICES', path: '/software/application/service', code: 'SVC' },
-      { label: '基础服务', en: 'BASE SERVICES', path: '/software/application/base-service', code: 'BAS' },
-      { label: '容器', en: 'CONTAINERS', path: '/software/application/service-pod', code: 'POD' },
-      { label: '服务配置', en: 'SERVICE CONFIG', path: '/software/application/service-config', code: 'SCF' },
-      { label: '服务参数', en: 'SERVICE PARAMETERS', path: '/software/application/service-params', code: 'PRM' },
-      { label: '服务延迟启动', en: 'STARTUP PLAN', path: '/software/application/service-startup', code: 'STA' },
-      { label: '自动伸缩策略', en: 'AUTOSCALING', path: '/software/application/autoscale', code: 'HPA' },
-      { label: '工作负载', en: 'WORKLOADS', path: '/software/workloads', code: 'WLD' },
+      {
+        label: '应用配置',
+        en: 'APP CONFIG',
+        path: '/software/application',
+        code: 'CFG',
+        children: [
+          { label: '应用', en: 'APPLICATIONS', path: '/software/application', code: 'APP' },
+          { label: '应用服务', en: 'SERVICES', path: '/software/application/service', code: 'SVC' },
+          { label: '基础服务', en: 'BASE SERVICES', path: '/software/application/base-service', code: 'BAS' },
+          { label: '容器', en: 'CONTAINERS', path: '/software/application/service-pod', code: 'POD' },
+          { label: '服务配置', en: 'SERVICE CONFIG', path: '/software/application/service-params', code: 'SCF' },
+          { label: '服务延迟启动', en: 'STARTUP PLAN', path: '/software/application/service-startup', code: 'STA' },
+          { label: '自动伸缩策略', en: 'AUTOSCALING', path: '/software/application/autoscale', code: 'HPA' },
+          { label: '配置组', en: 'CONFIG GROUPS', path: '/software/application/service-config', code: 'CMG', hidden: true },
+        ],
+      },
+      {
+        label: '工作负载',
+        en: 'WORKLOADS',
+        path: '/software/workloads',
+        code: 'WLD',
+        children: [{ label: '工作负载', en: 'WORKLOADS', path: '/software/workloads', code: 'WLD' }],
+      },
     ],
   },
   {
@@ -125,7 +140,11 @@ export const navigation: NavGroup[] = [
   },
 ]
 
-export const flatNav = navigation.flatMap((group) => group.items.map((item) => ({ ...item, group })))
+export const flatNav = navigation.flatMap((group) =>
+  group.items
+    .flatMap((item) => (item.children?.length ? item.children : [item]))
+    .map((item) => ({ ...item, group })),
+)
 
 export function findNav(pathname: string) {
   const matches = flatNav

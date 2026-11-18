@@ -10,9 +10,8 @@ import {
   EmptyState,
   Field,
   Modal,
-  PageHeader,
+  PageToolbar,
   Panel,
-  StatusDot,
   useConfirm,
 } from '@/components/ui'
 import { toast } from '@/stores/toast'
@@ -242,57 +241,35 @@ export default function ConfigGroupPage() {
     onError: (error) => toast.error('导入失败', errorMessage(error)),
   })
 
-  const totalFiles = groups.reduce((sum, group) => sum + Object.keys(group.data).length, 0)
-
   return (
     <div>
-      <PageHeader
-        index="03 / 08"
-        en="SOFTWARE · CONFIG GROUPS"
-        title="服务配置"
-        description="以 ConfigMap 配置组管理服务的配置文件。配置组创建后可被多个服务挂载，修改内容后需重启服务生效。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
-                {groups.length} GROUPS · {totalFiles} FILES
-              </span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">KUBE / CONFIGMAP</span>
-          </>
-        }
-        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索配置组' }}
-        actions={
-          <>
-            <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-              <RefreshCw size={11} /> 刷新
-            </Button>
-            <input
-              ref={importRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0]
-                if (file) importGroups.mutate(file)
-                event.target.value = ''
-              }}
-            />
-            <Button size="sm" loading={importGroups.isPending} onClick={() => importRef.current?.click()}>
-              <Upload size={11} /> 导入配置组
-            </Button>
-            <Button size="sm" loading={exportMutation.isPending} onClick={exportGroups}>
-              <Download size={11} /> 导出配置组
-            </Button>
-            <Button size="sm" variant="signal" onClick={() => setGroupOpen(true)}>
-              <FolderPlus size={11} /> 创建配置组
-            </Button>
-          </>
-        }
-      />
+      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入配置组名称搜索' }}>
+        <Button size="sm" variant="signal" onClick={() => setGroupOpen(true)}>
+          <FolderPlus size={11} /> 创建配置组
+        </Button>
+        <input
+          ref={importRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            if (file) importGroups.mutate(file)
+            event.target.value = ''
+          }}
+        />
+        <Button size="sm" loading={importGroups.isPending} onClick={() => importRef.current?.click()}>
+          <Upload size={11} /> 导入配置组
+        </Button>
+        <Button size="sm" loading={exportMutation.isPending} onClick={exportGroups}>
+          <Download size={11} /> 导出配置组
+        </Button>
+        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
-      <Panel kicker="CONFIG MAPS" title="配置组清单" bodyClassName="p-0">
+      <Panel bodyClassName="p-0">
         <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
           <span className="mono text-[8.5px] tracking-widest text-mute">
             {selected.length > 0 ? `已选 ${selected.length} 项` : '勾选后可批量导出或删除'}

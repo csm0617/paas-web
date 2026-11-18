@@ -15,9 +15,8 @@ import {
   EmptyState,
   Field,
   LoadingBlock,
-  PageHeader,
+  PageToolbar,
   Panel,
-  StatusDot,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
@@ -440,126 +439,91 @@ export default function SoftwareListPage() {
     if (ok) deleteMutation.mutate(item.id)
   }
 
-  const stats = [
-    ['应用总数', list.length, 'REGISTERED'],
-    ['BS 架构', list.filter((item) => (item.framework || item.type) === 'BS').length, 'BROWSER / SERVER'],
-    ['CS 架构', list.filter((item) => (item.framework || item.type) === 'CS').length, 'CLIENT / SERVER'],
-    ['已放行', list.filter((item) => item.releaseStatus === 1).length, 'RELEASED'],
-  ] as const
-
   return (
     <div>
-      <PageHeader
-        index="02 / 01"
-        en="SOFTWARE · APPLICATIONS"
-        title="应用管理"
-        description="登记与编排平台内的业务软件。控制应用放行状态、路由入口与席位可见性。"
-        meta={
-          <>
-            <span className="flex items-center gap-1.5">
-              <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{list.length} APPLICATIONS</span>
-            </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">GATEWAY {platformHost}</span>
-          </>
-        }
-        toolbar={
-          <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
-            {['ALL', 'BS', 'CS'].map((item) => (
-              <button
-                key={item}
-                onClick={() => setType(item)}
-                className={cn(
-                  'h-[30px] px-3 text-[12px] transition-colors',
-                  type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
-                )}
-              >
-                {item === 'ALL' ? '全部' : item}
-              </button>
-            ))}
-          </div>
-        }
-        search={{ value: keyword, onChange: setKeyword, placeholder: '搜索名称 / 标识 / 描述' }}
-        actions={
-          <>
-            <input
-              ref={importRef}
-              type="file"
-              accept=".zip,.tar,.gz,.json"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0]
-                if (file) importFile(file)
-                event.target.value = ''
-              }}
-            />
-            <Button size="sm" onClick={() => importRef.current?.click()}>
-              <Upload size={11} /> 导入应用
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setExportIds([])
-                setExportOpen(true)
-              }}
+      <PageToolbar
+        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入应用名称/标识搜索' }}
+      >
+        <Button size="sm" variant="signal" onClick={openCreate}>
+          <Plus size={12} /> 创建应用
+        </Button>
+        <input
+          ref={importRef}
+          type="file"
+          accept=".zip,.tar,.gz,.json"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            if (file) importFile(file)
+            event.target.value = ''
+          }}
+        />
+        <Button size="sm" onClick={() => importRef.current?.click()}>
+          <Upload size={11} /> 导入应用
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => {
+            setExportIds([])
+            setExportOpen(true)
+          }}
+        >
+          <Download size={11} /> 导出应用
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => {
+            setGovTab('auth')
+            setGeneratedCode('')
+            setGovOpen(true)
+          }}
+        >
+          <ShieldCheck size={11} /> 授权与网关
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => {
+            minSetTouched.current = false
+            setMinSetSelected([])
+            setMinSetOpen(true)
+          }}
+        >
+          运行最小集
+        </Button>
+        <div className="flex overflow-hidden rounded-[3px] border border-line-strong">
+          {['ALL', 'BS', 'CS'].map((item) => (
+            <button
+              key={item}
+              onClick={() => setType(item)}
+              className={cn(
+                'h-[30px] px-3 text-[12px] transition-colors',
+                type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
+              )}
             >
-              <Download size={11} /> 导出应用
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setGovTab('auth')
-                setGeneratedCode('')
-                setGovOpen(true)
-              }}
-            >
-              <ShieldCheck size={11} /> 授权与网关
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                minSetTouched.current = false
-                setMinSetSelected([])
-                setMinSetOpen(true)
-              }}
-            >
-              运行最小集
-            </Button>
-            <div className="flex items-center border border-line">
-              <button
-                onClick={() => setViewMode('card')}
-                className={cn('px-2 py-1.5', viewMode === 'card' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
-                title="卡片视图"
-              >
-                <LayoutGrid size={12} />
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={cn('px-2 py-1.5', viewMode === 'table' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
-                title="列表视图"
-              >
-                <List size={12} />
-              </button>
-            </div>
-            <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-              <RefreshCw size={11} /> 刷新
-            </Button>
-            <Button size="sm" variant="signal" onClick={openCreate}>
-              <Plus size={12} /> 新建应用
-            </Button>
-          </>
-        }
-      />
-
-      <section className="panel mb-4 grid grid-cols-2 divide-line md:grid-cols-4 md:divide-x">
-        {stats.map(([label, value, hint]) => (
-          <div key={label} className="px-4 py-3.5">
-            <div className="label">{label}</div>
-            <div className="num mt-1.5 text-[30px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
-          </div>
-        ))}
-      </section>
+              {item === 'ALL' ? '全部' : item}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center border border-line">
+          <button
+            onClick={() => setViewMode('card')}
+            className={cn('px-2 py-1.5', viewMode === 'card' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
+            title="卡片视图"
+          >
+            <LayoutGrid size={12} />
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={cn('px-2 py-1.5', viewMode === 'table' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
+            title="列表视图"
+          >
+            <List size={12} />
+          </button>
+        </div>
+        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
+          <RefreshCw size={11} /> 刷新
+        </Button>
+      </PageToolbar>
 
       {query.isLoading ? (
         <Panel>

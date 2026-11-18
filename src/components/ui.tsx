@@ -214,6 +214,53 @@ export function PageHeader({
   )
 }
 
+export function PageToolbar({
+  children,
+  search,
+  extra,
+}: {
+  children?: ReactNode
+  search?: {
+    value: string
+    onChange: (value: string) => void
+    placeholder?: string
+    width?: number
+    onSubmit?: () => void
+  }
+  extra?: ReactNode
+}) {
+  return (
+    <div className="mb-2.5 flex flex-wrap items-center gap-2">
+      {children}
+      <div className="ml-auto flex flex-wrap items-center gap-2">
+        {extra}
+        {search && (
+          <div className="flex h-[30px]">
+            <input
+              className="field h-[30px] rounded-r-none text-[12px]"
+              style={{ width: search.width ?? 232 }}
+              placeholder={search.placeholder ?? '请输入关键字搜索'}
+              value={search.value}
+              onChange={(event) => search.onChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') search.onSubmit?.()
+              }}
+            />
+            <button
+              type="button"
+              aria-label="搜索"
+              onClick={search.onSubmit}
+              className="flex w-9 items-center justify-center rounded-r-[3px] border border-l-0 border-[#1a7ad1] bg-[#1670c2] text-white transition-colors hover:bg-[#1a82dd]"
+            >
+              <Search size={13} />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function SectionTitle({ children, extra }: { children: ReactNode; extra?: ReactNode }) {
   return (
     <div className="mb-3 flex items-center gap-2.5">
