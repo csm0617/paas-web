@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { dump } from 'js-yaml'
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { DataTable, type Column } from '@/components/DataTable'
-import { ActionMenu, Button, KV, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
+import { AreaTrend } from '@/components/charts'
+import { ActionMenu, Button, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -37,10 +39,7 @@ function serviceOf(pod: PodItem) {
 }
 
 function imageOf(pod: PodItem) {
-  const images = (pod.spec?.containers ?? []).map((container) => {
-    const parts = (container.image || '').split('/')
-    return parts[1] || parts[2] ? `${parts[1] || '--'}/${parts[2] || '--'}` : '--'
-  })
+  const images = (pod.spec?.containers ?? []).map((container) => container.image || '--')
   return images.join(',') || '--'
 }
 
@@ -49,6 +48,79 @@ function runningOf(pod: PodItem) {
   const running = statuses.filter((item) => (item.state as { running?: unknown } | undefined)?.running).length
   const terminated = statuses.filter((item) => (item.state as { terminated?: unknown } | undefined)?.terminated).length
   return { running, total: statuses.length, partial: running > 0 && terminated > 0 }
+}
+
+interface MonitorPoint {
+  timestamp?: string
+  floatValue?: string | null
+}
+
+interface MonitorSeries {
+  podName?: string
+  metrics?: MonitorPoint[]
+}
+
+interface MonitorData {
+  cpu?: MonitorSeries[]
+  memory?: MonitorSeries[]
+  outboundNetwork?: MonitorSeries[]
+  inboundNetwork?: MonitorSeries[]
+}
+
+function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
+  return (list ?? []).slice(0, 3).map((series, index) => ({
+    name: series.podName || `SERIES ${index + 1}`,
+    points: (series.metrics ?? [])
+      .filter(
+        (point) =>
+          point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)),
+      )
+      .map((point) => {
+        const date = point.timestamp ? new Date(point.timestamp) : null
+        const label =
+          date && !Number.isNaN(date.getTime())
+            ? `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+            : ''
+        return { label, value: Number(point.floatValue) * factor }
+      }),
+  }))
+}
+
+function YamlView({ text }: { text: string }) {
+  const lines = text.split('\n')
+  return (
+    <div className="h-[540px] overflow-auto border border-line bg-[#0e2233]">
+      <div className="flex min-w-max">
+        <div className="select-none bg-[#19476f] py-2 text-right font-mono text-[11px] leading-[18px] text-[#d7e6f5]">
+          {lines.map((_, index) => (
+            <div key={index} className="px-2">
+              {index + 1}
+            </div>
+          ))}
+        </div>
+        <pre className="px-2 py-2 font-mono text-[11px] leading-[18px]">
+          {lines.map((line, index) => {
+            const match = line.match(/^(\s*(?:- )?)([\w.\-/]+)(:)(.*)$/)
+            if (match) {
+              return (
+                <div key={index}>
+                  <span className="text-[#cfe3f5]">{match[1]}</span>
+                  <span className="text-[#7fb3f0]">{match[2]}</span>
+                  <span className="text-[#9db4ca]">:</span>
+                  <span className="text-[#cfe3f5]">{match[4]}</span>
+                </div>
+              )
+            }
+            return (
+              <div key={index} className="text-[#cfe3f5]">
+                {line || ' '}
+              </div>
+            )
+          })}
+        </pre>
+      </div>
+    </div>
+  )
 }
 
 function phaseText(phase?: string) {
@@ -79,6 +151,7 @@ export default function PodsPage() {
   const [keyword, setKeyword] = useState('')
   const [selected, setSelected] = useState<string[]>([])
   const [detail, setDetail] = useState<PodItem | null>(null)
+  const [detailTab, setDetailTab] = useState<'yaml' | 'monitor' | 'log' | 'events'>('yaml')
   const [consoleState, setConsoleState] = useState<{ service: string; mode: 'logs' | 'terminal' } | null>(null)
 
   const query = useQuery({
@@ -108,6 +181,57 @@ export default function PodsPage() {
     },
     onError: (error) => toast.error('操作失败', errorMessage(error)),
   })
+
+  const podName = detail?.metadata?.name || ''
+
+  const detailQuery = useQuery({
+    queryKey: ['pod-detail', podName],
+    queryFn: () =>
+      api.get<PodItem>(`/k8s/api/v1/namespaces/${NAMESPACE}/pods/${podName}`, { pretty: 'true' }),
+    enabled: !!detail,
+  })
+
+  const podLogQuery = useQuery({
+    queryKey: ['pod-log', podName],
+    queryFn: () =>
+      api.get<string>(`/k8s/api/v1/namespaces/${NAMESPACE}/pods/${podName}/log`, {
+        container: detail?.spec?.containers?.[0]?.name,
+        tailLines: 300,
+      }),
+    enabled: !!detail && detailTab === 'log',
+    refetchInterval: detailTab === 'log' ? 5_000 : false,
+  })
+
+  const podEventsQuery = useQuery({
+    queryKey: ['pod-events', podName],
+    queryFn: () =>
+      api.get<{ items?: Array<{ reason?: string; message?: string; lastTimestamp?: string; type?: string }> }>(
+        `/k8s/api/v1/namespaces/${NAMESPACE}/events`,
+        { pretty: 'true', fieldSelector: `involvedObject.kind=Pod,involvedObject.name=${podName}` },
+      ),
+    enabled: !!detail && detailTab === 'events',
+  })
+
+  const podMonitorQuery = useQuery({
+    queryKey: ['pod-monitor', podName],
+    queryFn: () =>
+      api.get<MonitorData>('/v1/pub/serviceMonitor', {
+        namespace: NAMESPACE,
+        name: podName,
+        queryTimeType: true,
+        timeType: 'ONE_HOURS',
+      }),
+    enabled: !!detail && detailTab === 'monitor',
+  })
+
+  const yamlText = useMemo(() => {
+    const source = detailQuery.data
+    if (!source) return ''
+    const clone = JSON.parse(JSON.stringify(source)) as Record<string, unknown>
+    const metadata = clone.metadata as Record<string, unknown> | undefined
+    if (metadata) delete metadata.managedFields
+    return dump(clone)
+  }, [detailQuery.data])
 
   async function remove(pod: PodItem, force: boolean) {
     const name = pod.metadata?.name
@@ -184,7 +308,7 @@ export default function PodsPage() {
     },
     {
       key: 'service',
-      header: '镜像所属',
+      header: '所属服务',
       width: 160,
       align: 'center',
       cell: (row) => <span className="mono text-[11.5px] text-ink-3">{serviceOf(row) || '--'}</span>,
@@ -290,30 +414,127 @@ export default function PodsPage() {
 
       <Modal
         open={!!detail}
-        onOpenChange={(open) => !open && setDetail(null)}
-        title={detail ? `${detail.metadata?.name || ''} 容器详情` : '容器详情'}
-        width={680}
-        footer={
-          <Button size="sm" onClick={() => setDetail(null)}>
-            关闭
-          </Button>
-        }
+        onOpenChange={(open) => {
+          if (!open) {
+            setDetail(null)
+            setDetailTab('yaml')
+          }
+        }}
+        title={`Pod详情：${podName}`}
+        width={1000}
+        footer={null}
       >
-        {detail && (
-          <div>
-            <KV k="容器名称" v={detail.metadata?.name || '—'} />
-            <KV k="命名空间" v={detail.metadata?.namespace || NAMESPACE} />
-            <KV k="运行节点" v={detail.spec?.nodeName || '—'} />
-            <KV k="镜像所属" v={serviceOf(detail) || '--'} />
-            <KV k="镜像" v={detail.spec?.containers?.[0]?.image || '—'} />
-            <KV k="访问地址" v={detail.status?.podIP || '—'} />
-            <KV k="状态" v={phaseText(detail.status?.phase).text} />
-            <KV
-              k="创建时间"
-              v={detail.metadata?.creationTimestamp ? formatDate(detail.metadata.creationTimestamp, true) : '—'}
-            />
+        <div className="flex h-[560px]">
+          <div className="flex w-[68px] flex-none flex-col gap-1 border-r border-line pt-1">
+            {(
+              [
+                { key: 'yaml', label: 'yaml' },
+                { key: 'monitor', label: '监控' },
+                { key: 'log', label: '日志' },
+                { key: 'events', label: '事件' },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setDetailTab(tab.key)}
+                className={cn(
+                  'border-l-2 px-3 py-2 text-left text-[12px] transition-colors',
+                  detailTab === tab.key
+                    ? 'border-signal text-signal'
+                    : 'border-transparent text-ink-3 hover:text-ink',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        )}
+          <div className="min-w-0 flex-1 pl-3">
+            {detailTab === 'yaml' &&
+              (detailQuery.isLoading ? (
+                <div className="py-16 text-center text-[12px] text-mute">正在读取 Pod 定义…</div>
+              ) : (
+                <YamlView text={yamlText} />
+              ))}
+            {detailTab === 'monitor' && (
+              <div className="h-[540px] overflow-auto">
+                {podMonitorQuery.isLoading ? (
+                  <div className="py-16 text-center text-[12px] text-mute">正在采集指标…</div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    <div>
+                      <div className="mb-2 text-[12px] text-ink-3">CPU 使用量（m）</div>
+                      <AreaTrend series={monitorTrend(podMonitorQuery.data?.cpu, 1000)} height={200} unit=" m" />
+                    </div>
+                    <div>
+                      <div className="mb-2 text-[12px] text-ink-3">内存使用量（MB）</div>
+                      <AreaTrend
+                        series={monitorTrend(podMonitorQuery.data?.memory, 1 / 1024 / 1024)}
+                        height={200}
+                        unit=" MB"
+                      />
+                    </div>
+                    <div>
+                      <div className="mb-2 text-[12px] text-ink-3">网络吞吐（KB/s）</div>
+                      <AreaTrend
+                        series={[
+                          ...monitorTrend(podMonitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
+                            ...series,
+                            name: `${series.name} IN`,
+                          })),
+                          ...monitorTrend(podMonitorQuery.data?.outboundNetwork, 1 / 1024).map((series) => ({
+                            ...series,
+                            name: `${series.name} OUT`,
+                          })),
+                        ]}
+                        height={200}
+                        unit=" KB/s"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {detailTab === 'log' && (
+              <div className="h-[540px] overflow-auto border border-line bg-[#0e2233] px-3 py-2 font-mono text-[11px] leading-[18px] text-[#cfe3f5]">
+                {podLogQuery.isLoading ? (
+                  <div className="py-16 text-center font-sans text-[12px] text-mute">正在读取日志…</div>
+                ) : (
+                  <pre className="whitespace-pre-wrap break-all">
+                    {typeof podLogQuery.data === 'string' && podLogQuery.data
+                      ? podLogQuery.data
+                      : '暂无日志'}
+                  </pre>
+                )}
+              </div>
+            )}
+            {detailTab === 'events' && (
+              <div className="h-[540px] space-y-2 overflow-auto">
+                {(podEventsQuery.data?.items ?? []).map((event, index) => (
+                  <div key={index} className="border border-line px-3 py-2">
+                    <div className="flex items-center gap-3 text-[12px]">
+                      <span
+                        className={cn(
+                          'w-[120px] flex-none',
+                          event.type === 'Warning' ? 'text-danger' : 'text-ok',
+                        )}
+                      >
+                        {event.reason || '—'}
+                      </span>
+                      <span className="flex-none text-ink-3">消息</span>
+                      <span className="min-w-0 flex-1 text-ink">{event.message || '—'}</span>
+                      <span className="mono flex-none text-[11px] text-mute">
+                        {event.lastTimestamp ? formatDate(event.lastTimestamp, true) : ''}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {!podEventsQuery.isLoading && (podEventsQuery.data?.items ?? []).length === 0 && (
+                  <div className="py-16 text-center text-[12px] text-mute">暂无事件</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </Modal>
 
       <Suspense fallback={null}>
