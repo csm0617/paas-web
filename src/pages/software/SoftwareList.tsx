@@ -819,7 +819,7 @@ export default function SoftwareListPage() {
                   <th style={{ width: 150 }}>描述</th>
                   <th className="w-20 text-center">置顶</th>
                   <th style={{ width: 180 }}>创建时间</th>
-                  <th style={{ width: 220 }} className="text-right">操作</th>
+                  <th style={{ width: 220 }} className="text-center">操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -955,7 +955,7 @@ export default function SoftwareListPage() {
                                         授权状态 <Filter size={10} />
                                       </span>
                                     </th>
-                                    <th className="text-right">操作</th>
+                                    <th className="text-center">操作</th>
                                   </tr>
                                 </thead>
                                 <tbody>
