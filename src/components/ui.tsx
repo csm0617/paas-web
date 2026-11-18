@@ -459,7 +459,7 @@ export function Select({
               width: pos.width,
               zIndex: 200,
             }}
-            className="max-h-[240px] overflow-auto rounded border border-line-strong bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+            className="pointer-events-auto max-h-[240px] overflow-auto rounded border border-line-strong bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
           >
             {searchable && (
               <div className="px-1.5 pb-1">
