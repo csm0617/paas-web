@@ -168,6 +168,7 @@ export default function SoftwareListPage() {
   const [relationOpen, setRelationOpen] = useState(false)
   const [relationService, setRelationService] = useState('')
   const [relatedSelected, setRelatedSelected] = useState<string[]>([])
+  const [expandedMapping, setExpandedMapping] = useState<string | null>(null)
   const detailAppliedRef = useRef('')
   const [minSetOpen, setMinSetOpen] = useState(false)
   const [minSetSelected, setMinSetSelected] = useState<string[]>([])
@@ -395,6 +396,33 @@ export default function SoftwareListPage() {
     onError: (error) => toast.error('关联服务更新失败', errorMessage(error)),
   })
 
+  const mappingQuery = useQuery({
+    queryKey: ['software-gateway-map'],
+    queryFn: () => api.get<{ list?: GatewayPort[] }>('/v1/software/gateway'),
+    enabled: modalOpen,
+  })
+  const mappings = mappingQuery.data?.list ?? []
+
+  const entryMutation = useMutation({
+    mutationFn: ({
+      id,
+      port,
+      serviceId,
+      type,
+    }: {
+      id: string
+      port: number
+      serviceId: string
+      type: number
+    }) => api.post(`/v1/software/${id}/service_entry`, {}, { type, port, serviceId }),
+    onSuccess: () => {
+      toast.success('入口设置已更新')
+      queryClient.invalidateQueries({ queryKey: ['software-gateway-map'] })
+      queryClient.invalidateQueries({ queryKey: ['software-gateway'] })
+    },
+    onError: (error) => toast.error('入口设置失败', errorMessage(error)),
+  })
+
   const statusMutation = useMutation({
     mutationFn: ({ id, running }: { id: string; running: boolean }) =>
       api.get(`/v1/software/${id}/${running ? 'start' : 'stop'}`),
@@ -583,6 +611,7 @@ export default function SoftwareListPage() {
     setRelatedSelected([])
     setRelationOpen(false)
     setRelationService('')
+    setExpandedMapping(null)
     detailAppliedRef.current = ''
     setForm({
       key: item.key,
@@ -1380,11 +1409,11 @@ export default function SoftwareListPage() {
             <thead>
               <tr>
                 <th className="w-9" />
-                <th>服务名称</th>
-                <th>服务类型</th>
-                <th>服务状态</th>
-                <th>映射路径</th>
-                <th className="text-right">操作</th>
+                <th style={{ width: 110 }}>服务名称</th>
+                <th style={{ width: 90 }}>服务类型</th>
+                <th style={{ width: 90 }}>服务状态</th>
+                <th style={{ width: 260 }}>映射路径</th>
+                <th style={{ width: 110 }} className="text-right">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -1392,6 +1421,9 @@ export default function SoftwareListPage() {
                 const name = serviceNameOf(service)
                 const appType = service.service?.metadata?.labels?.['system/appType']
                 const status = serviceStatusOf(service)
+                const mapping = mappings.find(
+                  (item) => item.serviceId === name || item.serviceLabel === name,
+                )
                 return (
                   <tr key={name}>
                     <td>
@@ -1407,7 +1439,7 @@ export default function SoftwareListPage() {
                       />
                     </td>
                     <td>
-                      <span className="text-[12px] text-ink">{name}</span>
+                      <span className="whitespace-nowrap text-[12px] text-ink">{name}</span>
                     </td>
                     <td>
                       <span className="text-[12px] text-ink-3">
@@ -1420,22 +1452,49 @@ export default function SoftwareListPage() {
                     <td>
                       <button
                         className="text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-                        onClick={() => {
-                          setGovTab('gateway')
-                          setGovOpen(true)
-                        }}
+                        onClick={() => setExpandedMapping(expandedMapping === name ? null : name)}
                       >
                         入口设置
                       </button>
+                      {expandedMapping === name && editing && (
+                        <div className="mt-1">
+                          {mapping ? (
+                            <div className="flex flex-wrap items-center gap-1.5 text-[11.5px]">
+                              <span className="text-ink-3">{mapping.port}</span>
+                              <span className="text-mute">-&gt;</span>
+                              <a
+                                href={`http://${platformHost}${mapping.fullPath || ''}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[#4aa3f0] hover:underline"
+                              >
+                                {`http://${platformHost}${mapping.fullPath || ''}`}
+                              </a>
+                              <button
+                                className="text-[11.5px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                                onClick={() =>
+                                  entryMutation.mutate({
+                                    id: editing.id,
+                                    port: Number(mapping.port ?? 80),
+                                    serviceId: mapping.serviceId || name,
+                                    type: mapping.web ? 0 : 1,
+                                  })
+                                }
+                              >
+                                {mapping.web ? '取消入口' : '设为入口'}
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[11.5px] text-mute">暂无映射</span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td>
-                      <div className="flex items-center justify-end gap-2.5 text-[12px]">
+                      <div className="flex items-center justify-end gap-2.5 whitespace-nowrap text-[12px]">
                         <button
                           className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-                          onClick={() => {
-                            setGovTab('gateway')
-                            setGovOpen(true)
-                          }}
+                          onClick={() => setExpandedMapping(expandedMapping === name ? null : name)}
                         >
                           映射路径
                         </button>
