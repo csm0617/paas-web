@@ -125,6 +125,16 @@ function YamlView({ text }: { text: string }) {
   )
 }
 
+const MONITOR_RANGES = [
+  { key: 'ONE_HOURS', label: '最近1小时' },
+  { key: 'SIX_HOURS', label: '最近6小时' },
+  { key: 'TWENTY_FOUR_HOURS', label: '最近24小时' },
+  { key: 'SEVEN_DAY', label: '最近7天' },
+  { key: 'THIRTY_DAY', label: '最近30天' },
+] as const
+
+type MonitorRange = (typeof MONITOR_RANGES)[number]['key']
+
 function phaseText(phase?: string) {
   const value = phase || 'Unknown'
   switch (value) {
@@ -154,6 +164,10 @@ export default function PodsPage() {
   const [selected, setSelected] = useState<string[]>([])
   const [detail, setDetail] = useState<PodItem | null>(null)
   const [detailTab, setDetailTab] = useState<'yaml' | 'monitor' | 'log' | 'events'>('yaml')
+  const [podRange, setPodRange] = useState<MonitorRange>('ONE_HOURS')
+  const [customRange, setCustomRange] = useState(false)
+  const [rangeStart, setRangeStart] = useState('')
+  const [rangeEnd, setRangeEnd] = useState('')
   const [consoleState, setConsoleState] = useState<{ service: string; mode: 'logs' | 'terminal' } | null>(null)
 
   const query = useQuery({
@@ -215,15 +229,31 @@ export default function PodsPage() {
   })
 
   const podMonitorQuery = useQuery({
-    queryKey: ['pod-monitor', podName],
+    queryKey: ['pod-monitor', podName, customRange ? `${rangeStart}~${rangeEnd}` : podRange],
     queryFn: () =>
-      api.get<MonitorData>('/v1/pub/serviceMonitor', {
-        namespace: NAMESPACE,
-        name: podName,
-        queryTimeType: true,
-        timeType: 'ONE_HOURS',
-      }),
-    enabled: !!detail && detailTab === 'monitor',
+      api.get<MonitorData>(
+        '/v1/pub/serviceMonitor',
+        customRange
+          ? {
+              namespace: NAMESPACE,
+              name: podName,
+              podName,
+              queryTimeType: false,
+              start: rangeStart ? new Date(rangeStart).toISOString() : undefined,
+              end: rangeEnd ? new Date(rangeEnd).toISOString() : undefined,
+            }
+          : {
+              namespace: NAMESPACE,
+              name: podName,
+              podName,
+              queryTimeType: true,
+              timeType: podRange,
+            },
+      ),
+    enabled:
+      !!detail &&
+      detailTab === 'monitor' &&
+      (!customRange || (!!rangeStart && !!rangeEnd)),
   })
 
   const yamlText = useMemo(() => {
@@ -459,6 +489,54 @@ export default function PodsPage() {
               ))}
             {detailTab === 'monitor' && (
               <div className="h-[540px] overflow-auto">
+                <div className="mb-4 flex flex-wrap items-center">
+                  <button
+                    onClick={() => setCustomRange(true)}
+                    className={cn(
+                      'inline-flex h-7 items-center border px-3 text-[12px] transition-colors',
+                      customRange
+                        ? 'border-signal bg-[#1670c2] text-white'
+                        : 'border-[#2f6fa8] text-ink-3 hover:text-ink',
+                    )}
+                  >
+                    自定义日期
+                  </button>
+                  {MONITOR_RANGES.map((range) => (
+                    <button
+                      key={range.key}
+                      onClick={() => {
+                        setCustomRange(false)
+                        setPodRange(range.key)
+                      }}
+                      className={cn(
+                        '-ml-px inline-flex h-7 items-center border px-3 text-[12px] transition-colors',
+                        !customRange && podRange === range.key
+                          ? 'border-signal bg-[#1670c2] text-white'
+                          : 'border-[#2f6fa8] text-ink-3 hover:text-ink',
+                      )}
+                    >
+                      {range.label}
+                    </button>
+                  ))}
+                </div>
+                {customRange && (
+                  <div className="mb-4 flex items-center gap-2 text-[12px] text-ink-3">
+                    <input
+                      type="datetime-local"
+                      className="field h-8 w-[210px]"
+                      value={rangeStart}
+                      onChange={(event) => setRangeStart(event.target.value)}
+                    />
+                    <span>至</span>
+                    <input
+                      type="datetime-local"
+                      className="field h-8 w-[210px]"
+                      value={rangeEnd}
+                      onChange={(event) => setRangeEnd(event.target.value)}
+                    />
+                  </div>
+                )}
+                <div className="mb-3 text-[12px] text-ink-3">时间间隔：1minute</div>
                 {podMonitorQuery.isLoading ? (
                   <div className="py-16 text-center text-[12px] text-mute">正在采集指标…</div>
                 ) : (
