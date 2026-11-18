@@ -873,20 +873,12 @@ export default function SoftwareListPage() {
                         <td>
                           <span className="block max-w-[150px] truncate text-[12px] text-ink-3">{item.desc || ''}</span>
                         </td>
-                        <td>
-                          <button
-                            className={cn(
-                              'inline-flex h-6 w-6 items-center justify-center rounded transition-colors',
-                              item.orderTop ? 'text-signal' : 'text-mute hover:text-ink',
-                            )}
-                            aria-label={item.orderTop ? '取消置顶' : '置顶'}
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              orderMutation.mutate({ id: item.id, top: !item.orderTop })
-                            }}
-                          >
-                            <Pin size={12} />
-                          </button>
+                        <td className="text-center">
+                          {item.orderTop ? (
+                            <span className="inline-flex items-center border border-line-strong bg-paper-2 px-1.5 py-0.5 text-[11px] text-ink-3">
+                              已置顶
+                            </span>
+                          ) : null}
                         </td>
                         <td>
                           <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
@@ -896,7 +888,7 @@ export default function SoftwareListPage() {
                         <td onClick={(event) => event.stopPropagation()}>
                           <div className="flex items-center justify-end gap-2.5 text-[12px]">
                             <button
-                              disabled={!item.routerKey}
+                              disabled={item.framework !== 'CS' && (!item.routerKey || item.web !== 1)}
                               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff] disabled:cursor-not-allowed disabled:text-mute"
                               onClick={() =>
                                 window.open(`http://${platformHost}${item.routerKey}`, '_blank', 'noopener')
@@ -914,6 +906,11 @@ export default function SoftwareListPage() {
                               triggerText="更多"
                               items={[
                                 { label: '配置席位', onSelect: () => openSeats(item), icon: <Users size={12} /> },
+                                {
+                                  label: item.orderTop ? '取消置顶' : '置顶应用',
+                                  onSelect: () => orderMutation.mutate({ id: item.id, top: !item.orderTop }),
+                                  icon: <Pin size={12} />,
+                                },
                                 {
                                   label: '授权与网关',
                                   onSelect: () => {
