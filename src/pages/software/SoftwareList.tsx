@@ -182,22 +182,24 @@ function MappingPopover({
           className="z-[75] w-[300px] rounded border border-line bg-paper-2 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
         >
           {mapping ? (
-            <div className="space-y-2">
-              <div className="flex items-start gap-1.5 text-[11.5px] text-ink-3">
-                <span>{mapping.port}</span>
-                <span>-&gt;</span>
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="break-all text-[#4aa3f0] hover:underline"
-                >
-                  {url}
-                </a>
-              </div>
+            <div className="flex items-center gap-1.5 text-[11.5px]">
+              <span className="flex-none text-ink-3">{mapping.port}</span>
+              <span className="flex-none text-ink-3">-&gt;</span>
+              <a
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                title={url}
+                className="min-w-0 flex-1 truncate text-[#4aa3f0] hover:underline"
+              >
+                {url}
+              </a>
               <DropdownMenu.Item
                 onSelect={onToggle}
-                className="cursor-pointer text-[11.5px] text-[#4aa3f0] outline-none transition-colors data-[highlighted]:text-[#7cc4ff]"
+                className={cn(
+                  'flex-none cursor-pointer whitespace-nowrap text-[11.5px] outline-none transition-opacity data-[highlighted]:opacity-80',
+                  mapping.web ? 'text-[#ff5c5c]' : 'text-[#4aa3f0]',
+                )}
               >
                 {mapping.web ? '取消入口' : '设为入口'}
               </DropdownMenu.Item>
