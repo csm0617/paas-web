@@ -5,7 +5,7 @@ import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem, ServiceList } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { ActionMenu, Button, Drawer, Field, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
+import { ActionMenu, Button, Drawer, Field, Modal, PageToolbar, Panel, Select, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -354,21 +354,17 @@ export default function AutoscalePage() {
       >
         <div className="space-y-3">
           <Field label="目标服务" required hint="选择需要自动伸缩的 Deployment">
-            <select
-              className="field"
+            <Select
+              placeholder="请选择服务"
               value={form.service}
-              onChange={(event) => setForm({ ...form, service: event.target.value })}
-            >
-              <option value="">请选择服务</option>
-              {deploymentOptions.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-              {form.service && !deploymentOptions.includes(form.service) && (
-                <option value={form.service}>{form.service}</option>
-              )}
-            </select>
+              options={[
+                ...deploymentOptions.map((name) => ({ value: name, label: name })),
+                ...(form.service && !deploymentOptions.includes(form.service)
+                  ? [{ value: form.service, label: form.service }]
+                  : []),
+              ]}
+              onChange={(value) => setForm({ ...form, service: value })}
+            />
           </Field>
           <div className="grid grid-cols-3 gap-3">
             <Field label="CPU 阈值" required>

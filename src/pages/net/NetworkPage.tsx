@@ -15,6 +15,7 @@ import {
   Field,
   PageHeader,
   Panel,
+  Select,
   StatusDot,
   TabStrip,
   useConfirm,
@@ -740,13 +741,14 @@ export default function NetworkPage() {
       >
         <div className="space-y-3">
           <Field label="网卡" required>
-            <select className="field" value={netName} onChange={(event) => setNetName(event.target.value)}>
-              {interfaces.map((item) => (
-                <option key={item.name} value={item.name}>
-                  {item.name} · {item.addresses[0]}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={netName}
+              options={interfaces.map((item) => ({
+                value: item.name,
+                label: `${item.name} · ${item.addresses[0] ?? ''}`,
+              }))}
+              onChange={(value) => setNetName(value)}
+            />
           </Field>
           <Field label="虚拟 IP" required hint="需与网卡同网段，例如 172.16.209.100">
             <input className="field font-mono" value={ip} onChange={(event) => setIp(event.target.value)} placeholder="172.16.209.100" />
@@ -897,25 +899,25 @@ export default function NetworkPage() {
             />
           </Field>
           <Field label="类型">
-            <select
-              className="field"
+            <Select
               value={createForm.type}
-              onChange={(event) => setCreateForm((prev) => ({ ...prev, type: event.target.value }))}
-            >
-              <option value="ClusterIP">ClusterIP</option>
-              <option value="NodePort">NodePort</option>
-              <option value="LoadBalancer">LoadBalancer</option>
-            </select>
+              options={[
+                { value: 'ClusterIP', label: 'ClusterIP' },
+                { value: 'NodePort', label: 'NodePort' },
+                { value: 'LoadBalancer', label: 'LoadBalancer' },
+              ]}
+              onChange={(value) => setCreateForm((prev) => ({ ...prev, type: value }))}
+            />
           </Field>
           <Field label="协议">
-            <select
-              className="field"
+            <Select
               value={createForm.protocol}
-              onChange={(event) => setCreateForm((prev) => ({ ...prev, protocol: event.target.value }))}
-            >
-              <option value="TCP">TCP</option>
-              <option value="UDP">UDP</option>
-            </select>
+              options={[
+                { value: 'TCP', label: 'TCP' },
+                { value: 'UDP', label: 'UDP' },
+              ]}
+              onChange={(value) => setCreateForm((prev) => ({ ...prev, protocol: value }))}
+            />
           </Field>
           <Field label="服务端口" required hint="Service 暴露的端口">
             <input

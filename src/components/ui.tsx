@@ -13,7 +13,8 @@ import {
   XCircle,
 } from 'lucide-react'
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
-import { createContext, useContext, useId, useState } from 'react'
+import { createContext, useContext, useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 import { useToastStore } from '@/stores/toast'
 
@@ -338,6 +339,167 @@ export function Field({
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cn('field', props.className)} />
+}
+
+/* ------------------------------------------------------------------ */
+/* Select                                                              */
+/* ------------------------------------------------------------------ */
+export interface SelectOption {
+  value: string
+  label: string
+}
+
+export function Select({
+  value,
+  options,
+  onChange,
+  placeholder = '请选择',
+  disabled,
+  className,
+  searchable,
+}: {
+  value: string
+  options: SelectOption[]
+  onChange: (value: string) => void
+  placeholder?: string
+  disabled?: boolean
+  className?: string
+  searchable?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const [pos, setPos] = useState<{ left: number; top: number; bottom?: number; width: number } | null>(null)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  const current = options.find((option) => option.value === value)
+
+  const openPanel = () => {
+    const el = triggerRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const panelHeight = Math.min(240, options.length * 32 + 10)
+    const up = rect.bottom + panelHeight > window.innerHeight - 8 && rect.top > panelHeight + 8
+    setPos({
+      left: rect.left,
+      top: up ? rect.top - 4 : rect.bottom + 4,
+      bottom: up ? window.innerHeight - rect.top + 4 : undefined,
+      width: Math.max(rect.width, 120),
+    })
+    setKeyword('')
+    setOpen(true)
+  }
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (triggerRef.current?.contains(target) || panelRef.current?.contains(target)) return
+      setOpen(false)
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    const onScroll = (event: Event) => {
+      if (panelRef.current?.contains(event.target as Node)) return
+      setOpen(false)
+    }
+    const onResize = () => setOpen(false)
+    document.addEventListener('mousedown', onDown)
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('scroll', onScroll, true)
+    window.addEventListener('resize', onResize)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onResize)
+    }
+  }, [open])
+
+  const list = keyword
+    ? options.filter((option) => option.label.toLowerCase().includes(keyword.toLowerCase()))
+    : options
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        disabled={disabled}
+        onClick={() => {
+          if (disabled) return
+          if (open) setOpen(false)
+          else openPanel()
+        }}
+        className={cn(
+          'field flex items-center justify-between gap-2 text-left disabled:cursor-not-allowed disabled:opacity-60',
+          open && 'border-signal',
+          className,
+        )}
+      >
+        <span className={cn('truncate', current ? 'text-ink' : 'text-mute')}>
+          {current?.label ?? placeholder}
+        </span>
+        {searchable ? (
+          <Search size={12} className="flex-none text-mute" />
+        ) : (
+          <ChevronDown size={12} className="flex-none text-mute" />
+        )}
+      </button>
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={panelRef}
+            style={{
+              position: 'fixed',
+              left: pos.left,
+              top: pos.bottom === undefined ? pos.top : undefined,
+              bottom: pos.bottom,
+              width: pos.width,
+              zIndex: 200,
+            }}
+            className="max-h-[240px] overflow-auto rounded border border-line-strong bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+          >
+            {searchable && (
+              <div className="px-1.5 pb-1">
+                <input
+                  autoFocus
+                  className="field h-7 text-[11.5px]"
+                  placeholder="搜索"
+                  value={keyword}
+                  onChange={(event) => setKeyword(event.target.value)}
+                />
+              </div>
+            )}
+            {list.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onChange(option.value)
+                  setOpen(false)
+                }}
+                className={cn(
+                  'flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-[12px] transition-colors',
+                  option.value === value
+                    ? 'bg-signal/15 text-signal'
+                    : 'text-ink-3 hover:bg-line/40 hover:text-ink',
+                )}
+              >
+                <span className="flex w-3 flex-none justify-center">
+                  {option.value === value && <Check size={11} />}
+                </span>
+                <span className="truncate">{option.label}</span>
+              </button>
+            ))}
+            {list.length === 0 && <div className="px-2 py-1.5 text-[12px] text-mute">无匹配项</div>}
+          </div>,
+          document.body,
+        )}
+    </>
+  )
 }
 
 /* ------------------------------------------------------------------ */

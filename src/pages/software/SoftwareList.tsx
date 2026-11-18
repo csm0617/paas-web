@@ -22,6 +22,7 @@ import {
   PageToolbar,
   Panel,
   SectionTitle,
+  Select,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
@@ -1786,16 +1787,15 @@ export default function SoftwareListPage() {
                 />
               </ConfigRow>
               <ConfigRow label="应用类型">
-                <select
-                  className="field h-8 text-[12px]"
+                <Select
+                  className="h-8 text-[12px]"
                   value={form.type}
-                  onChange={(event) =>
-                    setForm({ ...form, type: event.target.value, framework: event.target.value })
-                  }
-                >
-                  <option value="BS">容器化应用（B/S）</option>
-                  <option value="CS">客户端应用（C/S）</option>
-                </select>
+                  options={[
+                    { value: 'BS', label: '容器化应用（B/S）' },
+                    { value: 'CS', label: '客户端应用（C/S）' },
+                  ]}
+                  onChange={(value) => setForm({ ...form, type: value, framework: value })}
+                />
               </ConfigRow>
               <ConfigRow label="关联席位" onEdit={() => editing && openSeats(editing)}>
                 <input
@@ -2220,18 +2220,20 @@ export default function SoftwareListPage() {
             <span className="w-[48px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
               <span className="text-danger">*</span> 端口：
             </span>
-            <select
-              className="field h-8 flex-1 text-[12px]"
+            <Select
+              className="h-8 flex-1 text-[12px]"
+              placeholder="请选择端口"
               value={mappingPort}
-              onChange={(event) => setMappingPort(event.target.value)}
-            >
-              {mappingTarget &&
-                servicePortsOf(mappingTarget.service).map((port) => (
-                  <option key={port} value={String(port)}>
-                    {port}
-                  </option>
-                ))}
-            </select>
+              options={
+                mappingTarget
+                  ? servicePortsOf(mappingTarget.service).map((port) => ({
+                      value: String(port),
+                      label: String(port),
+                    }))
+                  : []
+              }
+              onChange={(value) => setMappingPort(value)}
+            />
           </div>
           <div className="flex items-start gap-2">
             <span className="w-[48px] flex-none pt-[7px] text-right text-[12px] text-ink-3">

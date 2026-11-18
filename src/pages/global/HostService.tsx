@@ -8,7 +8,7 @@ import type { CockpitData, NodesResponse, NodeSummary, ServiceItem } from '@/typ
 import { toast } from '@/stores/toast'
 import { useAuthStore } from '@/stores/auth'
 import { RingGauge, AreaTrend } from '@/components/charts'
-import { Badge, Button, Drawer, Field, KV, Meter, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, Drawer, Field, KV, Meter, Modal, PageHeader, Panel, Select, StatusDot, useConfirm } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 const NodeTerminalModal = lazy(() =>
@@ -1080,24 +1080,26 @@ export default function HostServicePage() {
           </Field>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="是否具备显卡">
-              <select
-                className="field h-9"
+              <Select
+                className="h-9"
                 value={addForm.labelNvidia ? '1' : '0'}
-                onChange={(event) => setAddForm({ ...addForm, labelNvidia: event.target.value === '1' })}
-              >
-                <option value="0">否</option>
-                <option value="1">是</option>
-              </select>
+                options={[
+                  { value: '0', label: '否' },
+                  { value: '1', label: '是' },
+                ]}
+                onChange={(value) => setAddForm({ ...addForm, labelNvidia: value === '1' })}
+              />
             </Field>
             <Field label="清理系统环境" hint="开启后会先卸载目标主机上的旧集群组件">
-              <select
-                className="field h-9"
+              <Select
+                className="h-9"
                 value={addForm.uninstall ? '1' : '0'}
-                onChange={(event) => setAddForm({ ...addForm, uninstall: event.target.value === '1' })}
-              >
-                <option value="0">否</option>
-                <option value="1">是</option>
-              </select>
+                options={[
+                  { value: '0', label: '否' },
+                  { value: '1', label: '是' },
+                ]}
+                onChange={(value) => setAddForm({ ...addForm, uninstall: value === '1' })}
+              />
             </Field>
           </div>
           <div className="space-y-1.5">

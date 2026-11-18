@@ -5,7 +5,7 @@ import { api } from '@/lib/api'
 import { formatDate, relativeTime } from '@/lib/format'
 import type { AuditItem } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, PageHeader, Panel, StatusDot } from '@/components/ui'
+import { Badge, Button, PageHeader, Panel, Select, StatusDot } from '@/components/ui'
 
 interface AuditDictItem {
   id?: number
@@ -133,18 +133,19 @@ export default function AuditPage() {
         }
         toolbar={
           <>
-            <select
-              className="field h-[30px] w-[132px] font-mono text-[10.5px]"
+            <Select
+              className="h-[30px] w-[132px] text-[10.5px]"
+              placeholder="全部行为类型"
               value={moduleName}
-              onChange={(event) => setModuleName(event.target.value)}
-            >
-              <option value="">全部行为类型</option>
-              {moduleOptions.map((item) => (
-                <option key={item.dictionaryKey} value={item.dictionaryKey}>
-                  {item.dictionaryName || item.dictionaryKey}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: '全部行为类型' },
+                ...moduleOptions.map((item) => ({
+                  value: item.dictionaryKey || '',
+                  label: item.dictionaryName || item.dictionaryKey || '',
+                })),
+              ]}
+              onChange={(value) => setModuleName(value)}
+            />
             <input
               type="date"
               className="field h-[30px] w-[134px] font-mono text-[10px]"

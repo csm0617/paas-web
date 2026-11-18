@@ -17,6 +17,7 @@ import {
   KV,
   PageToolbar,
   Panel,
+  Select,
   useConfirm,
 } from '@/components/ui'
 import { toast } from '@/stores/toast'
@@ -883,47 +884,32 @@ export default function ServiceManagePage() {
                 />
               </Field>
               <Field label="镜像仓库组" required>
-                <select
-                  className="field"
+                <Select
+                  placeholder="选择仓库组"
                   value={createForm.projectName}
-                  onChange={(event) =>
-                    setCreateForm({ ...createForm, projectName: event.target.value, imageName: '', imageTagName: '' })
+                  options={projectOptions.map((project) => ({ value: project, label: project }))}
+                  onChange={(value) =>
+                    setCreateForm({ ...createForm, projectName: value, imageName: '', imageTagName: '' })
                   }
-                >
-                  {projectOptions.map((project) => (
-                    <option key={project} value={project}>
-                      {project}
-                    </option>
-                  ))}
-                </select>
+                />
               </Field>
               <Field label="镜像" required>
-                <select
-                  className="field font-mono"
+                <Select
+                  className="font-mono"
+                  placeholder={imagesQuery.isLoading ? '读取中…' : '选择镜像'}
                   value={createForm.imageName}
-                  onChange={(event) => setCreateForm({ ...createForm, imageName: event.target.value, imageTagName: '' })}
-                >
-                  <option value="">{imagesQuery.isLoading ? '读取中…' : '选择镜像'}</option>
-                  {imageOptions.map((image) => (
-                    <option key={image} value={image}>
-                      {image}
-                    </option>
-                  ))}
-                </select>
+                  options={imageOptions.map((image) => ({ value: image, label: image }))}
+                  onChange={(value) => setCreateForm({ ...createForm, imageName: value, imageTagName: '' })}
+                />
               </Field>
               <Field label="镜像版本" required>
-                <select
-                  className="field font-mono"
+                <Select
+                  className="font-mono"
+                  placeholder={tagsQuery.isLoading ? '读取中…' : '选择版本'}
                   value={createForm.imageTagName}
-                  onChange={(event) => setCreateForm({ ...createForm, imageTagName: event.target.value })}
-                >
-                  <option value="">{tagsQuery.isLoading ? '读取中…' : '选择版本'}</option>
-                  {tagOptions.map((tag) => (
-                    <option key={tag} value={tag}>
-                      {tag}
-                    </option>
-                  ))}
-                </select>
+                  options={tagOptions.map((tag) => ({ value: tag, label: tag }))}
+                  onChange={(value) => setCreateForm({ ...createForm, imageTagName: value })}
+                />
               </Field>
             </div>
           </section>
@@ -962,18 +948,18 @@ export default function ServiceManagePage() {
                 />
               </Field>
               <Field label="指定节点" className="col-span-2">
-                <select
-                  className="field"
+                <Select
+                  placeholder="由调度器自动选择"
                   value={createForm.bindNodeName}
-                  onChange={(event) => setCreateForm({ ...createForm, bindNodeName: event.target.value })}
-                >
-                  <option value="">由调度器自动选择</option>
-                  {nodeOptions.map((node) => (
-                    <option key={node.objectMeta.name} value={node.objectMeta.name}>
-                      {node.objectMeta.name}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: '', label: '由调度器自动选择' },
+                    ...nodeOptions.map((node) => ({
+                      value: node.objectMeta.name,
+                      label: node.objectMeta.name,
+                    })),
+                  ]}
+                  onChange={(value) => setCreateForm({ ...createForm, bindNodeName: value })}
+                />
               </Field>
             </div>
           </section>
@@ -1116,27 +1102,29 @@ export default function ServiceManagePage() {
                 onChange={(event) => setVersionTag(event.target.value)}
                 placeholder="如：alpine-arm64"
               />
-              <select
-                className="field w-[180px]"
+              <Select
+                className="w-[180px]"
+                placeholder="选择已有版本"
                 value=""
-                onChange={(event) => {
-                  if (event.target.value) setVersionTag(event.target.value)
+                options={(versionTagsQuery.data?.list ?? []).map((tag) => ({
+                  value: tag.name,
+                  label: tag.name,
+                }))}
+                onChange={(value) => {
+                  if (value) setVersionTag(value)
                 }}
-              >
-                <option value="">选择已有版本</option>
-                {(versionTagsQuery.data?.list ?? []).map((tag) => (
-                  <option key={tag.name} value={tag.name}>
-                    {tag.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </Field>
           <Field label="滚动策略" required hint="先启动：新实例就绪后再停止旧实例；先停止：先停旧实例再启动新实例">
-            <select className="field" value={versionStrategy} onChange={(event) => setVersionStrategy(event.target.value as '1' | '2')}>
-              <option value="2">先停止（FIRST STOP）</option>
-              <option value="1">先启动（FIRST START）</option>
-            </select>
+            <Select
+              value={versionStrategy}
+              options={[
+                { value: '2', label: '先停止（FIRST STOP）' },
+                { value: '1', label: '先启动（FIRST START）' },
+              ]}
+              onChange={(value) => setVersionStrategy(value as '1' | '2')}
+            />
           </Field>
           <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[8.5px] leading-relaxed tracking-wider text-mute">
             切换后 Kubernetes 将按滚动更新策略替换容器实例；若镜像拉取失败，旧实例会保留。

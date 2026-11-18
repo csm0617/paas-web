@@ -7,7 +7,7 @@ import { formatDate } from '@/lib/format'
 import type { ServiceItem } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
 import { AreaTrend } from '@/components/charts'
-import { ActionMenu, Button, Drawer, Field, PageToolbar, Panel, useConfirm } from '@/components/ui'
+import { ActionMenu, Button, Drawer, Field, PageToolbar, Panel, Select, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -427,31 +427,29 @@ export default function BaseServicesPage() {
                 value={versionTag}
                 onChange={(event) => setVersionTag(event.target.value)}
               />
-              <select
-                className="field w-[140px]"
+              <Select
+                className="w-[140px]"
+                placeholder="选择版本"
                 value=""
-                onChange={(event) => {
-                  if (event.target.value) setVersionTag(event.target.value)
+                options={(versionTagsQuery.data?.list ?? []).map((tag) => ({
+                  value: tag.name,
+                  label: tag.name,
+                }))}
+                onChange={(value) => {
+                  if (value) setVersionTag(value)
                 }}
-              >
-                <option value="">选择版本</option>
-                {(versionTagsQuery.data?.list ?? []).map((tag) => (
-                  <option key={tag.name} value={tag.name}>
-                    {tag.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </Field>
           <Field label="更新策略">
-            <select
-              className="field"
+            <Select
               value={versionStrategy}
-              onChange={(event) => setVersionStrategy(event.target.value as '1' | '2')}
-            >
-              <option value="2">滚动更新</option>
-              <option value="1">先停止再启动</option>
-            </select>
+              options={[
+                { value: '2', label: '滚动更新' },
+                { value: '1', label: '先停止再启动' },
+              ]}
+              onChange={(value) => setVersionStrategy(value as '1' | '2')}
+            />
           </Field>
         </div>
       </Drawer>

@@ -3,7 +3,7 @@ import { ChevronDown, Download, FileText, Folder, FolderPlus, Pencil, Plus, Tras
 import { useMemo, useRef, useState } from 'react'
 import { api, API_BASE, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
-import { Button, EmptyState, Field, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
+import { Button, EmptyState, Field, Modal, PageToolbar, Panel, Select, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { useAuthStore } from '@/stores/auth'
 import { cn } from '@/lib/utils'
@@ -541,17 +541,18 @@ export default function ConfigGroupPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="w-[56px] flex-none" />
-            <select
-              className="field h-8 w-full text-[12px]"
+            <Select
+              className="h-8 text-[12px]"
               value={fileEncoding}
-              onChange={(event) => setFileEncoding(event.target.value)}
-            >
-              <option value="UTF-8">UTF-8</option>
-              <option value="GBK">GBK</option>
-              <option value="Big5">Big5</option>
-              <option value="EUC-JP">EUC-JP</option>
-              <option value="KOI8-R">KOI8-R</option>
-            </select>
+              options={[
+                { value: 'UTF-8', label: 'UTF-8' },
+                { value: 'GBK', label: 'GBK' },
+                { value: 'Big5', label: 'Big5' },
+                { value: 'EUC-JP', label: 'EUC-JP' },
+                { value: 'KOI8-R', label: 'KOI8-R' },
+              ]}
+              onChange={(value) => setFileEncoding(value)}
+            />
           </div>
           <div className="flex items-center gap-2">
             <span className="w-[56px] flex-none" />

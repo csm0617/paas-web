@@ -13,6 +13,7 @@ import {
   Field,
   PageHeader,
   Panel,
+  Select,
   StatusDot,
   useConfirm,
 } from '@/components/ui'
@@ -476,13 +477,11 @@ export default function ServiceAuthPage() {
         }
       >
         <Field label="授权周期">
-          <select className="field" value={intervalValue} onChange={(event) => setIntervalValue(Number(event.target.value))}>
-            {intervals.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={String(intervalValue)}
+            options={intervals.map((item) => ({ value: String(item.value), label: item.label }))}
+            onChange={(value) => setIntervalValue(Number(value))}
+          />
         </Field>
       </Drawer>
     </div>

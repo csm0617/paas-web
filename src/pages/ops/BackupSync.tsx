@@ -19,6 +19,7 @@ import {
   Modal,
   PageHeader,
   Panel,
+  Select,
   StatusDot,
   TabStrip,
   useConfirm,
@@ -675,17 +676,18 @@ export default function BackupSyncPage() {
           {(settingsQuery.data?.list ?? []).map((item) => (
             <div key={item.databaseName} className="flex items-center justify-between gap-3 border border-line px-3 py-2">
               <span className="mono truncate text-[11px] text-ink">{item.databaseName}</span>
-              <select
-                className="field h-8 w-[190px] flex-none"
+              <Select
+                className="h-8 w-[190px] flex-none"
                 value={String(item.type ?? 1)}
                 disabled={changeSettingMutation.isPending}
-                onChange={(event) =>
-                  changeSettingMutation.mutate({ name: item.databaseName, type: Number(event.target.value) })
+                options={[
+                  { value: '0', label: '仅数据结构' },
+                  { value: '1', label: '数据结构与数据' },
+                ]}
+                onChange={(value) =>
+                  changeSettingMutation.mutate({ name: item.databaseName, type: Number(value) })
                 }
-              >
-                <option value="0">仅数据结构</option>
-                <option value="1">数据结构与数据</option>
-              </select>
+              />
             </div>
           ))}
           {(settingsQuery.data?.list ?? []).length === 0 && (

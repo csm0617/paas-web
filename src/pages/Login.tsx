@@ -7,7 +7,7 @@ import { api, errorMessage } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from '@/stores/toast'
 import type { LoginResult, RoleItem } from '@/types'
-import { Button, Field } from '@/components/ui'
+import { Button, Field, Select } from '@/components/ui'
 
 const platformHost = (import.meta.env.VITE_PLATFORM_HOST as string | undefined) || '172.16.209.170'
 
@@ -169,13 +169,15 @@ export default function LoginPage() {
                 placeholder="席位标识，默认 admin"
               />
             ) : (
-              <select className="field h-9" value={role} onChange={(event) => setRole(event.target.value)}>
-                {roles.map((item) => (
-                  <option key={item.key} value={item.key}>
-                    {item.name} · {item.key}
-                  </option>
-                ))}
-              </select>
+              <Select
+                className="h-9"
+                value={role}
+                options={roles.map((item) => ({
+                  value: item.key,
+                  label: `${item.name} · ${item.key}`,
+                }))}
+                onChange={(value) => setRole(value)}
+              />
             )}
           </div>
 

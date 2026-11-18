@@ -16,6 +16,7 @@ import {
   LoadingBlock,
   PageHeader,
   Panel,
+  Select,
   StatusDot,
   TabStrip,
   useConfirm,
@@ -441,15 +442,15 @@ export default function AlertsPage() {
             />
           </Field>
           <Field label="告警类型">
-            <select
-              className="field"
-              value={form.alertType}
+            <Select
+              value={String(form.alertType)}
               disabled={!!editing}
-              onChange={(event) => setForm({ ...form, alertType: Number(event.target.value) })}
-            >
-              <option value={0}>资源告警</option>
-              <option value={1}>日志告警</option>
-            </select>
+              options={[
+                { value: '0', label: '资源告警' },
+                { value: '1', label: '日志告警' },
+              ]}
+              onChange={(value) => setForm({ ...form, alertType: Number(value) })}
+            />
           </Field>
           <Field label="监控对象" required>
             <input
@@ -469,28 +470,40 @@ export default function AlertsPage() {
             />
           </Field>
           <Field label="巡检周期">
-            <select className="field" value={form.interval} onChange={(event) => setForm({ ...form, interval: event.target.value })}>
-              <option value="1m">1 分钟</option>
-              <option value="5m">5 分钟</option>
-              <option value="15m">15 分钟</option>
-              <option value="1h">1 小时</option>
-            </select>
+            <Select
+              value={form.interval}
+              options={[
+                { value: '1m', label: '1 分钟' },
+                { value: '5m', label: '5 分钟' },
+                { value: '15m', label: '15 分钟' },
+                { value: '1h', label: '1 小时' },
+              ]}
+              onChange={(value) => setForm({ ...form, interval: value })}
+            />
           </Field>
           <Field label="指标">
-            <select className="field" value={form.metric} onChange={(event) => setForm({ ...form, metric: event.target.value })}>
-              <option value="cpu">CPU 使用率</option>
-              <option value="memory">内存使用率</option>
-              <option value="disk">磁盘使用率</option>
-              <option value="restart">容器重启</option>
-            </select>
+            <Select
+              value={form.metric}
+              options={[
+                { value: 'cpu', label: 'CPU 使用率' },
+                { value: 'memory', label: '内存使用率' },
+                { value: 'disk', label: '磁盘使用率' },
+                { value: 'restart', label: '容器重启' },
+              ]}
+              onChange={(value) => setForm({ ...form, metric: value })}
+            />
           </Field>
           <Field label="比较符">
-            <select className="field" value={form.operator} onChange={(event) => setForm({ ...form, operator: event.target.value })}>
-              <option value=">">大于 &gt;</option>
-              <option value=">=">大于等于 ≥</option>
-              <option value="<">小于 &lt;</option>
-              <option value="=">等于 =</option>
-            </select>
+            <Select
+              value={form.operator}
+              options={[
+                { value: '>', label: '大于 >' },
+                { value: '>=', label: '大于等于 ≥' },
+                { value: '<', label: '小于 <' },
+                { value: '=', label: '等于 =' },
+              ]}
+              onChange={(value) => setForm({ ...form, operator: value })}
+            />
           </Field>
           <Field label="阈值">
             <input

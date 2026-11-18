@@ -16,6 +16,7 @@ import {
   Modal,
   PageHeader,
   Panel,
+  Select,
   StatusDot,
   useConfirm,
 } from '@/components/ui'
@@ -440,10 +441,14 @@ export default function UsersPage() {
             />
           </Field>
           <Field label="账户状态">
-            <select className="field" value={form.status} onChange={(event) => setForm({ ...form, status: Number(event.target.value) })}>
-              <option value={1}>启用</option>
-              <option value={0}>停用</option>
-            </select>
+            <Select
+              value={String(form.status)}
+              options={[
+                { value: '1', label: '启用' },
+                { value: '0', label: '停用' },
+              ]}
+              onChange={(value) => setForm({ ...form, status: Number(value) })}
+            />
           </Field>
           <Field label="邮箱">
             <input className="field" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="name@domain.com" />

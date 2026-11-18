@@ -16,6 +16,7 @@ import {
   Field,
   PageHeader,
   Panel,
+  Select,
   StatusDot,
   TabStrip,
   useConfirm,
@@ -844,17 +845,18 @@ export default function DatabasePage() {
 
           <Field label="新增授权" hint="从数据库用户中选择，授权后立即生效">
             <div className="flex items-center gap-2">
-              <select className="field flex-1" value={grantUser} onChange={(event) => setGrantUser(event.target.value)}>
-                <option value="">选择数据库用户</option>
-                {dbUsers
+              <Select
+                className="flex-1"
+                placeholder="选择数据库用户"
+                value={grantUser}
+                options={dbUsers
                   .filter((user) => !authorizedUsers.includes(user.username))
-                  .map((user) => (
-                    <option key={user.username} value={user.username}>
-                      {user.username}
-                      {user.desc ? ` · ${user.desc}` : ''}
-                    </option>
-                  ))}
-              </select>
+                  .map((user) => ({
+                    value: user.username,
+                    label: `${user.username}${user.desc ? ` · ${user.desc}` : ''}`,
+                  }))}
+                onChange={(value) => setGrantUser(value)}
+              />
               <Button
                 size="sm"
                 variant="signal"

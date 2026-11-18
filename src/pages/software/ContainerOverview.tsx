@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { formatBytes, formatNumber } from '@/lib/format'
-import { Panel } from '@/components/ui'
+import { Panel, Select } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 interface OverView {
@@ -154,14 +154,15 @@ export default function ContainerOverviewPage() {
             <span className="flex h-[30px] items-center border border-signal/60 bg-signal/10 px-3 text-[12px] text-signal">
               资源使用量 Top5
             </span>
-            <select
-              className="field h-[30px] w-[132px] text-[12px]"
+            <Select
+              className="h-[30px] w-[132px] text-[12px]"
               value={topType}
-              onChange={(event) => setTopType(event.target.value as 'cpu' | 'mem')}
-            >
-              <option value="cpu">CPU使用量</option>
-              <option value="mem">内存使用量</option>
-            </select>
+              options={[
+                { value: 'cpu', label: 'CPU使用量' },
+                { value: 'mem', label: '内存使用量' },
+              ]}
+              onChange={(value) => setTopType(value as 'cpu' | 'mem')}
+            />
             <button
               onClick={() => {
                 overviewQuery.refetch()
@@ -247,10 +248,15 @@ export default function ContainerOverviewPage() {
           >
             ›
           </button>
-          <select className="field ml-2 h-[26px] w-[112px] text-[11.5px]" defaultValue="5">
-            <option value="5">每页显示 5 条</option>
-            <option value="10">每页显示 10 条</option>
-          </select>
+          <Select
+            className="ml-2 h-[26px] w-[112px] text-[11.5px]"
+            value="5"
+            options={[
+              { value: '5', label: '每页显示 5 条' },
+              { value: '10', label: '每页显示 10 条' },
+            ]}
+            onChange={() => {}}
+          />
         </div>
       </Panel>
 

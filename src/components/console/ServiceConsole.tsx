@@ -21,7 +21,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import type { PodInfoItem, ServiceItem, ServiceLogData } from '@/types'
-import { Badge, Tip } from '@/components/ui'
+import { Badge, Select, Tip } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || '/api/gaop'
@@ -595,25 +595,23 @@ export function ServiceConsole({
         <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-[#262d31] bg-[#14181b] px-4 py-1.5">
           <div className="flex items-center gap-1.5">
             <span className="font-mono text-[8px] tracking-[0.16em] text-[#68716f]">POD</span>
-            <select className={darkSelect} value={pod} onChange={(event) => setPod(event.target.value)}>
-              {pods.length === 0 && <option value="">无运行 Pod</option>}
-              {pods.map((item) => (
-                <option key={item.podName} value={item.podName}>
-                  {item.podName}
-                </option>
-              ))}
-            </select>
+            <Select
+              className={cn(darkSelect, 'flex items-center')}
+              placeholder="无运行 Pod"
+              value={pod}
+              options={pods.map((item) => ({ value: item.podName, label: item.podName }))}
+              onChange={(value) => setPod(value)}
+            />
           </div>
           <div className="flex items-center gap-1.5">
             <span className="font-mono text-[8px] tracking-[0.16em] text-[#68716f]">CONTAINER</span>
-            <select className={darkSelect} value={container} onChange={(event) => setContainer(event.target.value)}>
-              {containers.length === 0 && <option value="">无容器</option>}
-              {containers.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
+            <Select
+              className={cn(darkSelect, 'flex items-center')}
+              placeholder="无容器"
+              value={container}
+              options={containers.map((item) => ({ value: item, label: item }))}
+              onChange={(value) => setContainer(value)}
+            />
           </div>
           <div className="hidden h-5 w-px bg-[#2b3236] sm:block" />
           <span className="hidden font-mono text-[8px] tracking-[0.14em] text-[#68716f] sm:inline">NS / {namespace}</span>

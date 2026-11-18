@@ -27,6 +27,7 @@ import {
   KV,
   PageHeader,
   Panel,
+  Select,
   StatusDot,
   useConfirm,
 } from '@/components/ui'
@@ -515,23 +516,28 @@ export default function DeploymentDetailPage() {
       >
         <div className="space-y-3">
           <Field label="目标版本" required hint="来自镜像仓库的标签列表">
-            <select className="field font-mono" value={imageVersion} onChange={(event) => setImageVersion(event.target.value)}>
-              <option value="">选择版本</option>
-              {(tagsQuery.data?.list ?? []).map((tag) => (
-                <option key={tag.name} value={tag.name}>
-                  {tag.name}
-                </option>
-              ))}
-              {parsed.tag && !(tagsQuery.data?.list ?? []).some((tag) => tag.name === parsed.tag) && (
-                <option value={parsed.tag}>{parsed.tag}（当前）</option>
-              )}
-            </select>
+            <Select
+              className="font-mono"
+              placeholder="选择版本"
+              value={imageVersion}
+              options={[
+                ...(tagsQuery.data?.list ?? []).map((tag) => ({ value: tag.name, label: tag.name })),
+                ...(parsed.tag && !(tagsQuery.data?.list ?? []).some((tag) => tag.name === parsed.tag)
+                  ? [{ value: parsed.tag, label: `${parsed.tag}（当前）` }]
+                  : []),
+              ]}
+              onChange={(value) => setImageVersion(value)}
+            />
           </Field>
           <Field label="更新策略">
-            <select className="field" value={imageType} onChange={(event) => setImageType(Number(event.target.value))}>
-              <option value={1}>先启动新实例，再停止旧实例</option>
-              <option value={2}>先停止旧实例，再启动新实例</option>
-            </select>
+            <Select
+              value={String(imageType)}
+              options={[
+                { value: '1', label: '先启动新实例，再停止旧实例' },
+                { value: '2', label: '先停止旧实例，再启动新实例' },
+              ]}
+              onChange={(value) => setImageType(Number(value))}
+            />
           </Field>
           <div className="flex items-start gap-2 border border-line bg-paper-2/40 px-3 py-2">
             <Server size={12} className="mt-0.5 text-mute" />
