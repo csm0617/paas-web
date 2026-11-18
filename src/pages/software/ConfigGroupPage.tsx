@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, FilePlus2, Files, FolderPlus, Link2, RefreshCw, Save, Trash2, Upload } from 'lucide-react'
+import { ChevronDown, Download, FilePlus2, FolderPlus, Link2, Save, Trash2, Upload } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { api, API_BASE, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -55,6 +55,7 @@ export default function ConfigGroupPage() {
   const importRef = useRef<HTMLInputElement | null>(null)
   const [keyword, setKeyword] = useState('')
   const [selected, setSelected] = useState<string[]>([])
+  const [expandedName, setExpandedName] = useState<string | null>(null)
   const [groupOpen, setGroupOpen] = useState(false)
   const [groupName, setGroupName] = useState('')
   const [active, setActive] = useState<GroupRow | null>(null)
@@ -243,9 +244,12 @@ export default function ConfigGroupPage() {
 
   return (
     <div>
-      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入配置组名称搜索' }}>
+      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入配置名称搜索' }}>
         <Button size="sm" variant="signal" onClick={() => setGroupOpen(true)}>
-          <FolderPlus size={11} /> 创建配置组
+          <FolderPlus size={11} /> 新增配置
+        </Button>
+        <Button size="sm" variant="signal" loading={exportMutation.isPending} onClick={exportGroups}>
+          <Download size={11} /> 导出配置
         </Button>
         <input
           ref={importRef}
@@ -258,109 +262,145 @@ export default function ConfigGroupPage() {
             event.target.value = ''
           }}
         />
-        <Button size="sm" loading={importGroups.isPending} onClick={() => importRef.current?.click()}>
-          <Upload size={11} /> 导入配置组
+        <Button size="sm" variant="signal" loading={importGroups.isPending} onClick={() => importRef.current?.click()}>
+          <Upload size={11} /> 导入配置
         </Button>
-        <Button size="sm" loading={exportMutation.isPending} onClick={exportGroups}>
-          <Download size={11} /> 导出配置组
-        </Button>
-        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-          <RefreshCw size={11} /> 刷新
+        <Button
+          size="sm"
+          variant="danger"
+          disabled={selected.length === 0}
+          loading={deleteGroups.isPending}
+          onClick={removeSelected}
+        >
+          <Trash2 size={11} /> 删除配置
         </Button>
       </PageToolbar>
 
       <Panel bodyClassName="p-0">
-        <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
-          <span className="mono text-[8.5px] tracking-widest text-mute">
-            {selected.length > 0 ? `已选 ${selected.length} 项` : '勾选后可批量导出或删除'}
-          </span>
-          {selected.length > 0 && (
-            <Button size="sm" variant="danger" className="ml-auto" loading={deleteGroups.isPending} onClick={removeSelected}>
-              <Trash2 size={10} /> 删除所选
-            </Button>
-          )}
-        </div>
-        <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
-          {groups.map((group) => {
-            const fileCount = Object.keys(group.data).length
-            const checked = selected.includes(group.name)
-            return (
-              <div
-                key={group.name}
-                className={cn(
-                  'border bg-paper transition-colors',
-                  checked ? 'border-signal' : 'border-line hover:border-line-strong',
-                )}
-              >
-                <div className="flex items-start gap-2.5 px-3.5 py-3">
-                  <input
-                    type="checkbox"
-                    className="check mt-0.5"
-                    checked={checked}
-                    onChange={() => toggle(group.name)}
-                    aria-label={`选择 ${group.name}`}
+        {groups.map((group) => {
+          const files = Object.entries(group.data)
+          const checked = selected.includes(group.name)
+          const expanded = expandedName === group.name
+          return (
+            <div key={group.name} className="border-b border-line last:border-b-0">
+              <div className="flex items-center gap-3 px-4 py-2.5">
+                <input
+                  type="checkbox"
+                  className="check"
+                  checked={checked}
+                  onChange={() => toggle(group.name)}
+                  aria-label={`选择 ${group.name}`}
+                />
+                <button
+                  className="min-w-0 truncate text-[12px] text-ink transition-colors hover:text-signal"
+                  onClick={() => setExpandedName(expanded ? null : group.name)}
+                >
+                  {group.name}
+                </button>
+                <span className="flex-none text-[12px] text-ink-3">配置文件 {files.length} 个</span>
+                <span className="mono ml-auto flex-none text-[11.5px] text-mute">
+                  {formatDate(group.createdAt, true)}
+                </span>
+
+                <Button
+                  size="sm"
+                  variant="signal"
+                  className="flex-none"
+                  onClick={() => {
+                    setActive(group)
+                    setFileOpen(true)
+                    setFileName('')
+                    setFileValue('')
+                  }}
+                >
+                  <FilePlus2 size={10} /> 新建配置文件
+                </Button>
+                <button
+                  className="flex-none text-mute transition-colors hover:text-ink"
+                  onClick={() => setExpandedName(expanded ? null : group.name)}
+                  aria-label={expanded ? '收起' : '展开'}
+                >
+                  <ChevronDown
+                    size={14}
+                    className={cn('transition-transform', expanded && 'rotate-180')}
                   />
-                  <div className="flex h-9 w-9 flex-none items-center justify-center border border-line-strong bg-paper-2">
-                    <Files size={15} className="text-ink-3" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-mono text-[11.5px] text-ink">{group.name}</div>
-                    <div className="mono mt-1 text-[8.5px] tracking-wider text-mute">
-                      {fileCount} FILES · {formatDate(group.createdAt, false)}
-                    </div>
-                  </div>
-                  <Badge tone={fileCount > 0 ? 'ok' : 'default'}>{fileCount}</Badge>
-                </div>
-                <div className="flex items-center justify-between border-t border-line px-3.5 py-2">
-                  <button
-                    className="mono text-[8.5px] tracking-widest text-ink-3 hover:text-signal"
-                    onClick={() => {
-                      setActive(group)
-                      setEditing(null)
-                    }}
-                  >
-                    查看 / 编辑文件
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="text-mute transition-colors hover:text-ink"
-                      title="创建配置文件"
-                      onClick={() => {
-                        setActive(group)
-                        setFileOpen(true)
-                        setFileName('')
-                        setFileValue('')
-                      }}
-                    >
-                      <FilePlus2 size={12} />
-                    </button>
-                    <button
-                      className="text-mute transition-colors hover:text-signal"
-                      title="删除配置组"
-                      onClick={() => removeGroup(group)}
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                </div>
+                </button>
               </div>
-            )
-          })}
-        </div>
+              {expanded && (
+                <div className="bg-[#0c1b2a] px-4 pb-3">
+                  {files.length === 0 ? (
+                    <div className="py-6 text-center text-[12px] text-mute">暂无配置文件</div>
+                  ) : (
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>文件名称</th>
+                          <th>文件内容</th>
+                          <th className="w-[120px] text-center">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {files.map(([name, value]) => (
+                          <tr key={name}>
+                            <td>
+                              <span className="mono text-[11.5px] text-ink">{name}</span>
+                            </td>
+                            <td>
+                              <span className="block max-w-[560px] truncate font-mono text-[11px] text-ink-3">
+                                {value || '（空）'}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="flex items-center justify-center gap-2.5 text-[12px]">
+                                <button
+                                  className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                                  onClick={() => {
+                                    setActive(group)
+                                    setEditing({ name, value })
+                                  }}
+                                >
+                                  编辑
+                                </button>
+                                <button
+                                  className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
+                                  onClick={async () => {
+                                    const ok = await confirm({
+                                      title: `删除配置文件「${name}」？`,
+                                      description: '挂载该配置组的服务将无法读取此文件。',
+                                      danger: true,
+                                      confirmText: '删除文件',
+                                    })
+                                    if (ok) deleteFile.mutate({ group: group.name, file: name })
+                                  }}
+                                >
+                                  删除
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
         {groups.length === 0 && !query.isLoading && (
           <div className="p-4">
             <EmptyState
-              title="暂无配置组"
-              description="创建配置组后，可在其中维护多个配置文件，并挂载到服务。"
+              title="暂无配置"
+              description="创建配置后，可在其中维护多个配置文件，并挂载到服务。"
               action={
                 <Button size="sm" variant="signal" onClick={() => setGroupOpen(true)}>
-                  <FolderPlus size={11} /> 创建配置组
+                  <FolderPlus size={11} /> 新增配置
                 </Button>
               }
             />
           </div>
         )}
-        {query.isLoading && <div className="px-4 py-10 text-center text-[11px] text-mute">正在读取配置组…</div>}
+        {query.isLoading && <div className="px-4 py-10 text-center text-[11px] text-mute">正在读取配置…</div>}
       </Panel>
 
       <Modal

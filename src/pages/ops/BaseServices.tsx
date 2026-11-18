@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Box, RefreshCw, RotateCw, ScrollText, Settings2, SquareTerminal } from 'lucide-react'
-import { lazy, Suspense, useMemo, useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Activity, Plus } from 'lucide-react'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, Drawer, KV, Modal, PageToolbar, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { AreaTrend } from '@/components/charts'
+import { ActionMenu, Button, Drawer, Field, PageToolbar, Panel, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -15,36 +17,97 @@ const ServiceConsole = lazy(() =>
 
 const BASE_TYPE = 1
 
+interface MonitorPoint {
+  timestamp?: string
+  floatValue?: string | null
+}
+
+interface MonitorSeries {
+  podName?: string
+  metrics?: MonitorPoint[]
+}
+
+interface MonitorData {
+  cpu?: MonitorSeries[]
+  memory?: MonitorSeries[]
+  outboundNetwork?: MonitorSeries[]
+  inboundNetwork?: MonitorSeries[]
+  diskReadIo?: MonitorSeries[]
+  diskWriteIo?: MonitorSeries[]
+}
+
+function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
+  return (list ?? []).slice(0, 4).map((series, index) => ({
+    name: series.podName || `SERIES ${index + 1}`,
+    points: (series.metrics ?? [])
+      .filter(
+        (point) =>
+          point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)),
+      )
+      .map((point) => {
+        const date = point.timestamp ? new Date(point.timestamp) : null
+        const label =
+          date && !Number.isNaN(date.getTime())
+            ? `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+            : ''
+        return { label, value: Number(point.floatValue) * factor }
+      }),
+  }))
+}
+
 function serviceName(service: ServiceItem) {
   return service.nameUs || service.nameFr
 }
 
 function k8sName(service: ServiceItem) {
-  return service.service?.metadata?.name || service.deployment?.metadata?.name || serviceName(service)
+  return service.deployment?.metadata?.name || serviceName(service)
+}
+
+function serviceLabel(service: ServiceItem) {
+  return service.deployment?.spec?.template?.metadata?.annotations?.['gaop/serviceLabel'] || '--'
 }
 
 function imageOf(service: ServiceItem) {
   if (typeof service.imageInfo === 'string') return service.imageInfo
   if (service.imageInfo?.image) return service.imageInfo.image
-  return '—'
+  return service.deployment?.spec?.template?.spec?.containers?.[0]?.image || '—'
+}
+
+function imageShort(service: ServiceItem) {
+  return (service.deployment?.spec?.template?.spec?.containers ?? [])
+    .map((container) => {
+      const parts = (container.image || '').split('/')
+      return parts[1] || parts[2] ? `${parts[1] || '--'}/${parts[2] || '--'}` : '--'
+    })
+    .join(',')
 }
 
 function statusOf(service: ServiceItem) {
   const ready = service.deployment?.status?.readyReplicas ?? 0
-  const desired = service.deployment?.spec?.replicas ?? 0
-  if (service.terminated) return { label: 'STOPPED', tone: 'default' as const, ready, desired }
-  if (ready > 0) return { label: 'RUNNING', tone: 'ok' as const, ready, desired }
-  if (desired > 0) return { label: 'PENDING', tone: 'warn' as const, ready, desired }
-  return { label: 'STOPPED', tone: 'default' as const, ready, desired }
+  const desired = service.deployment?.status?.replicas ?? service.deployment?.spec?.replicas ?? 0
+  if (service.terminated) return { label: '已停止', tone: 'text-mute', ready, desired }
+  if (ready > 0 && desired > 0 && ready < desired) return { label: '滚动发布中', tone: 'text-[#4aa3f0]', ready, desired }
+  if (ready > 0) return { label: '运行中', tone: 'text-ok', ready, desired }
+  if (desired > 0) return { label: '启动中', tone: 'text-warn', ready, desired }
+  return { label: '已停止', tone: 'text-mute', ready, desired }
 }
 
 export default function BaseServicesPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
-  const [keyword, setKeyword] = useState('')
+  const navigate = useNavigate()
   const [detail, setDetail] = useState<ServiceItem | null>(null)
-  const [eventTarget, setEventTarget] = useState<ServiceItem | null>(null)
-  const [consoleState, setConsoleState] = useState<{ service: string; mode: 'logs' | 'terminal' } | null>(null)
+  const [consoleState, setConsoleState] = useState<{
+    service: string
+    mode: 'logs' | 'terminal'
+    history?: boolean
+  } | null>(null)
+  const [versionTarget, setVersionTarget] = useState<ServiceItem | null>(null)
+  const [versionImage, setVersionImage] = useState('')
+  const [versionTag, setVersionTag] = useState('')
+  const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
+  const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
+  const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
 
   const query = useQuery({
     queryKey: ['base-services'],
@@ -55,34 +118,14 @@ export default function BaseServicesPage() {
         size: 50,
         keyword: '',
       }),
-    refetchInterval: 30_000,
-  })
-
-  const eventsQuery = useQuery({
-    queryKey: ['base-service-events', eventTarget ? k8sName(eventTarget) : ''],
-    queryFn: () =>
-      api.get<Array<{ reason?: string; message?: string; type?: string; count?: number; lastTimestamp?: string; firstTimestamp?: string }>>(
-        '/v1/service/baseEvent',
-        { baseServiceName: eventTarget ? k8sName(eventTarget) : '' },
-      ),
-    enabled: !!eventTarget,
+    refetchInterval: 3_000,
   })
 
   const services = query.data?.services ?? []
 
-  const filtered = useMemo(() => {
-    const q = keyword.trim().toLowerCase()
-    if (!q) return services
-    return services.filter((item) => {
-      const name = `${serviceName(item)} ${item.nameFr || ''} ${k8sName(item)}`.toLowerCase()
-      return name.includes(q)
-    })
-  }, [services, keyword])
-
   const actionMutation = useMutation({
     mutationFn: ({ path, name }: { path: string; name: string }) => api.put(path, [name]),
-    onSuccess: (_data, variables) => {
-      toast.success('操作已下发', `${variables.name} 的变更请求已提交至集群`)
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['base-services'] })
     },
     onError: (error) => toast.error('操作失败', errorMessage(error)),
@@ -97,110 +140,195 @@ export default function BaseServicesPage() {
     onError: (error) => toast.error('重启失败', errorMessage(error)),
   })
 
-  async function toggle(service: ServiceItem) {
-    const status = statusOf(service)
-    const stopping = status.label === 'RUNNING'
-    const ok = await confirm({
-      title: `${stopping ? '停止' : '启动'} ${k8sName(service)}？`,
-      description: stopping
-        ? '框架服务为平台运行的基础组件，停止后可能导致对应功能不可用，请确认影响范围。'
-        : '启动后框架服务将重新调度工作负载，可能需要一段时间才能就绪。',
-      confirmText: stopping ? '停止' : '启动',
-      danger: stopping,
-    })
-    if (!ok) return
-    actionMutation.mutate({ path: stopping ? '/v1/service/stop' : '/v1/service/start', name: k8sName(service) })
+  const versionTagsQuery = useQuery({
+    queryKey: ['base-version-tags', versionImage],
+    queryFn: () =>
+      api.get<{ list: Array<{ name: string }> }>('/v1/image/tagInfo', {
+        imageName: imageRepo(versionImage),
+        page: 1,
+        size: 200,
+      }),
+    enabled: !!versionTarget && !!versionImage,
+  })
+
+  const versionMutation = useMutation({
+    mutationFn: async () => {
+      if (!versionTarget) throw new Error('未选择服务')
+      if (!versionImage.trim() || !versionTag.trim()) throw new Error('请填写镜像与版本')
+      return api.put('/v1/service/rollingUpdate', {
+        name: serviceName(versionTarget),
+        version: `${versionImage.trim()}:${versionTag.trim()}`,
+        type: Number(versionStrategy),
+      })
+    },
+    onSuccess: () => {
+      toast.success('镜像版本已切换', 'Deployment 将触发滚动更新')
+      setVersionTarget(null)
+      queryClient.invalidateQueries({ queryKey: ['base-services'] })
+    },
+    onError: (error) => toast.error('版本切换失败', errorMessage(error)),
+  })
+
+  const monitorQuery = useQuery({
+    queryKey: ['base-service-monitor', monitorTarget ? serviceName(monitorTarget) : '', monitorRange],
+    queryFn: () =>
+      api.get<MonitorData>('/v1/pub/serviceMonitor', {
+        namespace: monitorTarget?.service?.metadata?.namespace || 'gaop-namespace',
+        name: monitorTarget ? serviceName(monitorTarget) : '',
+        queryTimeType: true,
+        timeType: monitorRange,
+      }),
+    enabled: !!monitorTarget,
+  })
+
+  function imageRepo(image: string) {
+    const colon = image.lastIndexOf(':')
+    const slash = image.lastIndexOf('/')
+    return colon > slash ? image.slice(0, colon) : image
+  }
+
+  function openVersion(service: ServiceItem) {
+    const image = imageOf(service)
+    const colon = image.lastIndexOf(':')
+    const slash = image.lastIndexOf('/')
+    if (colon > slash) {
+      setVersionImage(image.slice(0, colon))
+      setVersionTag(image.slice(colon + 1))
+    } else {
+      setVersionImage(image)
+      setVersionTag('')
+    }
+    setVersionTarget(service)
   }
 
   const columns: Array<Column<ServiceItem>> = [
     {
       key: 'index',
-      header: '#',
-      width: '48px',
-      cell: (_row, index) => <span className="mono text-[9.5px] text-mute">{String(index + 1).padStart(2, '0')}</span>,
+      header: '序号',
+      width: 80,
+      align: 'center',
+      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
     },
     {
-      key: 'name',
-      header: '框架服务 / COMPONENT',
-      cell: (row) => (
-        <div className="flex items-center gap-2.5">
-          <Box size={13} className="text-mute" />
-          <div className="min-w-0">
-            <div className="truncate text-[12px] font-medium text-ink">{serviceName(row)}</div>
-            <div className="mono mt-0.5 text-[9px] tracking-wider text-mute">{k8sName(row)}</div>
-          </div>
-        </div>
-      ),
+      key: 'label',
+      header: '服务名称',
+      width: 120,
+      align: 'center',
+      cell: (row) => <span className="text-[12px] text-ink">{serviceLabel(row)}</span>,
+    },
+    {
+      key: 'key',
+      header: '服务标识',
+      width: 120,
+      align: 'center',
+      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{k8sName(row)}</span>,
     },
     {
       key: 'status',
       header: '状态',
+      width: 160,
+      align: 'center',
       cell: (row) => {
         const status = statusOf(row)
+        const allRunning = status.desired > 0 && status.ready === status.desired
         return (
-          <div className="flex items-center gap-2">
-            <StatusDot tone={status.label === 'RUNNING' ? 'ok' : status.label === 'PENDING' ? 'warn' : 'idle'} />
-            <span className="mono text-[9.5px] tracking-widest text-ink-3">{status.label}</span>
+          <div className="leading-[1.5]">
+            <div className={cn('text-[12px]', status.tone)}>{status.label}</div>
+            <div className="text-[11.5px] text-ink-3">
+              {status.ready}/{status.desired}
+              {status.desired === 0 ? '全部停止' : allRunning ? '全部运行' : '部分运行'}
+            </div>
+            <div className="text-[11.5px] text-ink-3">已重启 {row.restartCount ?? 0} 次</div>
           </div>
-        )
-      },
-    },
-    {
-      key: 'replicas',
-      header: '副本',
-      cell: (row) => {
-        const status = statusOf(row)
-        return (
-          <span className="num text-[12px] text-ink">
-            {status.ready}
-            <span className="text-[9.5px] text-mute"> / {status.desired || '—'}</span>
-          </span>
         )
       },
     },
     {
       key: 'image',
       header: '镜像',
-      cell: (row) => <span className="mono max-w-[240px] truncate text-[9.5px] text-ink-3">{imageOf(row)}</span>,
-    },
-    {
-      key: 'restart',
-      header: '重启',
-      cell: (row) => (
-        <span className={cn('mono text-[11px]', (row.restartCount ?? 0) > 0 ? 'text-signal' : 'text-mute')}>
-          {row.restartCount ?? 0}
-        </span>
-      ),
+      width: 350,
+      align: 'center',
+      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{imageShort(row)}</span>,
     },
     {
       key: 'created',
       header: '创建时间',
+      width: 180,
+      align: 'center',
       cell: (row) => (
-        <span className="mono text-[9.5px] text-mute">
+        <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
           {row.deployment?.metadata?.creationTimestamp
-            ? formatDate(row.deployment.metadata.creationTimestamp, false)
-            : '—'}
+            ? formatDate(row.deployment.metadata.creationTimestamp, true)
+            : '--'}
         </span>
       ),
     },
     {
+      key: 'updated',
+      header: '版本更新时间',
+      width: 120,
+      align: 'center',
+      cell: (row) => {
+        const stamp = row.deployment?.spec?.template?.metadata?.annotations?.['gaop/updateTimestamp']
+        return (
+          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+            {stamp ? formatDate(Number(stamp), true) : '--'}
+          </span>
+        )
+      },
+    },
+    {
       key: 'actions',
-      header: '',
-      align: 'right',
+      header: '操作',
+      width: 180,
+      fixed: 'right',
+      align: 'center',
+      headerAlign: 'center',
       cell: (row) => {
         const status = statusOf(row)
-        const stopped = status.label === 'STOPPED'
+        const running = status.label === '运行中' || status.label === '滚动发布中' || status.label === '启动中'
         return (
-          <div className="flex items-center justify-end gap-1.5">
-            <Button size="sm" onClick={() => setDetail(row)}>
-              <Settings2 size={10} /> 配置
-            </Button>
-            <Button size="sm" onClick={() => toggle(row)} disabled={actionMutation.isPending}>
-              {stopped ? '启动' : '停止'}
-            </Button>
-            <Button size="sm" onClick={() => setEventTarget(row)}>
-              更多
-            </Button>
+          <div className="flex items-center justify-center gap-2.5 text-[12px]">
+            <button
+              className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+              onClick={() => setDetail(row)}
+            >
+              配置
+            </button>
+            <button
+              className={cn(
+                'transition-colors',
+                running ? 'text-[#ff7b7b] hover:text-[#ff9a9a]' : 'text-[#4aa3f0] hover:text-[#7cc4ff]',
+              )}
+              onClick={async () => {
+                const name = k8sName(row)
+                const ok = await confirm({
+                  title: `${running ? '停止' : '启动'} ${name}？`,
+                  description: '框架服务为平台运行的基础组件，操作后可能短暂影响对应功能。',
+                  confirmText: running ? '停止' : '启动',
+                  danger: running,
+                })
+                if (ok) {
+                  actionMutation.mutate({ path: running ? '/v1/service/stop' : '/v1/service/start', name })
+                }
+              }}
+            >
+              {running ? '停止' : '启动'}
+            </button>
+            <ActionMenu
+              triggerText="更多"
+              items={[
+                { label: '版本切换', onSelect: () => openVersion(row) },
+                {
+                  label: '历史日志',
+                  onSelect: () => setConsoleState({ service: k8sName(row), mode: 'logs', history: true }),
+                },
+                { label: '实时日志', onSelect: () => setConsoleState({ service: k8sName(row), mode: 'logs' }) },
+                { label: '终端登录', onSelect: () => setConsoleState({ service: k8sName(row), mode: 'terminal' }) },
+                { label: '监控', onSelect: () => setMonitorTarget(row) },
+                { label: '重启', danger: true, onSelect: () => restartMutation.mutate(k8sName(row)) },
+              ]}
+            />
           </div>
         )
       },
@@ -209,16 +337,16 @@ export default function BaseServicesPage() {
 
   return (
     <div>
-      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入基础服务名称搜索' }}>
-        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-          <RefreshCw size={11} /> 刷新
+      <PageToolbar>
+        <Button size="sm" variant="signal" onClick={() => navigate('/mirror/group')}>
+          <Plus size={12} /> 服务镜像组
         </Button>
       </PageToolbar>
 
-      <Panel kicker="FRAMEWORK COMPONENTS" title="组件清单" bodyClassName="p-0">
+      <Panel bodyClassName="p-0">
         <DataTable
           columns={columns}
-          rows={filtered}
+          rows={services}
           rowKey={(row) => k8sName(row)}
           loading={query.isLoading}
           pageSize={12}
@@ -230,134 +358,199 @@ export default function BaseServicesPage() {
       <Drawer
         open={!!detail}
         onOpenChange={(open) => !open && setDetail(null)}
-        kicker="BASE SERVICE / CONFIG"
         title={detail ? k8sName(detail) : '配置'}
-        description="框架服务的镜像、端口与调度信息。如需调整环境变量或存储，请在服务配置中操作。"
         width={680}
         footer={
-          <>
-            <Button size="sm" onClick={() => setDetail(null)}>
-              关闭
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                if (!detail) return
-                setConsoleState({ service: k8sName(detail), mode: 'logs' })
-                setDetail(null)
-              }}
-            >
-              <ScrollText size={10} /> 实时日志
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                if (!detail) return
-                setConsoleState({ service: k8sName(detail), mode: 'terminal' })
-                setDetail(null)
-              }}
-            >
-              <SquareTerminal size={10} /> 容器终端
-            </Button>
-            <Button
-              size="sm"
-              variant="signal"
-              loading={restartMutation.isPending}
-              onClick={() => {
-                if (!detail) return
-                restartMutation.mutate(k8sName(detail))
-              }}
-            >
-              <RotateCw size={10} /> 重启组件
-            </Button>
-          </>
+          <Button size="sm" onClick={() => setDetail(null)}>
+            关闭
+          </Button>
         }
       >
         {detail && (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="space-y-3">
             <div>
-              <div className="label mb-2">服务信息</div>
-              <KV k="组件名称" v={serviceName(detail)} />
-              <KV k="K8S 名称" v={k8sName(detail)} />
-              <KV k="镜像" v={imageOf(detail)} />
-              <KV k="命名空间" v={detail.service?.metadata?.namespace || '—'} />
-              <KV k="重启次数" v={detail.restartCount ?? 0} />
+              <InfoRow k="服务名称" v={serviceLabel(detail)} />
+              <InfoRow k="服务标识" v={k8sName(detail)} />
+              <InfoRow k="镜像" v={imageOf(detail)} />
+              <InfoRow k="命名空间" v={detail.service?.metadata?.namespace || '—'} />
+              <InfoRow k="重启次数" v={detail.restartCount ?? 0} />
             </div>
             <div>
-              <div className="label mb-2">端口映射</div>
-              {(detail.service?.spec?.ports ?? []).length === 0 && <div className="py-2 text-[11px] text-mute">未声明端口</div>}
+              <div className="mb-2 text-[12px] text-ink-3">端口映射</div>
+              {(detail.service?.spec?.ports ?? []).length === 0 && (
+                <div className="py-2 text-[12px] text-mute">未声明端口</div>
+              )}
               {(detail.service?.spec?.ports ?? []).map((port) => (
-                <KV
+                <InfoRow
                   key={`${port.name}-${port.port}`}
                   k={port.name || port.protocol || 'PORT'}
                   v={`${port.port} → ${port.targetPort || '—'}${port.nodePort ? ` (NodePort ${port.nodePort})` : ''}`}
                 />
               ))}
-              <div className="label mb-2 mt-4">Deployment 状态</div>
-              <KV k="可用副本" v={detail.deployment?.status?.availableReplicas ?? 0} />
-              <KV k="就绪副本" v={detail.deployment?.status?.readyReplicas ?? 0} />
-              <KV k="期望副本" v={detail.deployment?.spec?.replicas ?? 0} />
             </div>
           </div>
         )}
       </Drawer>
 
-      <Modal
-        open={!!eventTarget}
-        onOpenChange={(open) => !open && setEventTarget(null)}
-        kicker="BASE SERVICE / EVENTS"
-        title={eventTarget ? `${k8sName(eventTarget)} 事件` : '事件'}
-        description="Kubernetes 事件流，用于排查调度失败、镜像拉取异常与健康检查失败。"
-        width={720}
+      <Drawer
+        open={!!versionTarget}
+        onOpenChange={(open) => !open && setVersionTarget(null)}
+        title={versionTarget ? `${serviceName(versionTarget)} 版本切换` : '版本切换'}
+        width={520}
         footer={
           <>
-            <Button size="sm" onClick={() => setEventTarget(null)}>
-              关闭
+            <Button size="sm" onClick={() => setVersionTarget(null)}>
+              取消
             </Button>
-            <Button
-              size="sm"
-              variant="signal"
-              loading={restartMutation.isPending}
-              onClick={() => {
-                if (!eventTarget) return
-                restartMutation.mutate(k8sName(eventTarget))
-              }}
-            >
-              <RotateCw size={10} /> 重启组件
+            <Button size="sm" variant="signal" loading={versionMutation.isPending} onClick={() => versionMutation.mutate()}>
+              确定
             </Button>
           </>
         }
       >
-        <div className="max-h-[380px] space-y-2 overflow-y-auto">
-          {(eventsQuery.data ?? []).map((event, index) => (
-            <div key={`${event.reason}-${index}`} className="border border-line px-3 py-2">
-              <div className="flex items-center gap-2">
-                <Badge tone={event.type === 'Warning' ? 'warn' : 'info'}>{event.type || 'Normal'}</Badge>
-                <span className="font-mono text-[10px] text-ink">{event.reason || '—'}</span>
-                {event.count ? <span className="mono ml-auto text-[9px] text-mute">×{event.count}</span> : null}
-              </div>
-              <div className="mt-1.5 text-[11px] leading-relaxed text-ink-3">{event.message || '—'}</div>
-              <div className="mono mt-1 text-[8.5px] tracking-wider text-mute">
-                {event.lastTimestamp || event.firstTimestamp || '—'}
-              </div>
+        <div className="space-y-3">
+          <Field label="镜像仓库" required>
+            <input
+              className="field"
+              value={versionImage}
+              onChange={(event) => {
+                setVersionImage(event.target.value)
+                setVersionTag('')
+              }}
+            />
+          </Field>
+          <Field label="镜像版本" required>
+            <div className="flex gap-2">
+              <input
+                className="field flex-1"
+                value={versionTag}
+                onChange={(event) => setVersionTag(event.target.value)}
+              />
+              <select
+                className="field w-[140px]"
+                value=""
+                onChange={(event) => {
+                  if (event.target.value) setVersionTag(event.target.value)
+                }}
+              >
+                <option value="">选择版本</option>
+                {(versionTagsQuery.data?.list ?? []).map((tag) => (
+                  <option key={tag.name} value={tag.name}>
+                    {tag.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          ))}
-          {(eventsQuery.data ?? []).length === 0 && (
-            <div className="px-3 py-10 text-center text-[11px] text-mute">
-              {eventsQuery.isLoading ? '正在读取事件…' : '暂无事件记录'}
-            </div>
-          )}
+          </Field>
+          <Field label="更新策略">
+            <select
+              className="field"
+              value={versionStrategy}
+              onChange={(event) => setVersionStrategy(event.target.value as '1' | '2')}
+            >
+              <option value="2">滚动更新</option>
+              <option value="1">先停止再启动</option>
+            </select>
+          </Field>
         </div>
-      </Modal>
+      </Drawer>
+
+      <Drawer
+        open={!!monitorTarget}
+        onOpenChange={(open) => !open && setMonitorTarget(null)}
+        title={monitorTarget ? `${serviceName(monitorTarget)} 资源监控` : '服务监控'}
+        width={920}
+        footer={
+          <Button size="sm" onClick={() => setMonitorTarget(null)}>
+            关闭
+          </Button>
+        }
+      >
+        <div className="mb-4 flex w-fit border border-line">
+          {(['ONE_HOURS', 'SIX_HOURS'] as const).map((range) => (
+            <button
+              key={range}
+              onClick={() => setMonitorRange(range)}
+              className={cn(
+                'px-3 py-1.5 text-[12px] transition-colors',
+                monitorRange === range ? 'bg-[#1670c2] text-white' : 'text-ink-3 hover:text-white',
+              )}
+            >
+              {range === 'ONE_HOURS' ? '最近 1 小时' : '最近 6 小时'}
+            </button>
+          ))}
+        </div>
+        {monitorQuery.isLoading ? (
+          <div className="py-10 text-center text-[12px] text-mute">正在采集服务指标…</div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div>
+              <div className="mb-2 text-[12px] text-ink-3">CPU 使用量（m）</div>
+              <AreaTrend series={monitorTrend(monitorQuery.data?.cpu, 1000)} height={170} unit=" m" />
+            </div>
+            <div>
+              <div className="mb-2 text-[12px] text-ink-3">内存使用量（MB）</div>
+              <AreaTrend series={monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024)} height={170} unit=" MB" />
+            </div>
+            <div>
+              <div className="mb-2 text-[12px] text-ink-3">网络吞吐（KB/s）</div>
+              <AreaTrend
+                series={[
+                  ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name} IN`,
+                  })),
+                  ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name} OUT`,
+                  })),
+                ]}
+                height={170}
+                unit=" KB/s"
+              />
+            </div>
+            <div>
+              <div className="mb-2 text-[12px] text-ink-3">磁盘 IO（KB/s）</div>
+              <AreaTrend
+                series={[
+                  ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name} READ`,
+                  })),
+                  ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name} WRITE`,
+                  })),
+                ]}
+                height={170}
+                unit=" KB/s"
+              />
+            </div>
+          </div>
+        )}
+        <div className="mono mt-3 flex items-center gap-2 text-[11px] text-mute">
+          <Activity size={11} /> 指标来自 Prometheus，采样间隔约 1 分钟。
+        </div>
+      </Drawer>
 
       <Suspense fallback={null}>
         <ServiceConsole
           open={!!consoleState}
           serviceName={consoleState?.service || ''}
           initialMode={consoleState?.mode || 'logs'}
+          initialPaused={!!consoleState?.history}
           onClose={() => setConsoleState(null)}
         />
       </Suspense>
+    </div>
+  )
+}
+
+function InfoRow({ k, v }: { k: string; v: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-line py-2 last:border-0">
+      <span className="text-[12px] text-mute">{k}</span>
+      <span className="mono text-right text-[12px] text-ink">{v}</span>
     </div>
   )
 }

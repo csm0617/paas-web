@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { Activity, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
+import { formatDate } from '@/lib/format'
 import type { ServiceItem, ServiceList } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, Drawer, Field, PageToolbar, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { ActionMenu, Button, Drawer, Field, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
+import { cn } from '@/lib/utils'
 
 const NAMESPACE = 'gaop-namespace'
 const HPA_PATH = `/k8s/apis/autoscaling/v2/namespaces/${NAMESPACE}/horizontalpodautoscalers`
@@ -33,12 +35,34 @@ function cpuTarget(item: HpaItem) {
   return metric?.resource?.target?.averageUtilization
 }
 
+function isDisabled(item: HpaItem) {
+  return (item.spec?.scaleTargetRef?.name || '').includes('-disabled')
+}
+
+function thresholdLines(item: HpaItem) {
+  const metrics = item.spec?.metrics ?? []
+  const current =
+    ((item.status?.currentMetrics as
+      | Array<{ resource?: { name?: string; current?: { averageUtilization?: number } } }>
+      | undefined) ?? [])
+  return metrics.map((metric) => {
+    const name = metric.resource?.name
+    const value = current.find((entry) => entry.resource?.name === name)?.resource?.current
+      ?.averageUtilization
+    const label = name === 'memory' ? '内存' : 'CPU'
+    const target = metric.resource?.target?.averageUtilization
+    return `${label}：${value != null ? `${value}%` : '--'} / ${target != null ? `${target}%` : '--'}`
+  })
+}
+
 export default function AutoscalePage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<HpaItem | null>(null)
   const [form, setForm] = useState({ service: '', min: '1', max: '3', cpu: '80' })
+  const [keyword, setKeyword] = useState('')
+  const [eventsTarget, setEventsTarget] = useState<HpaItem | null>(null)
 
   const hpaQuery = useQuery({
     queryKey: ['hpa-list'],
@@ -52,7 +76,27 @@ export default function AutoscalePage() {
     enabled: createOpen,
   })
 
-  const items = useMemo(() => hpaQuery.data?.items ?? [], [hpaQuery.data])
+  const eventsQuery = useQuery({
+    queryKey: ['hpa-events', eventsTarget?.metadata?.name || ''],
+    queryFn: () =>
+      api.get<{ items?: Array<{ reason?: string; message?: string; lastTimestamp?: string; type?: string }> }>(
+        `/k8s/api/v1/namespaces/${NAMESPACE}/events`,
+        {
+          pretty: 'true',
+          fieldSelector: `involvedObject.kind=HorizontalPodAutoscaler,involvedObject.name=${eventsTarget?.metadata?.name || ''}`,
+        },
+      ),
+    enabled: !!eventsTarget,
+  })
+
+  const items = useMemo(() => {
+    const list = hpaQuery.data?.items ?? []
+    const text = keyword.trim().toLowerCase()
+    if (!text) return list
+    return list.filter((item) =>
+      `${item.metadata?.name || ''} ${targetOf(item)}`.toLowerCase().includes(text),
+    )
+  }, [hpaQuery.data, keyword])
   const services = servicesQuery.data?.services ?? []
   const deploymentOptions = useMemo(
     () =>
@@ -109,6 +153,24 @@ export default function AutoscalePage() {
     onError: (error) => toast.error('删除失败', errorMessage(error)),
   })
 
+  const toggleMutation = useMutation({
+    mutationFn: (item: HpaItem) => {
+      const name = item.metadata?.name || ''
+      const target = item.spec?.scaleTargetRef?.name || ''
+      const nextTarget = isDisabled(item) ? target.replace('-disabled', '') : `${target}-disabled`
+      return api.put(`${HPA_PATH}/${name}`, {
+        ...item,
+        metadata: { name, namespace: NAMESPACE },
+        spec: { ...item.spec, scaleTargetRef: { ...item.spec?.scaleTargetRef, name: nextTarget } },
+      })
+    },
+    onSuccess: (_data, item) => {
+      toast.success(isDisabled(item) ? '策略已启用' : '策略已停用')
+      queryClient.invalidateQueries({ queryKey: ['hpa-list'] })
+    },
+    onError: (error) => toast.error('操作失败', errorMessage(error)),
+  })
+
   async function remove(item: HpaItem) {
     const name = item.metadata?.name
     if (!name) return
@@ -134,69 +196,102 @@ export default function AutoscalePage() {
 
   const columns: Array<Column<HpaItem>> = [
     {
-      key: 'service',
-      header: '服务标识 / TARGET',
+      key: 'index',
+      header: '序号',
+      width: 80,
+      align: 'center',
+      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
+    },
+    {
+      key: 'name',
+      header: '策略名称',
+      align: 'center',
+      cell: (row) => <span className="text-[12px] text-ink">{row.metadata?.name || '—'}</span>,
+    },
+    {
+      key: 'target',
+      header: '服务标识',
+      align: 'center',
       cell: (row) => (
-        <div>
-          <div className="font-mono text-[11px] text-ink">{targetOf(row)}</div>
-          <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">
-            {row.spec?.scaleTargetRef?.kind || 'Deployment'} · {NAMESPACE}
-          </div>
-        </div>
+        <span className="mono text-[11.5px] text-ink-3">
+          {(row.spec?.scaleTargetRef?.name || '').replace('-disabled', '') || '—'}
+        </span>
       ),
     },
     {
-      key: 'status',
-      header: '开启状态',
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          <StatusDot tone="ok" />
-          <Badge tone="ok">ENABLED</Badge>
-        </div>
-      ),
+      key: 'enabled',
+      header: '启用状态',
+      align: 'center',
+      cell: (row) =>
+        isDisabled(row) ? (
+          <span className="text-[12px] text-danger">禁用</span>
+        ) : (
+          <span className="text-[12px] text-ok">启用</span>
+        ),
     },
     {
       key: 'threshold',
       header: '阈值',
-      cell: (row) => (
-        <span className="num text-[12px] text-ink">
-          {cpuTarget(row) ?? '—'}
-          <span className="ml-0.5 text-[9px] text-mute">% CPU</span>
-        </span>
-      ),
+      align: 'center',
+      cell: (row) => {
+        const lines = thresholdLines(row)
+        return lines.length ? (
+          <div className="leading-[1.6] text-[12px] text-ink-3">
+            {lines.map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </div>
+        ) : (
+          <span className="text-[12px] text-mute">—</span>
+        )
+      },
     },
     {
       key: 'min',
-      header: '最小实例数',
-      cell: (row) => <span className="num text-[12px] text-ink">{row.spec?.minReplicas ?? '—'}</span>,
+      header: '最小实例',
+      align: 'center',
+      cell: (row) => (
+        <span className="num text-[12px] text-ink">{Math.round(row.spec?.minReplicas ?? 0)}</span>
+      ),
     },
     {
       key: 'max',
-      header: '最大实例数',
-      cell: (row) => <span className="num text-[12px] text-ink">{row.spec?.maxReplicas ?? '—'}</span>,
-    },
-    {
-      key: 'current',
-      header: '当前 / 期望',
+      header: '最大实例',
+      align: 'center',
       cell: (row) => (
-        <span className="num text-[12px] text-ink-3">
-          {row.status?.currentReplicas ?? 0}
-          <span className="text-[9.5px] text-mute"> / {row.status?.desiredReplicas ?? 0}</span>
-        </span>
+        <span className="num text-[12px] text-ink">{Math.round(row.spec?.maxReplicas ?? 0)}</span>
       ),
     },
     {
       key: 'actions',
-      header: '',
-      align: 'right',
+      header: '操作',
+      width: 250,
+      align: 'center',
+      headerAlign: 'center',
       cell: (row) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <Button size="sm" onClick={() => openEdit(row)}>
-            配置
-          </Button>
-          <Button size="sm" onClick={() => remove(row)}>
-            <Trash2 size={10} /> 删除
-          </Button>
+        <div className="flex items-center justify-center gap-2.5 text-[12px]">
+          <button
+            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+            onClick={() => setEventsTarget(row)}
+          >
+            缩容事件
+          </button>
+          <button
+            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+            onClick={() => openEdit(row)}
+          >
+            修改
+          </button>
+          <ActionMenu
+            triggerText="更多"
+            items={[
+              {
+                label: isDisabled(row) ? '启用' : '停用',
+                onSelect: () => toggleMutation.mutate(row),
+              },
+              { label: '删除', danger: true, onSelect: () => remove(row) },
+            ]}
+          />
         </div>
       ),
     },
@@ -204,7 +299,9 @@ export default function AutoscalePage() {
 
   return (
     <div>
-      <PageToolbar>
+      <PageToolbar
+        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入策略名或服务名搜索' }}
+      >
         <Button
           size="sm"
           variant="signal"
@@ -214,10 +311,7 @@ export default function AutoscalePage() {
             setCreateOpen(true)
           }}
         >
-          <Plus size={12} /> 新建策略
-        </Button>
-        <Button size="sm" loading={hpaQuery.isFetching} onClick={() => hpaQuery.refetch()}>
-          <RefreshCw size={11} /> 刷新
+          <Plus size={12} /> 创建策略
         </Button>
       </PageToolbar>
 
@@ -244,7 +338,7 @@ export default function AutoscalePage() {
           if (!open) setEditing(null)
         }}
         kicker="AUTOSCALING / POLICY"
-        title={editing ? '配置伸缩策略' : '新建伸缩策略'}
+        title={editing ? '修改策略' : '创建策略'}
         description="目标服务以 Deployment 名称标识。阈值表示容器平均 CPU 使用率，超过阈值时扩容。"
         width={470}
         footer={
@@ -311,6 +405,43 @@ export default function AutoscalePage() {
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        open={!!eventsTarget}
+        onOpenChange={(open) => !open && setEventsTarget(null)}
+        title={`${eventsTarget?.metadata?.name || ''} 缩容事件`}
+        width={1000}
+        footer={
+          <Button size="sm" onClick={() => setEventsTarget(null)}>
+            关闭
+          </Button>
+        }
+      >
+        <div className="max-h-[520px] space-y-2 overflow-y-auto">
+          {(eventsQuery.data?.items ?? []).map((event, index) => (
+            <div key={index} className="border border-line px-3 py-2">
+              <div className="flex items-center gap-3 text-[12px]">
+                <span
+                  className={cn(
+                    'w-[120px] flex-none',
+                    event.type === 'Warning' ? 'text-danger' : 'text-ok',
+                  )}
+                >
+                  {event.reason || '—'}
+                </span>
+                <span className="flex-none text-ink-3">消息</span>
+                <span className="min-w-0 flex-1 text-ink">{event.message || '—'}</span>
+                <span className="mono flex-none text-[11px] text-mute">
+                  {event.lastTimestamp ? formatDate(event.lastTimestamp, true) : ''}
+                </span>
+              </div>
+            </div>
+          ))}
+          {!eventsQuery.isLoading && (eventsQuery.data?.items ?? []).length === 0 && (
+            <div className="py-8 text-center text-[12px] text-mute">暂无事件</div>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }

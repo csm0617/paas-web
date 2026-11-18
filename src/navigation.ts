@@ -53,10 +53,9 @@ export const navigation: NavGroup[] = [
           { label: '应用服务', en: 'SERVICES', path: '/software/application/service', code: 'SVC' },
           { label: '基础服务', en: 'BASE SERVICES', path: '/software/application/base-service', code: 'BAS' },
           { label: '容器', en: 'CONTAINERS', path: '/software/application/service-pod', code: 'POD' },
-          { label: '服务配置', en: 'SERVICE CONFIG', path: '/software/application/service-params', code: 'SCF' },
+          { label: '服务配置', en: 'SERVICE CONFIG', path: '/software/application/service-config', code: 'SCF' },
           { label: '服务延迟启动', en: 'STARTUP PLAN', path: '/software/application/service-startup', code: 'STA' },
           { label: '自动伸缩策略', en: 'AUTOSCALING', path: '/software/application/autoscale', code: 'HPA' },
-          { label: '配置组', en: 'CONFIG GROUPS', path: '/software/application/service-config', code: 'CMG', hidden: true },
         ],
       },
       {
