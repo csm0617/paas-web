@@ -107,6 +107,24 @@ const RESOURCE_PRESETS = [
   { key: '32X', memory: '8GB 内存', cpu: '2CPU', memoryMin: '6400', memoryMax: '8192', cpuMin: '2', cpuMax: '2' },
 ]
 
+const POD_ENV_OPTIONS = [
+  { value: 'NodeName', label: 'NodeName' },
+  { value: 'PodName', label: 'PodName' },
+  { value: 'NameSpace', label: 'NameSpace' },
+  { value: 'NodeIP', label: 'NodeIP' },
+  { value: 'PodIP', label: 'PodIP' },
+  { value: 'ServiceAccountName', label: 'ServiceAccountName' },
+]
+
+const POD_ENV_PATHS: Record<string, string> = {
+  NodeName: 'spec.nodeName',
+  PodName: 'metadata.name',
+  NameSpace: 'metadata.namespace',
+  NodeIP: 'status.hostIP',
+  PodIP: 'status.podIP',
+  ServiceAccountName: 'spec.serviceAccountName',
+}
+
 interface CreateFormState {
   serviceName: string
   nameUs: string
@@ -509,7 +527,17 @@ export default function ServiceManagePage() {
       const args = createForm.commandMode === 'custom' && createForm.command.trim() ? [{ arg: createForm.command.trim() }] : undefined
       const env = envRows
         .filter((item) => item.name.trim())
-        .map((item) => ({ name: item.name.trim(), value: item.value }))
+        .map((item) =>
+          item.type === 'Pod类型'
+            ? {
+                name: item.name.trim(),
+                value: null,
+                valueFrom: {
+                  fieldRef: { apiVersion: 'v1', fieldPath: POD_ENV_PATHS[item.value] || item.value },
+                },
+              }
+            : { name: item.name.trim(), value: item.value },
+        )
       return api.post('/v1/pub/createService', {
         serviceName: createForm.serviceKey.trim(),
         serviceLabel: createForm.serviceName.trim(),
@@ -1137,17 +1165,33 @@ export default function ServiceManagePage() {
                   { value: 'Pod类型', label: 'Pod类型' },
                 ]}
                 onChange={(value) =>
-                  setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, type: value } : item)))
+                  setEnvRows((rows) =>
+                    rows.map((item, i) => (i === index ? { ...item, type: value, value: '' } : item)),
+                  )
                 }
               />
-              <input
-                className={cn(CREATE_INPUT, 'h-[30px] min-w-0 flex-1')}
-                placeholder="变量值"
-                value={row.value}
-                onChange={(event) =>
-                  setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)))
-                }
-              />
+              {row.type === 'Pod类型' ? (
+                <Select
+                  className={cn(CREATE_SELECT, 'h-[30px] min-w-0 flex-1 text-[12px]')}
+                  placeholder="请选择"
+                  value={row.value}
+                  options={POD_ENV_OPTIONS}
+                  onChange={(value) =>
+                    setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, value } : item)))
+                  }
+                />
+              ) : (
+                <input
+                  className={cn(CREATE_INPUT, 'h-[30px] min-w-0 flex-1')}
+                  placeholder="变量值"
+                  value={row.value}
+                  onChange={(event) =>
+                    setEnvRows((rows) =>
+                      rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)),
+                    )
+                  }
+                />
+              )}
               <button
                 type="button"
                 title="删除"

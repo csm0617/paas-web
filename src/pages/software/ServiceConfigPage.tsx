@@ -19,8 +19,31 @@ interface ConfigMapItem {
 
 interface EnvRow {
   name: string
+  type: 'text' | 'podType'
   value: string
 }
+
+const POD_FIELD_OPTIONS = [
+  { value: 'NodeName', label: 'NodeName' },
+  { value: 'PodName', label: 'PodName' },
+  { value: 'NameSpace', label: 'NameSpace' },
+  { value: 'NodeIP', label: 'NodeIP' },
+  { value: 'PodIP', label: 'PodIP' },
+  { value: 'ServiceAccountName', label: 'ServiceAccountName' },
+]
+
+const POD_FIELD_PATHS: Record<string, string> = {
+  NodeName: 'spec.nodeName',
+  PodName: 'metadata.name',
+  NameSpace: 'metadata.namespace',
+  NodeIP: 'status.hostIP',
+  PodIP: 'status.podIP',
+  ServiceAccountName: 'spec.serviceAccountName',
+}
+
+const POD_FIELD_BY_PATH: Record<string, string> = Object.fromEntries(
+  Object.entries(POD_FIELD_PATHS).map(([label, path]) => [path, label]),
+)
 
 interface PortRow {
   port: string
@@ -412,7 +435,7 @@ export default function ServiceConfigPage() {
   })
 
   const [envEditing, setEnvEditing] = useState(false)
-  const [envRows, setEnvRows] = useState<EnvRow[]>([{ name: '', value: '' }])
+  const [envRows, setEnvRows] = useState<EnvRow[]>([{ name: '', type: 'text', value: '' }])
 
   const [resourceEditing, setResourceEditing] = useState(false)
   const [resourceMode, setResourceMode] = useState<'1' | '2'>('1')
@@ -524,7 +547,12 @@ export default function ServiceConfigPage() {
       priority: podTemplate?.spec?.priorityClassName || '',
       serverKeys: role ? role.split(',').filter(Boolean) : [],
     })
-    const env = (container?.env ?? []).map((item) => ({ name: item.name, value: item.value ?? '' }))
+    const env = (container?.env ?? []).map((item) => {
+      const fieldPath = item.valueFrom?.fieldRef?.fieldPath
+      return fieldPath
+        ? { name: item.name, type: 'podType' as const, value: POD_FIELD_BY_PATH[fieldPath] || fieldPath }
+        : { name: item.name, type: 'text' as const, value: item.value ?? '' }
+    })
     setEnvRows(env.length ? env : [])
     const ports = (detail.service?.spec?.ports ?? []).map((port) => ({
       port: String(port.port ?? ''),
@@ -683,7 +711,19 @@ export default function ServiceConfigPage() {
     mutationFn: () =>
       api.put('/v1/pub/serviceEnv', {
         serviceName: selected,
-        env: envRows.filter((row) => row.name.trim()).map((row) => ({ name: row.name.trim(), value: row.value })),
+        env: envRows
+          .filter((row) => row.name.trim())
+          .map((row) =>
+            row.type === 'podType'
+              ? {
+                  name: row.name.trim(),
+                  value: null,
+                  valueFrom: {
+                    fieldRef: { apiVersion: 'v1', fieldPath: POD_FIELD_PATHS[row.value] || row.value },
+                  },
+                }
+              : { name: row.name.trim(), value: row.value },
+          ),
       }),
     onSuccess: () => {
       toast.success('保存成功')
@@ -1298,7 +1338,14 @@ export default function ServiceConfigPage() {
                 onSave={() => envMutation.mutate()}
                 onCancel={() => {
                   setEnvEditing(false)
-                  setEnvRows((container?.env ?? []).map((item) => ({ name: item.name, value: item.value ?? '' })))
+                  setEnvRows(
+                    (container?.env ?? []).map((item) => {
+                      const fieldPath = item.valueFrom?.fieldRef?.fieldPath
+                      return fieldPath
+                        ? { name: item.name, type: 'podType' as const, value: POD_FIELD_BY_PATH[fieldPath] || fieldPath }
+                        : { name: item.name, type: 'text' as const, value: item.value ?? '' }
+                    }),
+                  )
                 }}
               >
                 <div className="mb-1 flex items-center gap-3 text-[12px] text-ink-3">
@@ -1323,25 +1370,48 @@ export default function ServiceConfigPage() {
                       {envEditing ? (
                         <SelectBox
                           className="w-[14%]"
-                          value="text"
-                          options={[{ value: 'text', label: '普通变量' }]}
-                          onChange={() => {}}
+                          value={row.type}
+                          options={[
+                            { value: 'text', label: '普通变量' },
+                            { value: 'podType', label: 'Pod类型' },
+                          ]}
+                          onChange={(value) =>
+                            setEnvRows((rows) =>
+                              rows.map((item, i) =>
+                                i === index ? { ...item, type: value as EnvRow['type'], value: '' } : item,
+                              ),
+                            )
+                          }
                         />
                       ) : (
                         <div className="flex h-[30px] w-[14%] items-center border border-[#2f4f6d] bg-[#16293c] px-2 text-[12px] text-[#c6dbef]">
-                          普通变量
+                          {row.type === 'podType' ? 'Pod类型' : '普通变量'}
                         </div>
                       )}
-                      <input
-                        className={cn(inputCls, 'w-[40%]')}
-                        disabled={!envEditing}
-                        value={row.value}
-                        onChange={(event) =>
-                          setEnvRows((rows) =>
-                            rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)),
-                          )
-                        }
-                      />
+                      {envEditing && row.type === 'podType' ? (
+                        <SelectBox
+                          className="w-[40%]"
+                          value={row.value}
+                          placeholder="请选择"
+                          options={POD_FIELD_OPTIONS}
+                          onChange={(value) =>
+                            setEnvRows((rows) =>
+                              rows.map((item, i) => (i === index ? { ...item, value } : item)),
+                            )
+                          }
+                        />
+                      ) : (
+                        <input
+                          className={cn(inputCls, 'w-[40%]')}
+                          disabled={!envEditing}
+                          value={row.value}
+                          onChange={(event) =>
+                            setEnvRows((rows) =>
+                              rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)),
+                            )
+                          }
+                        />
+                      )}
                       <span className="w-[16%]">
                         <button
                           type="button"
@@ -1362,7 +1432,7 @@ export default function ServiceConfigPage() {
                     className={linkCls}
                     onClick={() => {
                       setEnvEditing(true)
-                      setEnvRows((rows) => [...rows, { name: '', value: '' }])
+                      setEnvRows((rows) => [...rows, { name: '', type: 'text', value: '' }])
                     }}
                   >
                     添加环境变量

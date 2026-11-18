@@ -103,7 +103,11 @@ export interface ServiceItem {
             image?: string
             command?: string[] | null
             args?: string[] | null
-            env?: Array<{ name: string; value?: string }>
+            env?: Array<{
+              name: string
+              value?: string | null
+              valueFrom?: { fieldRef?: { apiVersion?: string; fieldPath?: string } } | null
+            }>
             resources?: {
               limits?: { cpu?: string; memory?: string; gpu?: string } | null
               requests?: { cpu?: string; memory?: string } | null
