@@ -537,6 +537,10 @@ export default function ConfigGroupPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="w-[56px] flex-none text-right text-[12px] text-ink-3">内容：</span>
+            <span className="text-[12px] text-ink-3">导入或直接输入配置文件</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-[56px] flex-none" />
             <select
               className="field h-8 w-full text-[12px]"
               value={fileEncoding}
@@ -544,6 +548,9 @@ export default function ConfigGroupPage() {
             >
               <option value="UTF-8">UTF-8</option>
               <option value="GBK">GBK</option>
+              <option value="Big5">Big5</option>
+              <option value="EUC-JP">EUC-JP</option>
+              <option value="KOI8-R">KOI8-R</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
