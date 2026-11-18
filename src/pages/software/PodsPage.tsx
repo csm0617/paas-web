@@ -65,6 +65,8 @@ interface MonitorData {
   memory?: MonitorSeries[]
   outboundNetwork?: MonitorSeries[]
   inboundNetwork?: MonitorSeries[]
+  diskReadIo?: MonitorSeries[]
+  diskWriteIo?: MonitorSeries[]
 }
 
 function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
@@ -484,6 +486,23 @@ export default function PodsPage() {
                           ...monitorTrend(podMonitorQuery.data?.outboundNetwork, 1 / 1024).map((series) => ({
                             ...series,
                             name: `${series.name} OUT`,
+                          })),
+                        ]}
+                        height={200}
+                        unit=" KB/s"
+                      />
+                    </div>
+                    <div>
+                      <div className="mb-2 text-[12px] text-ink-3">磁盘 IO（KB/s）</div>
+                      <AreaTrend
+                        series={[
+                          ...monitorTrend(podMonitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
+                            ...series,
+                            name: `${series.name} READ`,
+                          })),
+                          ...monitorTrend(podMonitorQuery.data?.diskWriteIo, 1 / 1024).map((series) => ({
+                            ...series,
+                            name: `${series.name} WRITE`,
                           })),
                         ]}
                         height={200}
