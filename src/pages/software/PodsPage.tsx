@@ -70,23 +70,33 @@ interface MonitorData {
 }
 
 function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
-  return (list ?? []).slice(0, 3).map((series, index) => ({
-    name: series.podName || `SERIES ${index + 1}`,
-    points: (series.metrics ?? [])
-      .filter(
-        (point) =>
-          point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)),
-      )
-      .map((point) => {
-        const value = Number(point.floatValue) * factor
-        const date = point.timestamp ? new Date(point.timestamp) : null
-        if (!date || Number.isNaN(date.getTime())) return { label: '', value, tip: '' }
-        const pad = (n: number) => String(n).padStart(2, '0')
-        const label = `${pad(date.getHours())}:${pad(date.getMinutes())}`
-        const tip = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-        return { label, value, tip }
-      }),
-  }))
+  // 接口对同一 Pod 会返回多条重复序列（名称相同），仅保留第一条，避免图例出现重复曲线
+  const seen = new Set<string>()
+  return (list ?? [])
+    .filter((series) => {
+      const name = series.podName || ''
+      if (!name) return true
+      if (seen.has(name)) return false
+      seen.add(name)
+      return true
+    })
+    .map((series, index) => ({
+      name: series.podName || `SERIES ${index + 1}`,
+      points: (series.metrics ?? [])
+        .filter(
+          (point) =>
+            point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)),
+        )
+        .map((point) => {
+          const value = Number(point.floatValue) * factor
+          const date = point.timestamp ? new Date(point.timestamp) : null
+          if (!date || Number.isNaN(date.getTime())) return { label: '', value, tip: '' }
+          const pad = (n: number) => String(n).padStart(2, '0')
+          const label = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+          const tip = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+          return { label, value, tip }
+        }),
+    }))
 }
 
 function YamlView({ text }: { text: string }) {
