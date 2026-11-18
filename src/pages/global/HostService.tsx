@@ -8,7 +8,7 @@ import type { CockpitData, NodesResponse, NodeSummary, ServiceItem } from '@/typ
 import { toast } from '@/stores/toast'
 import { useAuthStore } from '@/stores/auth'
 import { RingGauge, AreaTrend } from '@/components/charts'
-import { Badge, Button, Field, KV, Meter, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, Drawer, Field, KV, Meter, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 const NodeTerminalModal = lazy(() =>
@@ -1014,7 +1014,7 @@ export default function HostServicePage() {
         </div>
       </Modal>
 
-      <Modal
+      <Drawer
         open={addOpen}
         onOpenChange={(open) => {
           setAddOpen(open)
@@ -1128,7 +1128,7 @@ export default function HostServicePage() {
             })}
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
       <Suspense fallback={null}>
         <NodeTerminalModal

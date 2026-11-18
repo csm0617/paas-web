@@ -10,6 +10,7 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   Field,
   Modal,
   PageHeader,
@@ -458,7 +459,7 @@ export default function MirrorPage() {
         </Panel>
       )}
 
-      <Modal
+      <Drawer
         open={projectModal}
         onOpenChange={setProjectModal}
         kicker="REGISTRY / PROJECT"
@@ -491,7 +492,7 @@ export default function MirrorPage() {
             autoFocus
           />
         </Field>
-      </Modal>
+      </Drawer>
 
       <Modal
         open={!!logItem}
@@ -520,7 +521,7 @@ export default function MirrorPage() {
         </pre>
       </Modal>
 
-      <Modal
+      <Drawer
         open={!!detailImage}
         onOpenChange={(open) => {
           if (!open) {
@@ -637,7 +638,7 @@ export default function MirrorPage() {
             </div>
           </div>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

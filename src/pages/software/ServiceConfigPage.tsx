@@ -7,6 +7,7 @@ import type { ProbeConfig, ServiceItem, ServiceList } from '@/types'
 import {
   Badge,
   Button,
+  Drawer,
   Field,
   Modal,
   PageHeader,
@@ -233,9 +234,7 @@ export default function ServiceConfigPage() {
     if (selected) return
     if (targetService && services.some((item) => serviceNameOf(item) === targetService)) {
       setSelected(targetService)
-      return
     }
-    if (services[0]) setSelected(serviceNameOf(services[0]))
   }, [services, selected, targetService])
 
   const detailQuery = useQuery({
@@ -688,37 +687,65 @@ export default function ServiceConfigPage() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <Panel className="lg:col-span-3" kicker="SERVICES" title="服务" bodyClassName="p-0">
-          <div className="max-h-[70vh] divide-y divide-line/70 overflow-y-auto">
-            {services.map((service) => {
-              const name = serviceNameOf(service)
-              const ready = service.deployment?.status?.readyReplicas ?? 0
-              return (
-                <button
-                  key={name}
-                  onClick={() => setSelected(name)}
-                  className={cn(
-                    'flex w-full items-center gap-2 px-4 py-3 text-left transition-colors',
-                    selected === name ? 'bg-signal text-white' : 'hover:bg-paper-2/60',
-                  )}
-                >
-                  <StatusDot tone={ready > 0 ? 'ok' : 'idle'} />
-                  <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{name}</span>
-                  <span className={cn('mono text-[8.5px]', selected === name ? 'text-white/70' : 'text-mute')}>
-                    {ready}/{service.deployment?.spec?.replicas ?? 0}
-                  </span>
-                </button>
-              )
-            })}
-            {services.length === 0 && <div className="px-4 py-8 text-center text-[11px] text-mute">暂无服务</div>}
-          </div>
-        </Panel>
+      <Panel kicker="SERVICES" title="服务" bodyClassName="p-0">
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>服务名称 / SERVICE</th>
+                <th>就绪副本 / READY</th>
+                <th className="text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {services.map((service) => {
+                const name = serviceNameOf(service)
+                const ready = service.deployment?.status?.readyReplicas ?? 0
+                const replicas = service.deployment?.spec?.replicas ?? 0
+                return (
+                  <tr key={name} onClick={() => setSelected(name)} className="cursor-pointer">
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <StatusDot tone={ready > 0 ? 'ok' : 'idle'} />
+                        <span className="font-mono text-[12px] text-ink">{name}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="mono text-[12px] text-ink-3">
+                        {ready}/{replicas}
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      <span className="text-[12px] text-[#4aa3f0]">配置</span>
+                    </td>
+                  </tr>
+                )
+              })}
+              {services.length === 0 && (
+                <tr>
+                  <td colSpan={3}>
+                    <div className="py-10 text-center text-[12px] text-mute">暂无服务</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
 
-        <div className="lg:col-span-9">
-          <div className="mb-3">
-            <TabStrip value={tab} onChange={setTab} tabs={tabs} />
-          </div>
+      <Drawer
+        open={!!selected}
+        onOpenChange={(open) => {
+          if (!open) setSelected('')
+        }}
+        kicker="SERVICE CONFIG"
+        title={selected || '服务配置'}
+        description="环境变量、端口暴露、健康检查、存储挂载与高级调度。保存后由平台下发至 Deployment。"
+        width={880}
+      >
+        <div className="mb-3">
+          <TabStrip value={tab} onChange={setTab} tabs={tabs} />
+        </div>
 
           {tab === 'env' && (
             <Panel
@@ -1287,8 +1314,7 @@ export default function ServiceConfigPage() {
               </Panel>
             </div>
           )}
-        </div>
-      </div>
+      </Drawer>
 
       <Modal
         open={cmOpen}

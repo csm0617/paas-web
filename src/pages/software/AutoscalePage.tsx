@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import type { ServiceItem, ServiceList } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, Field, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, Drawer, Field, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 
 const NAMESPACE = 'gaop-namespace'
@@ -254,7 +254,7 @@ export default function AutoscalePage() {
         <Activity size={10} /> 依赖 metrics-server 提供容器 CPU 指标；指标缺失时水平伸缩不会触发。
       </div>
 
-      <Modal
+      <Drawer
         open={createOpen}
         onOpenChange={(open) => {
           setCreateOpen(open)
@@ -327,7 +327,7 @@ export default function AutoscalePage() {
             HPA 需要 metrics-server 支持；创建后在「工作负载」中可观察副本变化。
           </div>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem, ServiceList } from '@/types'
-import { Badge, Button, Field, Modal, PageHeader, Panel, StatusDot } from '@/components/ui'
+import { Badge, Button, Drawer, Field, PageHeader, Panel, StatusDot } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -211,7 +211,7 @@ export default function WorkloadsPage() {
         )}
       </div>
 
-      <Modal
+      <Drawer
         open={!!scaleTarget}
         onOpenChange={(open) => !open && setScaleTarget(null)}
         kicker="WORKLOAD / SCALE"
@@ -247,7 +247,7 @@ export default function WorkloadsPage() {
         <div className="mt-3">
           <Badge tone="info">当前 {scaleTarget?.deployment?.spec?.replicas ?? 0} 副本</Badge>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

@@ -371,6 +371,57 @@ export function Modal({
   )
 }
 
+export function Drawer({
+  open,
+  onOpenChange,
+  title,
+  kicker,
+  description,
+  children,
+  footer,
+  width = 760,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  title: ReactNode
+  kicker?: ReactNode
+  description?: ReactNode
+  children: ReactNode
+  footer?: ReactNode
+  width?: number
+}) {
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="drawer-overlay fixed inset-0 z-[70] bg-black/55" />
+        <Dialog.Content
+          className="drawer-content fixed inset-y-0 right-0 z-[71] flex w-[calc(100vw-40px)] flex-col border-l border-line bg-paper-2 shadow-[-12px_0_40px_rgba(0,0,0,0.55)] outline-none"
+          style={{ maxWidth: width }}
+        >
+          <div className="flex flex-none items-start justify-between gap-4 border-b border-line px-4 py-3">
+            <div className="min-w-0">
+              {kicker && <div className="label mb-1">{kicker}</div>}
+              <Dialog.Title className="truncate text-[16px] font-semibold leading-6 text-ink">{title}</Dialog.Title>
+              {description && (
+                <Dialog.Description className="mt-1 text-[12px] leading-relaxed text-ink-3">
+                  {description}
+                </Dialog.Description>
+              )}
+            </div>
+            <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded text-ink-3 outline-none transition-colors hover:bg-[#16304a] hover:text-white">
+              <X size={14} />
+            </Dialog.Close>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3.5">{children}</div>
+          {footer && (
+            <div className="flex flex-none items-center justify-end gap-2 border-t border-line bg-paper-3 px-4 py-2.5">{footer}</div>
+          )}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  )
+}
+
 const ConfirmContext = createContext<(options: ConfirmOptions) => Promise<boolean>>(async () => false)
 
 interface ConfirmOptions {

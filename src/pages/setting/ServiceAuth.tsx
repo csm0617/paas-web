@@ -9,8 +9,8 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   Field,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -308,13 +308,13 @@ export default function ServiceAuthPage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={codeOpen}
         onOpenChange={setCodeOpen}
         kicker="LICENSE / MACHINE CODE"
         title="生成机器码"
         description="选择需要授权的服务，平台将生成包含机器标识的申请码，用于离线申请授权文件。"
-        width={620}
+        width={720}
         footer={
           <>
             <Button size="sm" onClick={() => setCodeOpen(false)}>
@@ -404,15 +404,15 @@ export default function ServiceAuthPage() {
             </div>
           )}
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={importOpen}
         onOpenChange={setImportOpen}
         kicker="LICENSE / IMPORT"
         title="导入授权码"
         description="粘贴授权文件内容，平台将校验签名并绑定到对应服务。"
-        width={560}
+        width={640}
         footer={
           <>
             <Button size="sm" onClick={() => setImportOpen(false)}>
@@ -453,9 +453,9 @@ export default function ServiceAuthPage() {
             </div>
           )}
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!intervalOpen}
         onOpenChange={(open) => {
           if (!open) setIntervalOpen(null)
@@ -463,7 +463,7 @@ export default function ServiceAuthPage() {
         kicker="LICENSE / INTERVAL"
         title={`设置授权周期 · ${intervalOpen ? nameOf(intervalOpen) : ''}`}
         description="周期授权到期后服务将受授权策略限制，需重新签发。"
-        width={420}
+        width={480}
         footer={
           <>
             <Button size="sm" onClick={() => setIntervalOpen(null)}>
@@ -484,7 +484,7 @@ export default function ServiceAuthPage() {
             ))}
           </select>
         </Field>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

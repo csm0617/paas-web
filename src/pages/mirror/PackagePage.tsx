@@ -6,7 +6,7 @@ import { formatDate } from '@/lib/format'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from '@/stores/toast'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, Drawer, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
 
 interface PackageItem {
   id?: string | number
@@ -359,7 +359,7 @@ export default function PackagePage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={uploadOpen}
         onOpenChange={setUploadOpen}
         kicker="PACKAGE / UPLOAD"
@@ -388,9 +388,9 @@ export default function PackagePage() {
             {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'CLICK TO SELECT'}
           </span>
         </button>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={clientOpen}
         onOpenChange={setClientOpen}
         kicker="PACKAGES / CLIENT DISTRIBUTION"
@@ -495,7 +495,7 @@ export default function PackagePage() {
             )}
           </div>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

@@ -21,10 +21,10 @@ import {
   Badge,
   Button,
   CopyText,
+  Drawer,
   EmptyState,
   Field,
   KV,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -451,7 +451,7 @@ export default function DeploymentDetailPage() {
         />
       </Suspense>
 
-      <Modal
+      <Drawer
         open={scaleOpen}
         onOpenChange={setScaleOpen}
         kicker="DEPLOYMENT / SCALE"
@@ -487,9 +487,9 @@ export default function DeploymentDetailPage() {
             </Button>
           </div>
         </Field>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={imageOpen}
         onOpenChange={setImageOpen}
         kicker="DEPLOYMENT / IMAGE"
@@ -540,7 +540,7 @@ export default function DeploymentDetailPage() {
             </span>
           </div>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

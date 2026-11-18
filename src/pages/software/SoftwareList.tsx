@@ -11,10 +11,10 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   EmptyState,
   Field,
   LoadingBlock,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -786,7 +786,7 @@ export default function SoftwareListPage() {
         </div>
       )}
 
-      <Modal
+      <Drawer
         open={modalOpen}
         onOpenChange={(open) => {
           setModalOpen(open)
@@ -928,9 +928,9 @@ export default function SoftwareListPage() {
             </div>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!seatTarget}
         onOpenChange={(open) => !open && setSeatTarget(null)}
         kicker="SOFTWARE / SEATS"
@@ -980,9 +980,9 @@ export default function SoftwareListPage() {
             <div className="py-6 text-center text-[11px] text-mute">暂无可关联的席位</div>
           )}
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={exportOpen}
         onOpenChange={setExportOpen}
         kicker="SOFTWARE / EXPORT"
@@ -1043,9 +1043,9 @@ export default function SoftwareListPage() {
           })}
           {list.length === 0 && <div className="py-6 text-center text-[11px] text-mute">暂无可导出的应用</div>}
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={minSetOpen}
         onOpenChange={setMinSetOpen}
         kicker="SOFTWARE / MINIMAL SET"
@@ -1107,9 +1107,9 @@ export default function SoftwareListPage() {
           })}
           {servicesQuery.isLoading && <div className="py-6 text-center text-[11px] text-mute">正在读取服务…</div>}
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={govOpen}
         onOpenChange={setGovOpen}
         kicker="SOFTWARE / LICENSE & GATEWAY"
@@ -1296,7 +1296,7 @@ export default function SoftwareListPage() {
             )}
           </div>
         )}
-      </Modal>
+      </Drawer>
     </div>
   )
 }

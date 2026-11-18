@@ -10,9 +10,9 @@ import { DataTable, type Column } from '@/components/DataTable'
 import {
   Badge,
   Button,
+  Drawer,
   EmptyState,
   Field,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -740,7 +740,7 @@ export default function StoragePage() {
         </div>
       )}
 
-      <Modal
+      <Drawer
         open={!!fileProject}
         onOpenChange={(open) => !open && setFileProject(null)}
         kicker="STORAGE / FILES"
@@ -885,9 +885,9 @@ export default function StoragePage() {
             </div>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={projectOpen}
         onOpenChange={setProjectOpen}
         kicker="STORAGE / PROJECT"
@@ -914,7 +914,7 @@ export default function StoragePage() {
         <Field label="项目名称" required hint="建议与业务软件标识保持一致">
           <input className="field" value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="如：situation-map" autoFocus />
         </Field>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

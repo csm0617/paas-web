@@ -11,6 +11,7 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   Field,
   Modal,
   PageHeader,
@@ -380,7 +381,7 @@ export default function SubRolesPage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={formOpen}
         onOpenChange={(open) => {
           setFormOpen(open)
@@ -389,7 +390,7 @@ export default function SubRolesPage() {
         kicker={editing ? 'ACCESS / EDIT SUB ROLE' : 'ACCESS / NEW SUB ROLE'}
         title={editing ? `编辑子角色 · ${editing.name}` : '新建子角色'}
         description="唯一标识用于权限校验，创建后不可修改。成员可多选，保存后立即生效。"
-        width={620}
+        width={720}
         footer={
           <>
             <Button size="sm" onClick={() => setFormOpen(false)}>
@@ -510,7 +511,7 @@ export default function SubRolesPage() {
             </button>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
       <Modal
         open={importOpen}

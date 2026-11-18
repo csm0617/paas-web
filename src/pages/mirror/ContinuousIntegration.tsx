@@ -11,6 +11,7 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   Field,
   Modal,
   PageHeader,
@@ -353,7 +354,7 @@ export default function ContinuousIntegrationPage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={formOpen}
         onOpenChange={(open) => {
           setFormOpen(open)
@@ -428,7 +429,7 @@ export default function ContinuousIntegrationPage() {
             TARGET / {form.imageStorage}/{form.imageName}:{form.tag}
           </p>
         </div>
-      </Modal>
+      </Drawer>
 
       <Modal
         open={!!logTarget}

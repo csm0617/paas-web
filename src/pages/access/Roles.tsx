@@ -10,6 +10,7 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   Field,
   KV,
   Modal,
@@ -323,13 +324,13 @@ export default function RolesPage() {
         )}
       </div>
 
-      <Modal
+      <Drawer
         open={createOpen}
         onOpenChange={setCreateOpen}
         kicker="ACCESS / NEW SEAT"
         title="新建席位"
         description="席位创建后需分配应用与用户。唯一标识用于权限校验，创建后不可修改。"
-        width={480}
+        width={560}
         footer={
           <>
             <Button size="sm" onClick={() => setCreateOpen(false)}>
@@ -363,15 +364,15 @@ export default function RolesPage() {
             <textarea className="field" rows={3} value={form.desc} onChange={(event) => setForm({ ...form, desc: event.target.value })} placeholder="描述该席位的职责与权限范围" />
           </Field>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!editRole}
         onOpenChange={(open) => !open && setEditRole(null)}
         kicker="ACCESS / EDIT SEAT"
         title={editRole ? `编辑「${editRole.name}」` : '编辑席位'}
         description="调整席位名称、描述及关联的应用与用户。保存后权限立即生效。"
-        width={720}
+        width={800}
         footer={
           <>
             <Button size="sm" onClick={() => setEditRole(null)}>
@@ -478,15 +479,15 @@ export default function RolesPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!detail}
         onOpenChange={(open) => !open && setDetail(null)}
         kicker="ACCESS / SEAT DETAIL"
         title={detail?.name || '席位详情'}
         description={detail ? `KEY / ${detail.key}` : undefined}
-        width={600}
+        width={640}
         footer={
           <Button size="sm" onClick={() => setDetail(null)}>
             关闭
@@ -527,7 +528,7 @@ export default function RolesPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
       <Modal
         open={importOpen}

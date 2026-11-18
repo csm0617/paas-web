@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '@/lib/api'
 import { formatDate, formatNumber } from '@/lib/format'
-import { Badge, Button, EmptyState, Modal, PageHeader, Panel, StatusDot } from '@/components/ui'
+import { Badge, Button, Drawer, EmptyState, PageHeader, Panel, StatusDot } from '@/components/ui'
 import { DataTable, type Column } from '@/components/DataTable'
 import { cn } from '@/lib/utils'
 
@@ -374,7 +374,7 @@ export default function SystemServicesPage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={!!detail}
         onOpenChange={(open) => {
           if (!open) setDetail(null)
@@ -494,7 +494,7 @@ export default function SystemServicesPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
       <Suspense fallback={null}>
         <ServiceConsole

@@ -11,9 +11,9 @@ import { DataTable, type Column } from '@/components/DataTable'
 import {
   Badge,
   Button,
+  Drawer,
   EmptyState,
   Field,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -683,7 +683,7 @@ export default function DatabasePage() {
         )}
       </Panel>
 
-      <Modal
+      <Drawer
         open={dbOpen}
         onOpenChange={setDbOpen}
         kicker="DATABASE / CREATE"
@@ -742,9 +742,9 @@ export default function DatabasePage() {
             </div>
           </Field>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={userOpen}
         onOpenChange={setUserOpen}
         kicker="DATABASE / USER"
@@ -795,9 +795,9 @@ export default function DatabasePage() {
             />
           </Field>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!grantDb}
         onOpenChange={(open) => {
           if (!open) {
@@ -873,9 +873,9 @@ export default function DatabasePage() {
             </div>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={maintOpen}
         onOpenChange={setMaintOpen}
         kicker="DATABASE / MAINTENANCE"
@@ -960,9 +960,9 @@ export default function DatabasePage() {
             </div>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={backupOpen}
         onOpenChange={setBackupOpen}
         kicker="DATABASE / BUSINESS BACKUP"
@@ -1021,7 +1021,7 @@ export default function DatabasePage() {
             <div className="py-6 text-center text-[11px] text-mute">暂无可备份的业务数据库</div>
           )}
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

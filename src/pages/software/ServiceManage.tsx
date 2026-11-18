@@ -11,9 +11,9 @@ import {
   Badge,
   Button,
   CopyText,
+  Drawer,
   Field,
   KV,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -613,7 +613,7 @@ export default function ServiceManagePage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={!!detail}
         onOpenChange={(open) => !open && setDetail(null)}
         kicker="SERVICE / INSPECT"
@@ -739,9 +739,9 @@ export default function ServiceManagePage() {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!scaleTarget}
         onOpenChange={(open) => !open && setScaleTarget(null)}
         kicker="SERVICE / SCALE"
@@ -793,9 +793,9 @@ export default function ServiceManagePage() {
             CPU {formatNumber(scaleTarget?.cpuOrder ?? 0, 2)} CORE · MEM {formatNumber(scaleTarget?.memoryOrder ?? 0, 0)} MiB
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={createOpen}
         onOpenChange={setCreateOpen}
         kicker="SERVICE / CREATE"
@@ -989,9 +989,9 @@ export default function ServiceManagePage() {
             </p>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!restartTarget}
         onOpenChange={(open) => !open && setRestartTarget(null)}
         kicker="SERVICE / RESTART HISTORY"
@@ -1022,9 +1022,9 @@ export default function ServiceManagePage() {
             </div>
           )}
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!versionTarget}
         onOpenChange={(open) => !open && setVersionTarget(null)}
         kicker="SERVICE / IMAGE VERSION"
@@ -1091,9 +1091,9 @@ export default function ServiceManagePage() {
             切换后 Kubernetes 将按滚动更新策略替换容器实例；若镜像拉取失败，旧实例会保留。
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!monitorTarget}
         onOpenChange={(open) => !open && setMonitorTarget(null)}
         kicker="SERVICE / MONITORING"
@@ -1171,7 +1171,7 @@ export default function ServiceManagePage() {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
       <Suspense fallback={null}>
         <ServiceConsole

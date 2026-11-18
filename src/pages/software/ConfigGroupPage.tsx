@@ -6,6 +6,7 @@ import { formatDate } from '@/lib/format'
 import {
   Badge,
   Button,
+  Drawer,
   EmptyState,
   Field,
   Modal,
@@ -420,7 +421,7 @@ export default function ConfigGroupPage() {
         </Field>
       </Modal>
 
-      <Modal
+      <Drawer
         open={fileOpen}
         onOpenChange={setFileOpen}
         kicker="CONFIG / FILE"
@@ -464,9 +465,9 @@ export default function ConfigGroupPage() {
             />
           </Field>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!active && !fileOpen}
         onOpenChange={(open) => {
           if (!open) {
@@ -477,7 +478,7 @@ export default function ConfigGroupPage() {
         kicker="CONFIG / CONTENT"
         title={active ? `${active.name} · 配置文件` : '配置文件'}
         description="编辑文件内容后保存会覆盖配置组内的同名键，挂载该配置组的服务重启后生效。"
-        width={760}
+        width={720}
         footer={
           <>
             <Button size="sm" onClick={() => setActive(null)}>
@@ -572,7 +573,7 @@ export default function ConfigGroupPage() {
             )}
           </div>
         )}
-      </Modal>
+      </Drawer>
 
       <Modal
         open={!!relationFile}

@@ -10,9 +10,9 @@ import {
   Badge,
   Button,
   CopyText,
+  Drawer,
   EmptyState,
   Field,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -714,7 +714,7 @@ export default function NetworkPage() {
         </div>
       )}
 
-      <Modal
+      <Drawer
         open={addOpen}
         onOpenChange={setAddOpen}
         kicker="NETWORK / VIP"
@@ -756,9 +756,9 @@ export default function NetworkPage() {
             <span className="mono text-[9px] text-mute">ADDRESS WILL BE BOUND TO {netName || '—'}</span>
           </div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={!!yamlTarget}
         onOpenChange={(open) => {
           if (!open) setYamlTarget(null)
@@ -794,9 +794,9 @@ export default function NetworkPage() {
             onChange={(event) => setYamlText(event.target.value)}
           />
         )}
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={createOpen}
         onOpenChange={setCreateOpen}
         kicker="SERVICE / CREATE"
@@ -957,7 +957,7 @@ export default function NetworkPage() {
           </div>
         </div>
         )}
-      </Modal>
+      </Drawer>
     </div>
   )
 }

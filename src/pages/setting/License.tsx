@@ -12,10 +12,10 @@ import {
   Badge,
   Button,
   CopyText,
+  Drawer,
   Field,
   KV,
   Meter,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -449,13 +449,13 @@ export default function LicensePage() {
         </Panel>
       </div>
 
-      <Modal
+      <Drawer
         open={activateOpen}
         onOpenChange={setActivateOpen}
         kicker="LICENCE / ACTIVATE"
         title="激活平台授权"
         description="粘贴授权方签发的激活码。激活成功后平台将自动刷新授权状态。"
-        width={540}
+        width={640}
         footer={
           <>
             <Button size="sm" onClick={() => setActivateOpen(false)}>
@@ -486,15 +486,15 @@ export default function LicensePage() {
           <div className="label mb-1">当前机器码</div>
           <div className="mono break-all text-[9px] leading-relaxed text-ink-3">{machine?.code || '—'}</div>
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={frameworkOpen}
         onOpenChange={setFrameworkOpen}
         kicker="LICENCE / FRAMEWORK KEY"
         title="更新框架公钥"
         description="用于替换平台与授权框架之间的解密公钥。公钥由授权方提供，错误配置可能导致授权校验失败。"
-        width={560}
+        width={640}
         footer={
           <>
             <Button size="sm" onClick={() => setFrameworkOpen(false)}>
@@ -520,15 +520,15 @@ export default function LicensePage() {
             placeholder="-----BEGIN PUBLIC KEY-----"
           />
         </Field>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={langOpen}
         onOpenChange={setLangOpen}
         kicker="LICENCE / LANGUAGE PACKS"
         title="语言包管理"
         description="导入、启用或删除平台语言包版本。当前界面语言仍以平台默认中文展示。"
-        width={860}
+        width={920}
         footer={
           <Button size="sm" onClick={() => setLangOpen(false)}>
             关闭
@@ -649,15 +649,15 @@ export default function LicensePage() {
             </div>
           )}
         </div>
-      </Modal>
+      </Drawer>
 
-      <Modal
+      <Drawer
         open={jarOpen}
         onOpenChange={setJarOpen}
         kicker="LICENCE / AUTH EXTENSION"
         title="授权扩展 Jar"
         description="上传自定义授权扩展 Jar 并维护默认解密公钥。扩展由平台在授权校验阶段动态加载。"
-        width={780}
+        width={860}
         footer={
           <Button size="sm" onClick={() => setJarOpen(false)}>
             关闭
@@ -743,7 +743,7 @@ export default function LicensePage() {
             </div>
           </div>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

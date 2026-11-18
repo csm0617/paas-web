@@ -11,6 +11,7 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   Field,
   Modal,
   PageHeader,
@@ -392,7 +393,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <Modal
+      <Drawer
         open={modalOpen}
         onOpenChange={(open) => {
           setModalOpen(open)
@@ -404,7 +405,7 @@ export default function UsersPage() {
         kicker={editing ? 'ACCESS / EDIT USER' : 'ACCESS / NEW USER'}
         title={editing ? `编辑「${editing.username}」` : '新建平台用户'}
         description="席位决定用户可见的应用与可调用的接口。可多选。"
-        width={600}
+        width={720}
         footer={
           <>
             <Button size="sm" onClick={() => setModalOpen(false)}>
@@ -481,7 +482,7 @@ export default function UsersPage() {
             <textarea className="field" rows={2} value={form.desc} onChange={(event) => setForm({ ...form, desc: event.target.value })} placeholder="可选" />
           </Field>
         </div>
-      </Modal>
+      </Drawer>
 
       <Modal
         open={importOpen}

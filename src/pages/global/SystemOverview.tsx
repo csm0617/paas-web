@@ -16,7 +16,7 @@ import {
 } from '@/lib/format'
 import type { ClusterSummary, CockpitData, NodesResponse, NodeSummary } from '@/types'
 import { AreaTrend, Donut, RingGauge, Sparkline } from '@/components/charts'
-import { Badge, Button, KV, Meter, Modal, PageHeader, Panel, StatusDot, TabStrip } from '@/components/ui'
+import { Badge, Button, Drawer, KV, Meter, Modal, PageHeader, Panel, StatusDot, TabStrip } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -604,7 +604,7 @@ export default function SystemOverviewPage() {
       </div>
 
       {/* Node detail dialog */}
-      <Modal
+      <Drawer
         open={!!selected}
         onOpenChange={(open) => !open && setSelected(null)}
         kicker="NODE / DETAIL"
@@ -704,7 +704,7 @@ export default function SystemOverviewPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
       <Modal
         open={balanceOpen}

@@ -10,10 +10,10 @@ import {
   ActionMenu,
   Badge,
   Button,
+  Drawer,
   EmptyState,
   Field,
   LoadingBlock,
-  Modal,
   PageHeader,
   Panel,
   StatusDot,
@@ -392,7 +392,7 @@ export default function AlertsPage() {
         )}
       </Panel>
 
-      <Modal
+      <Drawer
         open={createOpen || !!editing}
         onOpenChange={(open) => {
           if (!open) {
@@ -507,7 +507,7 @@ export default function AlertsPage() {
             表达式预览：<span className="mono text-ink">{form.metric} {form.operator} {form.value}</span>，每 {form.interval} 评估一次。
           </p>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

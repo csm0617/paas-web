@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
-import { Badge, Button, Field, Input, Modal, PageHeader, Panel, StatusDot } from '@/components/ui'
+import { Badge, Button, Drawer, Field, Input, PageHeader, Panel, StatusDot } from '@/components/ui'
 import { DataTable, type Column } from '@/components/DataTable'
 import { toast } from '@/stores/toast'
 
@@ -186,7 +186,7 @@ export default function LabelsPage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={editOpen}
         onOpenChange={setEditOpen}
         kicker="NODE LABEL MAINTENANCE"
@@ -278,7 +278,7 @@ export default function LabelsPage() {
             ))}
           </div>
         </div>
-      </Modal>
+      </Drawer>
     </div>
   )
 }

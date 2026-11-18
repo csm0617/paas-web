@@ -5,7 +5,7 @@ import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { Badge, Button, KV, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
+import { Badge, Button, Drawer, KV, Modal, PageHeader, Panel, StatusDot, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -250,7 +250,7 @@ export default function BaseServicesPage() {
         />
       </Panel>
 
-      <Modal
+      <Drawer
         open={!!detail}
         onOpenChange={(open) => !open && setDetail(null)}
         kicker="BASE SERVICE / CONFIG"
@@ -323,7 +323,7 @@ export default function BaseServicesPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
       <Modal
         open={!!eventTarget}

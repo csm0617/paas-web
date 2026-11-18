@@ -12,6 +12,7 @@ import { PasswordPrompt } from '@/components/PasswordPrompt'
 import {
   Badge,
   Button,
+  Drawer,
   Field,
   KV,
   Meter,
@@ -652,7 +653,7 @@ export default function BackupSyncPage() {
         </div>
       </Modal>
 
-      <Modal
+      <Drawer
         open={settingOpen}
         onOpenChange={setSettingOpen}
         kicker="BACKUP / SETTINGS"
@@ -693,7 +694,7 @@ export default function BackupSyncPage() {
             </div>
           )}
         </div>
-      </Modal>
+      </Drawer>
 
       <Modal
         open={!!restoreRow}
