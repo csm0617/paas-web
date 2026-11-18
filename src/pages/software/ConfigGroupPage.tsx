@@ -423,14 +423,23 @@ export default function ConfigGroupPage() {
 
       <Drawer
         open={fileOpen}
-        onOpenChange={setFileOpen}
+        onOpenChange={(open) => {
+          setFileOpen(open)
+          if (!open) setActive(null)
+        }}
         kicker="CONFIG / FILE"
         title={`新增配置文件${active ? ` · ${active.name}` : ''}`}
         description="配置文件名称将作为 ConfigMap 的键，内容支持任意文本。"
         width={640}
         footer={
           <>
-            <Button size="sm" onClick={() => setFileOpen(false)}>
+            <Button
+              size="sm"
+              onClick={() => {
+                setFileOpen(false)
+                setActive(null)
+              }}
+            >
               取消
             </Button>
             <Button

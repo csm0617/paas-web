@@ -110,7 +110,7 @@ function hasMeaningfulAffinity(value: unknown): boolean {
 export default function ServiceConfigPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const targetService = searchParams.get('service') || ''
   const [selected, setSelected] = useState('')
   const [tab, setTab] = useState<ConfigTab>('env')
@@ -230,12 +230,14 @@ export default function ServiceConfigPage() {
   })
   const serviceKeyOptions = serviceKeysQuery.data ?? []
 
+  const appliedTargetRef = useRef('')
   useEffect(() => {
-    if (selected) return
-    if (targetService && services.some((item) => serviceNameOf(item) === targetService)) {
-      setSelected(targetService)
-    }
-  }, [services, selected, targetService])
+    if (!targetService) return
+    if (appliedTargetRef.current === targetService) return
+    if (!services.some((item) => serviceNameOf(item) === targetService)) return
+    appliedTargetRef.current = targetService
+    setSelected(targetService)
+  }, [services, targetService])
 
   const detailQuery = useQuery({
     queryKey: ['config-service-detail', selected],
@@ -736,7 +738,13 @@ export default function ServiceConfigPage() {
       <Drawer
         open={!!selected}
         onOpenChange={(open) => {
-          if (!open) setSelected('')
+          if (open) return
+          setSelected('')
+          if (searchParams.has('service')) {
+            const next = new URLSearchParams(searchParams)
+            next.delete('service')
+            setSearchParams(next, { replace: true })
+          }
         }}
         kicker="SERVICE CONFIG"
         title={selected || '服务配置'}
