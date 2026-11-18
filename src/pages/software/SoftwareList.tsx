@@ -134,16 +134,31 @@ function ConfigRow({
   label,
   children,
   onEdit,
+  editing,
+  onSave,
+  onCancel,
 }: {
   label: string
   children: ReactNode
   onEdit?: () => void
+  editing?: boolean
+  onSave?: () => void
+  onCancel?: () => void
 }) {
   return (
     <div className="flex items-start gap-2">
       <span className="w-[68px] flex-none pt-[7px] text-right text-[12px] text-ink-3">{label}：</span>
       <div className="min-w-0 flex-1">{children}</div>
-      {onEdit ? (
+      {editing ? (
+        <div className="flex flex-none items-start gap-2 pt-[7px] text-[12px]">
+          <button onClick={onSave} className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
+            保存
+          </button>
+          <button onClick={onCancel} className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
+            取消
+          </button>
+        </div>
+      ) : onEdit ? (
         <button
           onClick={onEdit}
           className="w-8 flex-none pt-[7px] text-left text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
@@ -535,6 +550,25 @@ export default function SoftwareListPage() {
     onError: (error) => toast.error('保存失败', errorMessage(error)),
   })
 
+  const fieldSaveMutation = useMutation({
+    mutationFn: () => {
+      if (!editing) throw new Error('未选择应用')
+      return api.put(`/v1/software/${editing.id}`, {
+        ...form,
+        key: form.key.trim(),
+        name: form.name.trim(),
+        routerKey: form.routerKey.trim(),
+      })
+    },
+    onSuccess: () => {
+      toast.success('修改已保存')
+      setEditField(null)
+      queryClient.invalidateQueries({ queryKey: ['software'] })
+      queryClient.invalidateQueries({ queryKey: ['software-detail', editing?.id] })
+    },
+    onError: (error) => toast.error('保存失败', errorMessage(error)),
+  })
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.del(`/v1/software/${id}`),
     onSuccess: () => {
@@ -867,6 +901,28 @@ export default function SoftwareListPage() {
     } catch (error) {
       toast.error('下载失败', errorMessage(error))
     }
+  }
+
+  function cancelFieldEdit() {
+    if (!editField) return
+    const detail = detailQuery.data
+    const row = editing as (Software & { nameUs?: string; nameFr?: string }) | null
+    const value =
+      editField === 'name'
+        ? detail?.name ?? row?.name ?? ''
+        : editField === 'nameUs'
+          ? detail?.nameUs ?? row?.nameUs ?? ''
+          : editField === 'nameFr'
+            ? detail?.nameFr ?? row?.nameFr ?? ''
+            : editField === 'key'
+              ? row?.key ?? ''
+              : editField === 'desc'
+                ? detail?.desc ?? row?.desc ?? ''
+                : editField === 'routerKey'
+                  ? detail?.routerKey ?? row?.routerKey ?? ''
+                  : ''
+    setForm((prev) => ({ ...prev, [editField]: value }))
+    setEditField(null)
   }
 
   function openEdit(item: Software) {
@@ -1673,7 +1729,13 @@ export default function SoftwareListPage() {
           <div>
             <SectionTitle>基本信息</SectionTitle>
             <div className="space-y-2.5">
-              <ConfigRow label="应用名称" onEdit={() => setEditField('name')}>
+              <ConfigRow
+                label="应用名称"
+                onEdit={() => setEditField('name')}
+                editing={editField === 'name'}
+                onSave={() => fieldSaveMutation.mutate()}
+                onCancel={cancelFieldEdit}
+              >
                 <input
                   className="field h-8 text-[12px]"
                   readOnly={editField !== 'name'}
@@ -1681,7 +1743,13 @@ export default function SoftwareListPage() {
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
                 />
               </ConfigRow>
-              <ConfigRow label="英文名称" onEdit={() => setEditField('nameUs')}>
+              <ConfigRow
+                label="英文名称"
+                onEdit={() => setEditField('nameUs')}
+                editing={editField === 'nameUs'}
+                onSave={() => fieldSaveMutation.mutate()}
+                onCancel={cancelFieldEdit}
+              >
                 <input
                   className="field h-8 text-[12px]"
                   readOnly={editField !== 'nameUs'}
@@ -1689,7 +1757,13 @@ export default function SoftwareListPage() {
                   onChange={(event) => setForm({ ...form, nameUs: event.target.value })}
                 />
               </ConfigRow>
-              <ConfigRow label="法文名称" onEdit={() => setEditField('nameFr')}>
+              <ConfigRow
+                label="法文名称"
+                onEdit={() => setEditField('nameFr')}
+                editing={editField === 'nameFr'}
+                onSave={() => fieldSaveMutation.mutate()}
+                onCancel={cancelFieldEdit}
+              >
                 <input
                   className="field h-8 text-[12px]"
                   readOnly={editField !== 'nameFr'}
@@ -1697,7 +1771,13 @@ export default function SoftwareListPage() {
                   onChange={(event) => setForm({ ...form, nameFr: event.target.value })}
                 />
               </ConfigRow>
-              <ConfigRow label="应用标识" onEdit={() => setEditField('key')}>
+              <ConfigRow
+                label="应用标识"
+                onEdit={() => setEditField('key')}
+                editing={editField === 'key'}
+                onSave={() => fieldSaveMutation.mutate()}
+                onCancel={cancelFieldEdit}
+              >
                 <input
                   className="field h-8 text-[12px]"
                   readOnly={editField !== 'key'}
@@ -1728,7 +1808,13 @@ export default function SoftwareListPage() {
                   placeholder="未关联席位"
                 />
               </ConfigRow>
-              <ConfigRow label="应用描述" onEdit={() => setEditField('desc')}>
+              <ConfigRow
+                label="应用描述"
+                onEdit={() => setEditField('desc')}
+                editing={editField === 'desc'}
+                onSave={() => fieldSaveMutation.mutate()}
+                onCancel={cancelFieldEdit}
+              >
                 <textarea
                   className="field text-[12px]"
                   rows={2}
@@ -1851,12 +1937,29 @@ export default function SoftwareListPage() {
               value={form.routerKey}
               onChange={(event) => setForm({ ...form, routerKey: event.target.value })}
             />
-            <button
-              onClick={() => setEditField('routerKey')}
-              className="w-8 flex-none pt-[7px] text-left text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-            >
-              修改
-            </button>
+            {editField === 'routerKey' ? (
+              <div className="flex flex-none items-start gap-2 pt-[7px] text-[12px]">
+                <button
+                  onClick={() => fieldSaveMutation.mutate()}
+                  className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                >
+                  保存
+                </button>
+                <button
+                  onClick={cancelFieldEdit}
+                  className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                >
+                  取消
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setEditField('routerKey')}
+                className="w-8 flex-none pt-[7px] text-left text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+              >
+                修改
+              </button>
+            )}
           </div>
         </div>
 
