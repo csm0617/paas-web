@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, Check, ChevronDown, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
+import { AppWindow, ArrowDown, ArrowUp, Check, ChevronDown, ChevronsUpDown, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -211,6 +211,15 @@ function MappingPopover({
   )
 }
 
+function SortIndicator({ active, dir }: { active: boolean; dir: 'asc' | 'desc' }) {
+  if (!active) return <ChevronsUpDown size={10} className="text-mute" />
+  return dir === 'asc' ? (
+    <ArrowUp size={10} className="text-signal" />
+  ) : (
+    <ArrowDown size={10} className="text-signal" />
+  )
+}
+
 function FormRow({
   label,
   required,
@@ -331,6 +340,9 @@ export default function SoftwareListPage() {
   const [seatSelectOpen, setSeatSelectOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [createSeatNames, setCreateSeatNames] = useState<string[]>([])
+  const [sortField, setSortField] = useState<'key' | 'createdAt'>('key')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [authFilter, setAuthFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [exportOpen, setExportOpen] = useState(false)
   const [exportIds, setExportIds] = useState<string[]>([])
   const [exporting, setExporting] = useState(false)
@@ -420,10 +432,33 @@ export default function SoftwareListPage() {
     setPage(1)
   }, [keyword])
 
+  function toggleSort(field: 'key' | 'createdAt') {
+    if (sortField === field) {
+      setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortField(field)
+      setSortDir('asc')
+    }
+    setPage(1)
+  }
+
+  const sortedRows = useMemo(() => {
+    const rows = [...filtered]
+    rows.sort((a, b) => {
+      if (sortField === 'key') {
+        return sortDir === 'asc' ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)
+      }
+      const av = a.createdAt ?? 0
+      const bv = b.createdAt ?? 0
+      return sortDir === 'asc' ? av - bv : bv - av
+    })
+    return rows
+  }, [filtered, sortField, sortDir])
+
   const pageSize = 10
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize))
   const current = Math.min(page, totalPages)
-  const pageRows = filtered.slice((current - 1) * pageSize, current * pageSize)
+  const pageRows = sortedRows.slice((current - 1) * pageSize, current * pageSize)
 
   const relationServicesQuery = useQuery({
     queryKey: ['software-relation-services'],
@@ -944,19 +979,45 @@ export default function SoftwareListPage() {
                   <th className="w-12" />
                   <th className="w-20 text-center">序号</th>
                   <th style={{ width: 200 }}>名称</th>
-                  <th style={{ width: 200 }}>标识</th>
+                  <th style={{ width: 200 }}>
+                    <button
+                      onClick={() => toggleSort('key')}
+                      className={cn(
+                        'inline-flex items-center gap-1 transition-colors hover:text-white',
+                        sortField === 'key' && 'text-[#4aa3f0]',
+                      )}
+                    >
+                      标识
+                      <SortIndicator active={sortField === 'key'} dir={sortDir} />
+                    </button>
+                  </th>
                   <th style={{ width: 200 }}>关联席位</th>
                   <th style={{ width: 180 }}>更新时间</th>
                   <th style={{ width: 150 }}>描述</th>
                   <th className="w-20 text-center">置顶</th>
-                  <th style={{ width: 180 }}>创建时间</th>
+                  <th style={{ width: 180 }}>
+                    <button
+                      onClick={() => toggleSort('createdAt')}
+                      className={cn(
+                        'inline-flex items-center gap-1 transition-colors hover:text-white',
+                        sortField === 'createdAt' && 'text-[#4aa3f0]',
+                      )}
+                    >
+                      创建时间
+                      <SortIndicator active={sortField === 'createdAt'} dir={sortDir} />
+                    </button>
+                  </th>
                   <th style={{ width: 220 }} className="text-center">操作</th>
                 </tr>
               </thead>
               <tbody>
                 {pageRows.map((item, index) => {
                   const expanded = expandedId === item.id
-                  const related = appServiceList(item)
+                  const related = appServiceList(item).filter((service) => {
+                    if (authFilter === 'all') return true
+                    const auth = service.serviceAuth as { auth?: number } | null | undefined
+                    return authFilter === 'yes' ? auth?.auth === 1 : auth?.auth !== 1
+                  })
                   const updatedAt = (item as Software & { updatedAt?: number }).updatedAt
                   return (
                     <Fragment key={item.id}>
@@ -1018,7 +1079,7 @@ export default function SoftwareListPage() {
                         </td>
                         <td className="text-center">
                           {item.orderTop ? (
-                            <span className="inline-flex items-center border border-line-strong bg-paper-2 px-1.5 py-0.5 text-[11px] text-ink-3">
+                            <span className="inline-flex items-center rounded-[2px] border border-[#6b8098] px-1.5 py-0.5 text-[11px] text-[#c9d6e3]">
                               已置顶
                             </span>
                           ) : null}
@@ -1095,9 +1156,42 @@ export default function SoftwareListPage() {
                                     <th>镜像</th>
                                     <th>版本更新时间</th>
                                     <th>
-                                      <span className="inline-flex items-center gap-1">
-                                        授权状态 <Filter size={10} />
-                                      </span>
+                                      <DropdownMenu.Root>
+                                        <DropdownMenu.Trigger asChild>
+                                          <button
+                                            className={cn(
+                                              'inline-flex items-center gap-1 transition-colors hover:text-white',
+                                              authFilter !== 'all' && 'text-[#4aa3f0]',
+                                            )}
+                                          >
+                                            授权状态 <Filter size={10} />
+                                          </button>
+                                        </DropdownMenu.Trigger>
+                                        <DropdownMenu.Portal>
+                                          <DropdownMenu.Content
+                                            align="start"
+                                            sideOffset={4}
+                                            className="z-[75] w-[130px] border border-line bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+                                          >
+                                            {([
+                                              { key: 'all', label: '全部' },
+                                              { key: 'yes', label: '已授权' },
+                                              { key: 'no', label: '未授权' },
+                                            ] as const).map((option) => (
+                                              <DropdownMenu.Item
+                                                key={option.key}
+                                                onSelect={() => setAuthFilter(option.key)}
+                                                className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink"
+                                              >
+                                                {option.label}
+                                                {authFilter === option.key && (
+                                                  <Check size={11} className="flex-none text-signal" />
+                                                )}
+                                              </DropdownMenu.Item>
+                                            ))}
+                                          </DropdownMenu.Content>
+                                        </DropdownMenu.Portal>
+                                      </DropdownMenu.Root>
                                     </th>
                                     <th className="text-center">操作</th>
                                   </tr>
