@@ -49,7 +49,7 @@ export const navigation: NavGroup[] = [
         path: '/software/application',
         code: 'CFG',
         children: [
-          { label: '应用', en: 'APPLICATIONS', path: '/software/application', code: 'APP' },
+          { label: '应用', en: 'APPLICATIONS', path: '/software/application/config', code: 'APP' },
           { label: '应用服务', en: 'SERVICES', path: '/software/application/service', code: 'SVC' },
           { label: '基础服务', en: 'BASE SERVICES', path: '/software/application/base-service', code: 'BAS' },
           { label: '容器', en: 'CONTAINERS', path: '/software/application/service-pod', code: 'POD' },

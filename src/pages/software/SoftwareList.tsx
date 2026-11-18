@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, ChevronDown, ChevronRight, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, Trash2, Upload, Users } from 'lucide-react'
+import { AppWindow, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -17,6 +17,7 @@ import {
   EmptyState,
   Field,
   LoadingBlock,
+  Modal,
   PageToolbar,
   Panel,
   SectionTitle,
@@ -52,6 +53,25 @@ interface GatewayPort {
   path?: string
   allow?: boolean
   fullPath?: string
+}
+
+interface RelationServiceInfo {
+  serviceId?: string
+  serviceLabel?: string
+  serviceName?: string
+  serviceType?: string | null
+  serviceStatus?: string
+  web?: boolean
+}
+
+type SoftwareDetail = Software & {
+  screenShotList?: string[] | null
+  serviceList?: RelationServiceInfo[]
+  roleNameList?: string[]
+  roleKeyList?: string[]
+  status?: string
+  nameUs?: string
+  nameFr?: string
 }
 
 const emptyForm = {
@@ -144,8 +164,11 @@ export default function SoftwareListPage() {
   const [initialShots, setInitialShots] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<'card' | 'table'>('table')
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [page, setPage] = useState(1)
+  const [relationOpen, setRelationOpen] = useState(false)
+  const [relationService, setRelationService] = useState('')
+  const [relatedSelected, setRelatedSelected] = useState<string[]>([])
+  const detailAppliedRef = useRef('')
   const [minSetOpen, setMinSetOpen] = useState(false)
   const [minSetSelected, setMinSetSelected] = useState<string[]>([])
   const [govOpen, setGovOpen] = useState(false)
@@ -256,6 +279,8 @@ export default function SoftwareListPage() {
   }
 
   const relatedServices = editing ? appServiceList(editing) : []
+  const relatedNames = relatedServices.map((service) => serviceNameOf(service))
+  const availableServices = services.filter((service) => !relatedNames.includes(serviceNameOf(service)))
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -316,8 +341,7 @@ export default function SoftwareListPage() {
 
   const detailQuery = useQuery({
     queryKey: ['software-detail', editing?.id],
-    queryFn: () =>
-      api.get<Software & { screenShotList?: string[] | null }>(`/v1/software/${editing?.id}`),
+    queryFn: () => api.get<SoftwareDetail>(`/v1/software/${editing?.id}`),
     enabled: !!editing,
   })
 
@@ -326,7 +350,23 @@ export default function SoftwareListPage() {
     const list = detailQuery.data.screenShotList ?? []
     setShots(list)
     setInitialShots(list)
+    if (detailAppliedRef.current === detailQuery.data.id) return
+    detailAppliedRef.current = detailQuery.data.id
+    const detail = detailQuery.data
+    setForm((prev) => ({
+      ...prev,
+      name: detail.name || prev.name,
+      nameUs: detail.nameUs || prev.nameUs,
+      nameFr: detail.nameFr || prev.nameFr,
+      desc: detail.desc ?? prev.desc,
+      routerKey: detail.routerKey ?? prev.routerKey,
+      icon: detail.icon ?? prev.icon,
+    }))
   }, [detailQuery.data])
+
+  const appRunning = detailQuery.data?.status
+    ? detailQuery.data.status === 'RUNNING'
+    : editing?.releaseStatus === 1
 
   const seatMutation = useMutation({
     mutationFn: () => api.put('/v1/software/softwareRelateRole', seatKeys, { softwareId: seatTarget?.id }),
@@ -336,6 +376,34 @@ export default function SoftwareListPage() {
       queryClient.invalidateQueries({ queryKey: ['software'] })
     },
     onError: (error) => toast.error('关联失败', errorMessage(error)),
+  })
+
+  const relateMutation = useMutation({
+    mutationFn: ({ id, list, remove }: { id: string; list: string[]; remove?: boolean }) =>
+      remove
+        ? api.del(`/v1/software/${id}/relate_service`, { list })
+        : api.post(`/v1/software/${id}/relate_service`, { list }),
+    onSuccess: () => {
+      toast.success('关联服务已更新')
+      setRelationOpen(false)
+      setRelationService('')
+      setRelatedSelected([])
+      queryClient.invalidateQueries({ queryKey: ['software-detail', editing?.id] })
+      queryClient.invalidateQueries({ queryKey: ['software-relation-services'] })
+      queryClient.invalidateQueries({ queryKey: ['software'] })
+    },
+    onError: (error) => toast.error('关联服务更新失败', errorMessage(error)),
+  })
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, running }: { id: string; running: boolean }) =>
+      api.get(`/v1/software/${id}/${running ? 'start' : 'stop'}`),
+    onSuccess: (_data, variables) => {
+      toast.success(variables.running ? '应用已启动' : '应用已停止')
+      queryClient.invalidateQueries({ queryKey: ['software-detail', editing?.id] })
+      queryClient.invalidateQueries({ queryKey: ['software'] })
+    },
+    onError: (error) => toast.error('启停失败', errorMessage(error)),
   })
 
   const orderMutation = useMutation({
@@ -512,6 +580,10 @@ export default function SoftwareListPage() {
   function openEdit(item: Software) {
     setEditing(item)
     setEditField(null)
+    setRelatedSelected([])
+    setRelationOpen(false)
+    setRelationService('')
+    detailAppliedRef.current = ''
     setForm({
       key: item.key,
       name: item.name,
@@ -587,26 +659,6 @@ export default function SoftwareListPage() {
         >
           <LayoutGrid size={11} /> 切换显示
         </Button>
-        {selectedIds.length > 0 && (
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={async () => {
-              const ok = await confirm({
-                title: `删除 ${selectedIds.length} 个应用？`,
-                description: '删除后应用将从门户移除，此操作不可恢复。',
-                confirmText: '删除',
-                danger: true,
-              })
-              if (!ok) return
-              const targets = list.filter((item) => selectedIds.includes(item.id))
-              targets.forEach((item) => deleteMutation.mutate(item.id))
-              setSelectedIds([])
-            }}
-          >
-            <Trash2 size={11} /> 批量删除
-          </Button>
-        )}
       </PageToolbar>
 
       {query.isLoading ? (
@@ -631,31 +683,16 @@ export default function SoftwareListPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th className="w-10 pl-3 pr-0">
-                    <input
-                      type="checkbox"
-                      className="check"
-                      aria-label="全选"
-                      checked={pageRows.length > 0 && pageRows.every((item) => selectedIds.includes(item.id))}
-                      onChange={(event) => {
-                        const keys = pageRows.map((item) => item.id)
-                        setSelectedIds((prev) =>
-                          event.target.checked
-                            ? Array.from(new Set([...prev, ...keys]))
-                            : prev.filter((key) => !keys.includes(key)),
-                        )
-                      }}
-                    />
-                  </th>
-                  <th className="w-14 text-center">序号</th>
-                  <th>名称</th>
-                  <th>标识</th>
-                  <th>关联席位</th>
-                  <th>更新时间</th>
-                  <th>描述</th>
-                  <th>置顶</th>
-                  <th>创建时间</th>
-                  <th className="text-right">操作</th>
+                  <th className="w-12" />
+                  <th className="w-20 text-center">序号</th>
+                  <th style={{ width: 200 }}>名称</th>
+                  <th style={{ width: 200 }}>标识</th>
+                  <th style={{ width: 200 }}>关联席位</th>
+                  <th style={{ width: 180 }}>更新时间</th>
+                  <th style={{ width: 150 }}>描述</th>
+                  <th className="w-20 text-center">置顶</th>
+                  <th style={{ width: 180 }}>创建时间</th>
+                  <th style={{ width: 220 }} className="text-right">操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -669,43 +706,37 @@ export default function SoftwareListPage() {
                         onClick={() => setExpandedId(expanded ? null : item.id)}
                         className={cn('cursor-pointer', expanded && 'bg-[#16395a]')}
                       >
-                        <td className="pl-3 pr-0" onClick={(event) => event.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            className="check"
-                            aria-label={`选择 ${item.name}`}
-                            checked={selectedIds.includes(item.id)}
-                            onChange={() =>
-                              setSelectedIds((prev) =>
-                                prev.includes(item.id) ? prev.filter((key) => key !== item.id) : [...prev, item.id],
-                              )
-                            }
-                          />
+                        <td onClick={(event) => event.stopPropagation()}>
+                          <button
+                            className="inline-flex h-6 w-6 items-center justify-center text-ink-3 transition-colors hover:text-white"
+                            aria-label={expanded ? '收起' : '展开'}
+                            onClick={() => setExpandedId(expanded ? null : item.id)}
+                          >
+                            {expanded ? <SquareChevronDown size={16} /> : <SquareChevronRight size={16} />}
+                          </button>
                         </td>
                         <td className="text-center">
                           <span className="mono text-[11.5px] text-ink-3">{(current - 1) * pageSize + index + 1}</span>
                         </td>
                         <td>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              className="inline-flex h-5 w-5 flex-none items-center justify-center rounded border border-line-strong text-ink-3 transition-colors hover:border-signal hover:text-signal"
-                              aria-label={expanded ? '收起' : '展开'}
-                              onClick={(event) => {
-                                event.stopPropagation()
-                                setExpandedId(expanded ? null : item.id)
-                              }}
-                            >
-                              {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                            </button>
-                            <span className="text-[12px] text-ink">{item.name}</span>
-                          </div>
+                          <span className="text-[12px] text-ink">{item.name}</span>
                         </td>
                         <td>
                           <span className="mono text-[11.5px] text-ink-3">{item.key}</span>
                         </td>
                         <td>
-                          <div className="flex flex-wrap gap-1">
-                            {(item.roleList ?? []).length === 0 && <span className="text-[12px] text-ink-3">—</span>}
+                          <div className="flex flex-wrap items-center gap-1">
+                            {(item.roleList ?? []).length === 0 && (
+                              <button
+                                onClick={(event) => {
+                                  event.stopPropagation()
+                                  openSeats(item)
+                                }}
+                                className="inline-flex items-center gap-0.5 border border-[#2f6fa8] bg-[#12314c] px-1.5 py-0.5 text-[11px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+                              >
+                                <Plus size={9} /> 添加席位
+                              </button>
+                            )}
                             {(item.roleList ?? []).map((role) => (
                               <Badge key={role.key || role.id} tone="info">
                                 {role.name || role.key}
@@ -714,10 +745,12 @@ export default function SoftwareListPage() {
                           </div>
                         </td>
                         <td>
-                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">{formatDate(updatedAt, true)}</span>
+                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+                            {updatedAt ? formatDate(updatedAt, true) : ''}
+                          </span>
                         </td>
                         <td>
-                          <span className="block max-w-[220px] truncate text-[12px] text-ink-3">{item.desc || '—'}</span>
+                          <span className="block max-w-[150px] truncate text-[12px] text-ink-3">{item.desc || ''}</span>
                         </td>
                         <td>
                           <button
@@ -1174,7 +1207,10 @@ export default function SoftwareListPage() {
                 <input
                   className="field h-8 text-[12px]"
                   readOnly
-                  value={(editing?.roleList ?? []).map((role) => role.name || role.key).join('、')}
+                  value={
+                    (detailQuery.data?.roleNameList ?? []).join('、') ||
+                    (editing?.roleList ?? []).map((role) => role.name || role.key).join('、')
+                  }
                   placeholder="未关联席位"
                 />
               </ConfigRow>
@@ -1258,36 +1294,33 @@ export default function SoftwareListPage() {
               <div className="flex items-center gap-2">
                 <button
                   role="switch"
-                  aria-checked={editing?.releaseStatus === 1}
-                  disabled={!editing || releaseMutation.isPending}
+                  aria-checked={appRunning}
+                  disabled={!editing || statusMutation.isPending}
                   onClick={() =>
-                    editing && releaseMutation.mutate({ id: editing.id, release: editing.releaseStatus !== 1 })
+                    editing && statusMutation.mutate({ id: editing.id, running: !appRunning })
                   }
                   className={cn(
                     'relative h-[18px] w-[34px] rounded-full transition-colors disabled:opacity-50',
-                    editing?.releaseStatus === 1 ? 'bg-[#1670c2]' : 'bg-[#2b4c6d]',
+                    appRunning ? 'bg-[#1670c2]' : 'bg-[#2b4c6d]',
                   )}
                 >
                   <span
                     className={cn(
                       'absolute top-[2px] h-[14px] w-[14px] rounded-full bg-[#dfeaf5] transition-all',
-                      editing?.releaseStatus === 1 ? 'left-[18px]' : 'left-[2px]',
+                      appRunning ? 'left-[18px]' : 'left-[2px]',
                     )}
                   />
                 </button>
                 <span
                   className={cn(
                     'flex items-center gap-1 text-[11px]',
-                    editing?.releaseStatus === 1 ? 'text-ok' : 'text-mute',
+                    appRunning ? 'text-ok' : 'text-mute',
                   )}
                 >
                   <span
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      editing?.releaseStatus === 1 ? 'bg-ok' : 'bg-mute',
-                    )}
+                    className={cn('h-1.5 w-1.5 rounded-full', appRunning ? 'bg-ok' : 'bg-mute')}
                   />
-                  {editing?.releaseStatus === 1 ? 'RUNNING' : 'STOPPED'}
+                  {appRunning ? '运行中' : '已停止'}
                 </span>
               </div>
             </div>
@@ -1320,27 +1353,27 @@ export default function SoftwareListPage() {
               size="sm"
               variant="signal"
               onClick={() => {
-                setModalOpen(false)
-                navigate('/software/application/service')
+                setRelationService('')
+                setRelationOpen(true)
               }}
             >
               <Plus size={11} /> 新增关联服务
             </Button>
             <Button
               size="sm"
-              disabled={relatedServices.length === 0}
+              disabled={relatedSelected.length === 0 || relateMutation.isPending}
               onClick={async () => {
+                if (!editing) return
                 const ok = await confirm({
-                  title: '解除服务关联？',
-                  description: '请前往应用服务列表调整该服务的所属应用。',
-                  confirmText: '前往应用服务',
+                  title: '删除关联服务',
+                  description: `确认删除所选服务: ${relatedSelected.join('、')} ?`,
+                  confirmText: '确定',
+                  danger: true,
                 })
-                if (!ok) return
-                setModalOpen(false)
-                navigate('/software/application/service')
+                if (ok) relateMutation.mutate({ id: editing.id, list: relatedSelected, remove: true })
               }}
             >
-              − 解除关联服务
+              − 删除关联服务
             </Button>
           </div>
           <table className="data-table">
@@ -1362,7 +1395,16 @@ export default function SoftwareListPage() {
                 return (
                   <tr key={name}>
                     <td>
-                      <input type="checkbox" className="check" />
+                      <input
+                        type="checkbox"
+                        className="check"
+                        checked={relatedSelected.includes(name)}
+                        onChange={() =>
+                          setRelatedSelected((prev) =>
+                            prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name],
+                          )
+                        }
+                      />
                     </td>
                     <td>
                       <span className="text-[12px] text-ink">{name}</span>
@@ -1400,14 +1442,14 @@ export default function SoftwareListPage() {
                         <button
                           className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
                           onClick={async () => {
+                            if (!editing) return
                             const ok = await confirm({
-                              title: `解除服务「${name}」关联？`,
-                              description: '请前往应用服务列表调整该服务的所属应用。',
-                              confirmText: '前往应用服务',
+                              title: '删除服务',
+                              description: `确认删除所选服务: ${name} ?`,
+                              confirmText: '确定',
+                              danger: true,
                             })
-                            if (!ok) return
-                            setModalOpen(false)
-                            navigate('/software/application/service')
+                            if (ok) relateMutation.mutate({ id: editing.id, list: [name], remove: true })
                           }}
                         >
                           删除
@@ -1428,6 +1470,51 @@ export default function SoftwareListPage() {
           </table>
         </div>
       </Drawer>
+
+      <Modal
+        open={relationOpen}
+        onOpenChange={(open) => {
+          setRelationOpen(open)
+          if (!open) setRelationService('')
+        }}
+        title="选择关联服务"
+        width={340}
+        footer={
+          <>
+            <Button size="sm" onClick={() => setRelationOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              disabled={!relationService}
+              loading={relateMutation.isPending}
+              onClick={() => {
+                if (!editing || !relationService) return
+                relateMutation.mutate({ id: editing.id, list: [relationService] })
+              }}
+            >
+              确定
+            </Button>
+          </>
+        }
+      >
+        <select
+          className="field h-9 w-full text-[12px]"
+          value={relationService}
+          onChange={(event) => setRelationService(event.target.value)}
+        >
+          <option value="">请选择服务</option>
+          {availableServices.map((service) => {
+            const name = serviceNameOf(service)
+            return (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            )
+          })}
+        </select>
+      </Modal>
 
       <Drawer
         open={!!seatTarget}
