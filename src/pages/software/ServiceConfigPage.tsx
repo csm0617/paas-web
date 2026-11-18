@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, X } from 'lucide-react'
+import { Download, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
@@ -338,6 +338,7 @@ export default function ServiceConfigPage() {
   const [configEditing, setConfigEditing] = useState(false)
   const [volumeRows, setVolumeRows] = useState<VolumeRow[]>([{ hostPath: '', podPath: '', readOnly: false }])
   const [configRows, setConfigRows] = useState<ConfigMapRow[]>([])
+  const [fileSearch, setFileSearch] = useState<{ row: number; value: string } | null>(null)
 
   const [healthEditing, setHealthEditing] = useState(false)
   const [readiness, setReadiness] = useState<ProbeForm>(emptyProbe)
@@ -1715,32 +1716,145 @@ export default function ServiceConfigPage() {
                   )
                 }}
               >
-                <div className="mb-1 flex items-center gap-3 text-[12px] text-ink-3">
-                  <span className="w-[26%]">挂载目录</span>
+                <div className="mb-1.5 flex items-center gap-3 text-[13px] text-[#c6dbef]">
+                  <span className="w-[26%]">文件映射：挂载目录</span>
                   <span className="w-[26%]">配置组</span>
                   <span className="w-[36%]">配置文件</span>
                   <span className="w-[12%]">操作</span>
                 </div>
                 <div className="mb-4 space-y-2">
-                  {configRows.map((row, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <input className={cn(inputCls, 'w-[26%]')} disabled value={row.dir} />
-                      <input className={cn(inputCls, 'w-[26%]')} disabled value={row.configmap} />
-                      <input className={cn(inputCls, 'w-[36%]')} disabled value={row.keys.join(', ')} />
-                      <span className="w-[12%]">
-                        <button
-                          type="button"
-                          className="text-[12px] text-[#ff6b6b]"
-                          onClick={() => {
-                            setConfigEditing(true)
-                            setConfigRows((rows) => rows.filter((_, i) => i !== index))
-                          }}
-                        >
-                          删除
-                        </button>
-                      </span>
-                    </div>
-                  ))}
+                  {configRows.map((row, index) => {
+                    const group = configMaps.find((item) => item.metadata?.name === row.configmap)
+                    const availableKeys = Object.keys(group?.data ?? {})
+                      .filter((key) => !row.keys.includes(key))
+                      .filter((key) =>
+                        fileSearch && fileSearch.row === index
+                          ? key.toLowerCase().includes(fileSearch.value.toLowerCase())
+                          : true,
+                      )
+                    return (
+                      <div key={index} className="flex items-center gap-3">
+                        <input
+                          className={cn(inputCls, 'w-[26%]')}
+                          disabled={!configEditing}
+                          placeholder="挂载目录"
+                          value={row.dir}
+                          onChange={(event) =>
+                            setConfigRows((rows) =>
+                              rows.map((item, i) => (i === index ? { ...item, dir: event.target.value } : item)),
+                            )
+                          }
+                        />
+                        <div className="relative w-[26%]">
+                          <select
+                            className={cn(inputCls, 'appearance-none pr-7')}
+                            disabled={!configEditing}
+                            value={row.configmap}
+                            onChange={(event) =>
+                              setConfigRows((rows) =>
+                                rows.map((item, i) =>
+                                  i === index ? { ...item, configmap: event.target.value, keys: [] } : item,
+                                ),
+                              )
+                            }
+                          >
+                            <option value="">请选择配置组</option>
+                            {configMaps.map((item) => {
+                              const name = item.metadata?.name || ''
+                              if (!name) return null
+                              return (
+                                <option key={name} value={name}>
+                                  {name}
+                                </option>
+                              )
+                            })}
+                          </select>
+                          <Search
+                            size={11}
+                            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#6f8aa5]"
+                          />
+                        </div>
+                        <div className="relative w-[36%]">
+                          <div className="flex min-h-[30px] flex-wrap items-center gap-1 border border-[#2f4f6d] bg-[#16293c] px-1.5 py-0.5">
+                            {row.keys.map((key) => (
+                              <span
+                                key={key}
+                                className="flex items-center gap-1 bg-[#23405c] px-1.5 py-[1px] text-[11px] text-[#c6dbef]"
+                              >
+                                {key}
+                                {configEditing && (
+                                  <button
+                                    type="button"
+                                    className="text-[#9db4ca] hover:text-white"
+                                    onClick={() =>
+                                      setConfigRows((rows) =>
+                                        rows.map((item, i) =>
+                                          i === index
+                                            ? { ...item, keys: item.keys.filter((value) => value !== key) }
+                                            : item,
+                                        ),
+                                      )
+                                    }
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </span>
+                            ))}
+                            {configEditing && (
+                              <input
+                                className="min-w-[60px] flex-1 bg-transparent px-1 text-[12px] text-[#c6dbef] outline-none placeholder:text-[#6f8aa5]"
+                                value={fileSearch?.row === index ? fileSearch.value : ''}
+                                placeholder={row.keys.length ? '' : '请选择配置文件'}
+                                onFocus={() => setFileSearch({ row: index, value: '' })}
+                                onChange={(event) => setFileSearch({ row: index, value: event.target.value })}
+                                onBlur={() =>
+                                  window.setTimeout(
+                                    () => setFileSearch((prev) => (prev?.row === index ? null : prev)),
+                                    150,
+                                  )
+                                }
+                              />
+                            )}
+                          </div>
+                          {configEditing && fileSearch?.row === index && availableKeys.length > 0 && (
+                            <div className="absolute left-0 top-full z-30 mt-0.5 max-h-[180px] w-full overflow-auto border border-[#2f4f6d] bg-[#0e2233]">
+                              {availableKeys.map((key) => (
+                                <button
+                                  key={key}
+                                  type="button"
+                                  className="block w-full px-2 py-1.5 text-left text-[12px] text-[#c6dbef] hover:bg-[#15395c]"
+                                  onMouseDown={(event) => {
+                                    event.preventDefault()
+                                    setConfigRows((rows) =>
+                                      rows.map((item, i) =>
+                                        i === index ? { ...item, keys: [...item.keys, key] } : item,
+                                      ),
+                                    )
+                                    setFileSearch({ row: index, value: '' })
+                                  }}
+                                >
+                                  {key}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <span className="w-[12%]">
+                          <button
+                            type="button"
+                            className="text-[12px] text-[#ff6b6b]"
+                            onClick={() => {
+                              setConfigEditing(true)
+                              setConfigRows((rows) => rows.filter((_, i) => i !== index))
+                            }}
+                          >
+                            删除
+                          </button>
+                        </span>
+                      </div>
+                    )
+                  })}
                   {configRows.length === 0 && <div className="py-1 text-[12px] text-mute">暂无配置组挂载</div>}
                   {configMaps.length > 0 && (
                     <button
@@ -1752,8 +1866,8 @@ export default function ServiceConfigPage() {
                           ...rows,
                           {
                             dir: '',
-                            configmap: configMaps[0].metadata?.name || '',
-                            keys: Object.keys(configMaps[0].data ?? {}),
+                            configmap: '',
+                            keys: [],
                           },
                         ])
                       }}
@@ -1762,8 +1876,8 @@ export default function ServiceConfigPage() {
                     </button>
                   )}
                 </div>
-                <div className="mb-1 flex items-center gap-3 text-[12px] text-ink-3">
-                  <span className="w-[26%]">宿主目录</span>
+                <div className="mb-1.5 flex items-center gap-3 text-[13px] text-[#c6dbef]">
+                  <span className="w-[26%]">主机路径：宿主目录</span>
                   <span className="w-[26%]">容器目录</span>
                   <span className="w-[36%]">读写权限</span>
                   <span className="w-[12%]">操作</span>
