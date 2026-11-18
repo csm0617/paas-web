@@ -210,8 +210,12 @@ export function AreaTrend({
             </g>
           )
         })}
-        {labels.map((label, i) => {
-          if (i % Math.ceil(count / 6) !== 0 && i !== count - 1) return null
+        {Array.from(
+          new Set(
+            (count > 1 ? [0, 1, 2, 3, 4, 5].map((k) => Math.round((k * (count - 1)) / 5)) : [0]),
+          ),
+        ).map((i) => {
+          const label = labels[i] ?? ''
           return (
             <text
               key={`${label}-${i}`}
