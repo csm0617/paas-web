@@ -1924,8 +1924,13 @@ export default function SoftwareListPage() {
                       />
                     </td>
                     <td>
-                      <span className="whitespace-nowrap text-[12px] text-ink">{name}</span>
-                      {mapping?.web && <span className="ml-1 text-[11px] text-mute">(入口)</span>}
+                      {mapping?.web ? (
+                        <span className="inline-flex items-center whitespace-nowrap rounded-sm border border-[#3d5b76] px-1.5 py-0.5 text-[12px] text-[#4aa3f0]">
+                          {name}（入口）
+                        </span>
+                      ) : (
+                        <span className="whitespace-nowrap text-[12px] text-ink">{name}</span>
+                      )}
                     </td>
                     <td>
                       <span className="text-[12px] text-ink-3">
