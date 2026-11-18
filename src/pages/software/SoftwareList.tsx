@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, Trash2, Upload, Users } from 'lucide-react'
+import { AppWindow, ChevronDown, ChevronRight, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, Trash2, Upload, Users } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage, API_BASE } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -18,6 +19,7 @@ import {
   LoadingBlock,
   PageToolbar,
   Panel,
+  SectionTitle,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
@@ -55,6 +57,8 @@ interface GatewayPort {
 const emptyForm = {
   key: '',
   name: '',
+  nameUs: '',
+  nameFr: '',
   type: 'BS',
   routerKey: '',
   framework: 'BS',
@@ -95,12 +99,40 @@ function serviceStatusOf(service: ServiceItem) {
   return { text: '已停止', tone: 'text-mute', ready, desired }
 }
 
+function ConfigRow({
+  label,
+  children,
+  onEdit,
+}: {
+  label: string
+  children: ReactNode
+  onEdit?: () => void
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="w-[68px] flex-none pt-[7px] text-right text-[12px] text-ink-3">{label}：</span>
+      <div className="min-w-0 flex-1">{children}</div>
+      {onEdit ? (
+        <button
+          onClick={onEdit}
+          className="w-8 flex-none pt-[7px] text-left text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+        >
+          修改
+        </button>
+      ) : (
+        <span className="w-8 flex-none" />
+      )}
+    </div>
+  )
+}
+
 export default function SoftwareListPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const navigate = useNavigate()
   const [keyword, setKeyword] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [editField, setEditField] = useState<string | null>(null)
   const [editing, setEditing] = useState<Software | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [seatTarget, setSeatTarget] = useState<Software | null>(null)
@@ -222,6 +254,8 @@ export default function SoftwareListPage() {
         (service.softwareNameList ?? []).includes(item.name),
     )
   }
+
+  const relatedServices = editing ? appServiceList(editing) : []
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -477,9 +511,12 @@ export default function SoftwareListPage() {
 
   function openEdit(item: Software) {
     setEditing(item)
+    setEditField(null)
     setForm({
       key: item.key,
       name: item.name,
+      nameUs: (item as Software & { nameUs?: string }).nameUs || '',
+      nameFr: (item as Software & { nameFr?: string }).nameFr || '',
       type: item.type || 'BS',
       routerKey: item.routerKey || '',
       framework: item.framework || 'BS',
@@ -649,7 +686,19 @@ export default function SoftwareListPage() {
                           <span className="mono text-[11.5px] text-ink-3">{(current - 1) * pageSize + index + 1}</span>
                         </td>
                         <td>
-                          <span className="text-[12px] text-ink">{item.name}</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              className="inline-flex h-5 w-5 flex-none items-center justify-center rounded border border-line-strong text-ink-3 transition-colors hover:border-signal hover:text-signal"
+                              aria-label={expanded ? '收起' : '展开'}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                setExpandedId(expanded ? null : item.id)
+                              }}
+                            >
+                              {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                            </button>
+                            <span className="text-[12px] text-ink">{item.name}</span>
+                          </div>
                         </td>
                         <td>
                           <span className="mono text-[11.5px] text-ink-3">{item.key}</span>
@@ -1057,12 +1106,11 @@ export default function SoftwareListPage() {
           if (!open) {
             setEditing(null)
             setForm(emptyForm)
+            setEditField(null)
           }
         }}
-        kicker={editing ? 'SOFTWARE / EDIT' : 'SOFTWARE / REGISTER'}
-        title={editing ? `编辑「${editing.name}」` : '登记新应用'}
-        description="应用登记后将出现在平台应用门户。路由标识用于网关转发，请与后端服务保持一致。"
-        width={600}
+        title={editing ? `应用配置 ${editing.name}` : '新增应用'}
+        width={760}
         footer={
           <>
             <Button size="sm" onClick={() => setModalOpen(false)}>
@@ -1074,123 +1122,310 @@ export default function SoftwareListPage() {
           </>
         }
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="应用名称" required>
-            <input
-              className="field"
-              value={form.name}
-              onChange={(event) => setForm({ ...form, name: event.target.value })}
-              placeholder="如：态势标绘系统"
-            />
-          </Field>
-          <Field label="唯一标识" required hint="小写字母、数字与短横线">
-            <input
-              className="field"
-              value={form.key}
-              onChange={(event) => setForm({ ...form, key: event.target.value })}
-              placeholder="如：situation-map"
-            />
-          </Field>
-          <Field label="架构类型" required>
-            <select className="field" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value, framework: event.target.value })}>
-              <option value="BS">BS · 浏览器应用</option>
-              <option value="CS">CS · 桌面客户端</option>
-            </select>
-          </Field>
-          <Field label="路由入口">
-            <input
-              className="field"
-              value={form.routerKey}
-              onChange={(event) => setForm({ ...form, routerKey: event.target.value })}
-              placeholder="/app/your-app/"
-            />
-          </Field>
-          <Field label="应用描述" className="sm:col-span-2">
-            <textarea
-              className="field"
-              rows={3}
-              value={form.desc}
-              onChange={(event) => setForm({ ...form, desc: event.target.value })}
-              placeholder="简述应用用途与使用范围"
-            />
-          </Field>
-          <Field label="部署位置">
-            <select className="field" value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })}>
-              <option value="local">本地 / LOCAL</option>
-              <option value="remote">远程 / REMOTE</option>
-            </select>
-          </Field>
-          <Field label="应用图标" hint="PNG / JPG，将转换为 Base64 存储">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 flex-none items-center justify-center border border-line-strong bg-paper-2">
-                {form.icon ? (
-                  <img src={iconSrc(form.icon)} alt="" className="h-7 w-7 object-contain" />
-                ) : (
-                  <span className="num text-[16px] text-mute">{(form.name || form.key || 'A').slice(0, 1).toUpperCase()}</span>
-                )}
-              </div>
-              <label className="mono cursor-pointer border border-line px-2.5 py-1.5 text-[9px] tracking-widest text-ink-3 hover:border-signal hover:text-signal">
-                选择图片
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
+          <div>
+            <SectionTitle>基本信息</SectionTitle>
+            <div className="space-y-2.5">
+              <ConfigRow label="应用名称" onEdit={() => setEditField('name')}>
                 <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  className="hidden"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0]
-                    if (file) readImage(file)
-                    event.target.value = ''
-                  }}
+                  className="field h-8 text-[12px]"
+                  readOnly={editField !== 'name'}
+                  value={form.name}
+                  onChange={(event) => setForm({ ...form, name: event.target.value })}
                 />
-              </label>
-              {form.icon && (
-                <button
-                  onClick={() => setForm({ ...form, icon: '' })}
-                  className="mono text-[9px] tracking-widest text-mute hover:text-signal"
+              </ConfigRow>
+              <ConfigRow label="英文名称" onEdit={() => setEditField('nameUs')}>
+                <input
+                  className="field h-8 text-[12px]"
+                  readOnly={editField !== 'nameUs'}
+                  value={form.nameUs}
+                  onChange={(event) => setForm({ ...form, nameUs: event.target.value })}
+                />
+              </ConfigRow>
+              <ConfigRow label="法文名称" onEdit={() => setEditField('nameFr')}>
+                <input
+                  className="field h-8 text-[12px]"
+                  readOnly={editField !== 'nameFr'}
+                  value={form.nameFr}
+                  onChange={(event) => setForm({ ...form, nameFr: event.target.value })}
+                />
+              </ConfigRow>
+              <ConfigRow label="应用标识" onEdit={() => setEditField('key')}>
+                <input
+                  className="field h-8 text-[12px]"
+                  readOnly={editField !== 'key'}
+                  value={form.key}
+                  onChange={(event) => setForm({ ...form, key: event.target.value })}
+                />
+              </ConfigRow>
+              <ConfigRow label="应用类型">
+                <select
+                  className="field h-8 text-[12px]"
+                  value={form.type}
+                  onChange={(event) =>
+                    setForm({ ...form, type: event.target.value, framework: event.target.value })
+                  }
                 >
-                  移除
-                </button>
-              )}
-            </div>
-          </Field>
-          {editing && (
-            <Field label="应用截图" className="sm:col-span-2" hint="最多展示 5 张，用于应用门户预览">
-              <div className="flex flex-wrap items-center gap-2">
-                {shots.map((shot, index) => (
-                  <div key={index} className="group relative h-16 w-24 border border-line bg-paper-2">
-                    <img src={iconSrc(shot)} alt="" className="h-full w-full object-cover" />
-                    <button
-                      onClick={() => setShots((prev) => prev.filter((_, i) => i !== index))}
-                      className="absolute right-0 top-0 bg-black/60 px-1 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      ×
-                    </button>
+                  <option value="BS">容器化应用（B/S）</option>
+                  <option value="CS">客户端应用（C/S）</option>
+                </select>
+              </ConfigRow>
+              <ConfigRow label="关联席位" onEdit={() => editing && openSeats(editing)}>
+                <input
+                  className="field h-8 text-[12px]"
+                  readOnly
+                  value={(editing?.roleList ?? []).map((role) => role.name || role.key).join('、')}
+                  placeholder="未关联席位"
+                />
+              </ConfigRow>
+              <ConfigRow label="应用描述" onEdit={() => setEditField('desc')}>
+                <textarea
+                  className="field text-[12px]"
+                  rows={2}
+                  readOnly={editField !== 'desc'}
+                  value={form.desc}
+                  onChange={(event) => setForm({ ...form, desc: event.target.value })}
+                />
+              </ConfigRow>
+              <ConfigRow label="应用截图">
+                <div className="flex flex-wrap items-center gap-2">
+                  {shots.map((shot, index) => (
+                    <div key={index} className="group relative h-[68px] w-[68px] border border-dashed border-line-strong bg-paper-2">
+                      <img src={iconSrc(shot)} alt="" className="h-full w-full object-cover" />
+                      <button
+                        onClick={() => setShots((prev) => prev.filter((_, i) => i !== index))}
+                        className="absolute right-0 top-0 bg-black/60 px-1 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <label className="flex h-[68px] w-[68px] cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line-strong text-[10px] text-ink-3 hover:border-signal hover:text-signal">
+                    <Plus size={12} />
+                    修改
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      multiple
+                      className="hidden"
+                      onChange={(event) => {
+                        if (event.target.files?.length) addShots(event.target.files)
+                        event.target.value = ''
+                      }}
+                    />
+                  </label>
+                </div>
+              </ConfigRow>
+              <ConfigRow label="应用图标">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-[68px] w-[68px] flex-none items-center justify-center border border-dashed border-line-strong bg-paper-2">
+                    {form.icon ? (
+                      <img src={iconSrc(form.icon)} alt="" className="h-10 w-10 object-contain" />
+                    ) : (
+                      <span className="num text-[16px] text-mute">{(form.name || form.key || 'A').slice(0, 1).toUpperCase()}</span>
+                    )}
                   </div>
-                ))}
-                <label className="mono flex h-16 w-24 cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line-strong text-[8.5px] tracking-widest text-mute hover:border-signal hover:text-signal">
-                  <Plus size={12} />
-                  添加截图
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg"
-                    multiple
-                    className="hidden"
-                    onChange={(event) => {
-                      if (event.target.files?.length) addShots(event.target.files)
-                      event.target.value = ''
-                    }}
-                  />
-                </label>
-              </div>
-            </Field>
-          )}
-          <div className="flex items-end">
-            <div className="w-full border border-line bg-paper-2/40 px-3 py-2">
-              <div className="label">提示</div>
-              <p className="mt-1 text-[10.5px] leading-relaxed text-ink-3">
-                创建后需在席位中心关联，用户才能在应用门户看到该软件。
-              </p>
+                  <label className="cursor-pointer text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
+                    修改
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file) readImage(file)
+                        event.target.value = ''
+                      }}
+                    />
+                  </label>
+                  {form.icon && (
+                    <button
+                      onClick={() => setForm({ ...form, icon: '' })}
+                      className="text-[12px] text-mute transition-colors hover:text-danger"
+                    >
+                      移除
+                    </button>
+                  )}
+                </div>
+              </ConfigRow>
             </div>
           </div>
+
+          <div>
+            <SectionTitle>运行状态</SectionTitle>
+            <div className="flex items-center justify-between border border-line bg-paper-2/40 px-3 py-2">
+              <span className="text-[12px] text-ink-3">一键启停</span>
+              <div className="flex items-center gap-2">
+                <button
+                  role="switch"
+                  aria-checked={editing?.releaseStatus === 1}
+                  disabled={!editing || releaseMutation.isPending}
+                  onClick={() =>
+                    editing && releaseMutation.mutate({ id: editing.id, release: editing.releaseStatus !== 1 })
+                  }
+                  className={cn(
+                    'relative h-[18px] w-[34px] rounded-full transition-colors disabled:opacity-50',
+                    editing?.releaseStatus === 1 ? 'bg-[#1670c2]' : 'bg-[#2b4c6d]',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-[2px] h-[14px] w-[14px] rounded-full bg-[#dfeaf5] transition-all',
+                      editing?.releaseStatus === 1 ? 'left-[18px]' : 'left-[2px]',
+                    )}
+                  />
+                </button>
+                <span
+                  className={cn(
+                    'flex items-center gap-1 text-[11px]',
+                    editing?.releaseStatus === 1 ? 'text-ok' : 'text-mute',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      editing?.releaseStatus === 1 ? 'bg-ok' : 'bg-mute',
+                    )}
+                  />
+                  {editing?.releaseStatus === 1 ? 'RUNNING' : 'STOPPED'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <SectionTitle>访问方式</SectionTitle>
+          <div className="flex items-start gap-2">
+            <span className="w-[68px] flex-none pt-[7px] text-right text-[12px] text-ink-3">url：</span>
+            <input
+              className="field h-8 flex-1 text-[12px]"
+              readOnly={editField !== 'routerKey'}
+              value={form.routerKey}
+              onChange={(event) => setForm({ ...form, routerKey: event.target.value })}
+            />
+            <button
+              onClick={() => setEditField('routerKey')}
+              className="w-8 flex-none pt-[7px] text-left text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+            >
+              修改
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <SectionTitle>包含的服务</SectionTitle>
+          <div className="mb-2.5 flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="signal"
+              onClick={() => {
+                setModalOpen(false)
+                navigate('/software/application/service')
+              }}
+            >
+              <Plus size={11} /> 新增关联服务
+            </Button>
+            <Button
+              size="sm"
+              disabled={relatedServices.length === 0}
+              onClick={async () => {
+                const ok = await confirm({
+                  title: '解除服务关联？',
+                  description: '请前往应用服务列表调整该服务的所属应用。',
+                  confirmText: '前往应用服务',
+                })
+                if (!ok) return
+                setModalOpen(false)
+                navigate('/software/application/service')
+              }}
+            >
+              − 解除关联服务
+            </Button>
+          </div>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th className="w-9" />
+                <th>服务名称</th>
+                <th>服务类型</th>
+                <th>服务状态</th>
+                <th>映射路径</th>
+                <th className="text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {relatedServices.map((service) => {
+                const name = serviceNameOf(service)
+                const appType = service.service?.metadata?.labels?.['system/appType']
+                const status = serviceStatusOf(service)
+                return (
+                  <tr key={name}>
+                    <td>
+                      <input type="checkbox" className="check" />
+                    </td>
+                    <td>
+                      <span className="text-[12px] text-ink">{name}</span>
+                    </td>
+                    <td>
+                      <span className="text-[12px] text-ink-3">
+                        {appType === 'business' ? '前台服务' : appType ? '后台服务' : '—'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={cn('text-[12px]', status.tone)}>{status.text}</span>
+                    </td>
+                    <td>
+                      <button
+                        className="text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                        onClick={() => {
+                          setGovTab('gateway')
+                          setGovOpen(true)
+                        }}
+                      >
+                        入口设置
+                      </button>
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-end gap-2.5 text-[12px]">
+                        <button
+                          className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                          onClick={() => {
+                            setGovTab('gateway')
+                            setGovOpen(true)
+                          }}
+                        >
+                          映射路径
+                        </button>
+                        <button
+                          className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: `解除服务「${name}」关联？`,
+                              description: '请前往应用服务列表调整该服务的所属应用。',
+                              confirmText: '前往应用服务',
+                            })
+                            if (!ok) return
+                            setModalOpen(false)
+                            navigate('/software/application/service')
+                          }}
+                        >
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+              {relatedServices.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-[11.5px] text-mute">
+                    该应用暂未关联服务
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </Drawer>
 
