@@ -1,3 +1,4 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AppWindow, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
@@ -146,6 +147,60 @@ function ConfigRow({
   )
 }
 
+function MappingPopover({
+  mapping,
+  text = '入口设置',
+  onToggle,
+}: {
+  mapping?: GatewayPort
+  text?: string
+  onToggle: () => void
+}) {
+  const url = mapping ? `http://${platformHost}${mapping.fullPath || ''}` : ''
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button className="whitespace-nowrap text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
+          {text}
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          side="top"
+          align="start"
+          sideOffset={6}
+          className="z-[75] w-[300px] rounded border border-line bg-paper-2 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+        >
+          {mapping ? (
+            <div className="space-y-2">
+              <div className="flex items-start gap-1.5 text-[11.5px] text-ink-3">
+                <span>{mapping.port}</span>
+                <span>-&gt;</span>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="break-all text-[#4aa3f0] hover:underline"
+                >
+                  {url}
+                </a>
+              </div>
+              <DropdownMenu.Item
+                onSelect={onToggle}
+                className="cursor-pointer text-[11.5px] text-[#4aa3f0] outline-none transition-colors data-[highlighted]:text-[#7cc4ff]"
+              >
+                {mapping.web ? '取消入口' : '设为入口'}
+              </DropdownMenu.Item>
+            </div>
+          ) : (
+            <div className="text-[11.5px] text-mute">暂无映射，请先在网络管理中配置端口</div>
+          )}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  )
+}
+
 export default function SoftwareListPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
@@ -168,7 +223,6 @@ export default function SoftwareListPage() {
   const [relationOpen, setRelationOpen] = useState(false)
   const [relationService, setRelationService] = useState('')
   const [relatedSelected, setRelatedSelected] = useState<string[]>([])
-  const [expandedMapping, setExpandedMapping] = useState<string | null>(null)
   const detailAppliedRef = useRef('')
   const [minSetOpen, setMinSetOpen] = useState(false)
   const [minSetSelected, setMinSetSelected] = useState<string[]>([])
@@ -611,7 +665,6 @@ export default function SoftwareListPage() {
     setRelatedSelected([])
     setRelationOpen(false)
     setRelationService('')
-    setExpandedMapping(null)
     detailAppliedRef.current = ''
     setForm({
       key: item.key,
@@ -1450,54 +1503,34 @@ export default function SoftwareListPage() {
                       <span className={cn('text-[12px]', status.tone)}>{status.text}</span>
                     </td>
                     <td>
-                      <button
-                        className="text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-                        onClick={() => setExpandedMapping(expandedMapping === name ? null : name)}
-                      >
-                        入口设置
-                      </button>
-                      {expandedMapping === name && editing && (
-                        <div className="mt-1">
-                          {mapping ? (
-                            <div className="flex flex-wrap items-center gap-1.5 text-[11.5px]">
-                              <span className="text-ink-3">{mapping.port}</span>
-                              <span className="text-mute">-&gt;</span>
-                              <a
-                                href={`http://${platformHost}${mapping.fullPath || ''}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[#4aa3f0] hover:underline"
-                              >
-                                {`http://${platformHost}${mapping.fullPath || ''}`}
-                              </a>
-                              <button
-                                className="text-[11.5px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-                                onClick={() =>
-                                  entryMutation.mutate({
-                                    id: editing.id,
-                                    port: Number(mapping.port ?? 80),
-                                    serviceId: mapping.serviceId || name,
-                                    type: mapping.web ? 0 : 1,
-                                  })
-                                }
-                              >
-                                {mapping.web ? '取消入口' : '设为入口'}
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-[11.5px] text-mute">暂无映射</span>
-                          )}
-                        </div>
-                      )}
+                      <MappingPopover
+                        mapping={mapping}
+                        onToggle={() => {
+                          if (!editing || !mapping) return
+                          entryMutation.mutate({
+                            id: editing.id,
+                            port: Number(mapping.port ?? 80),
+                            serviceId: mapping.serviceId || name,
+                            type: mapping.web ? 0 : 1,
+                          })
+                        }}
+                      />
                     </td>
                     <td>
                       <div className="flex items-center justify-end gap-2.5 whitespace-nowrap text-[12px]">
-                        <button
-                          className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-                          onClick={() => setExpandedMapping(expandedMapping === name ? null : name)}
-                        >
-                          映射路径
-                        </button>
+                        <MappingPopover
+                          mapping={mapping}
+                          text="映射路径"
+                          onToggle={() => {
+                            if (!editing || !mapping) return
+                            entryMutation.mutate({
+                              id: editing.id,
+                              port: Number(mapping.port ?? 80),
+                              serviceId: mapping.serviceId || name,
+                              type: mapping.web ? 0 : 1,
+                            })
+                          }}
+                        />
                         <button
                           className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
                           onClick={async () => {
