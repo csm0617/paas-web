@@ -394,7 +394,7 @@ export default function SoftwareListPage() {
     mutationFn: ({ id, release }: { id: string; release: boolean }) =>
       api.post('/v1/software/release', { type: release ? 1 : 0, list: [id] }),
     onSuccess: (_data, variables) => {
-      toast.success(variables.release ? '已放行该应用' : '已禁止该应用')
+      toast.success(variables.release ? '关闭权限校验成功' : '开启权限校验成功')
       queryClient.invalidateQueries({ queryKey: ['software'] })
     },
     onError: (error) => toast.error('操作失败', errorMessage(error)),
@@ -742,7 +742,7 @@ export default function SoftwareListPage() {
         search={{ value: keyword, onChange: setKeyword, placeholder: '请输入应用名称/标识搜索' }}
       >
         <Button size="sm" variant="signal" onClick={openCreate}>
-          <Plus size={12} /> 创建应用
+          <Plus size={12} /> 新增应用
         </Button>
         <input
           ref={importRef}
@@ -755,11 +755,12 @@ export default function SoftwareListPage() {
             event.target.value = ''
           }}
         />
-        <Button size="sm" onClick={() => importRef.current?.click()}>
+        <Button size="sm" variant="signal" onClick={() => importRef.current?.click()}>
           <Upload size={11} /> 导入应用
         </Button>
         <Button
           size="sm"
+          variant="signal"
           onClick={() => {
             setExportIds([])
             setExportOpen(true)
@@ -769,6 +770,7 @@ export default function SoftwareListPage() {
         </Button>
         <Button
           size="sm"
+          variant="signal"
           onClick={() => {
             minSetTouched.current = false
             setMinSetSelected([])
@@ -779,6 +781,7 @@ export default function SoftwareListPage() {
         </Button>
         <Button
           size="sm"
+          variant="signal"
           onClick={() => {
             setViewMode((prev) => (prev === 'table' ? 'card' : 'table'))
             setExpandedId(null)
@@ -853,22 +856,28 @@ export default function SoftwareListPage() {
                         </td>
                         <td>
                           <div className="flex flex-wrap items-center gap-1">
-                            {(item.roleList ?? []).length === 0 && (
-                              <button
-                                onClick={(event) => {
-                                  event.stopPropagation()
-                                  openSeats(item)
-                                }}
-                                className="inline-flex items-center gap-0.5 border border-[#2f6fa8] bg-[#12314c] px-1.5 py-0.5 text-[11px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
-                              >
-                                <Plus size={9} /> 添加席位
-                              </button>
-                            )}
-                            {(item.roleList ?? []).map((role) => (
+                            {(item.roleList ?? []).slice(0, 2).map((role) => (
                               <Badge key={role.key || role.id} tone="info">
                                 {role.name || role.key}
                               </Badge>
                             ))}
+                            {(item.roleList ?? []).length > 2 && (
+                              <span
+                                className="text-[11px] text-[#4aa3f0]"
+                                title={(item.roleList ?? []).map((role) => role.name || role.key).join('、')}
+                              >
+                                ...
+                              </span>
+                            )}
+                            <button
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                openSeats(item)
+                              }}
+                              className="inline-flex items-center gap-0.5 border border-[#2f6fa8] bg-[#12314c] px-1.5 py-0.5 text-[11px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+                            >
+                              <Plus size={9} /> 添加席位
+                            </button>
                           </div>
                         </td>
                         <td>
@@ -911,28 +920,35 @@ export default function SoftwareListPage() {
                             <ActionMenu
                               triggerText="更多"
                               items={[
-                                { label: '配置席位', onSelect: () => openSeats(item), icon: <Users size={12} /> },
+                                ...(item.framework === 'BS'
+                                  ? [
+                                      {
+                                        label: '应用下载',
+                                        onSelect: () => downloadApp(item),
+                                        icon: <Download size={12} />,
+                                      },
+                                    ]
+                                  : []),
                                 {
-                                  label: item.orderTop ? '取消置顶' : '置顶应用',
+                                  label: item.orderTop ? '取消置顶' : '应用置顶',
                                   onSelect: () => orderMutation.mutate({ id: item.id, top: !item.orderTop }),
                                   icon: <Pin size={12} />,
                                 },
-                                {
-                                  label: '授权与网关',
-                                  onSelect: () => {
-                                    setGovTab('auth')
-                                    setGeneratedCode('')
-                                    setGovOpen(true)
-                                  },
-                                  icon: <ShieldCheck size={12} />,
-                                },
-                                {
-                                  label: item.releaseStatus === 1 ? '禁止访问' : '放行应用',
-                                  onSelect: () => releaseMutation.mutate({ id: item.id, release: item.releaseStatus !== 1 }),
-                                  icon: <AppWindow size={12} />,
-                                },
-                                { label: '应用下载', onSelect: () => downloadApp(item), icon: <Download size={12} /> },
-                                { label: '删除应用', danger: true, onSelect: () => remove(item), icon: <Trash2 size={12} /> },
+                                ...(item.framework === 'BS'
+                                  ? [
+                                      {
+                                        label: item.releaseStatus === 1 ? '开启权限校验' : '关闭权限校验',
+                                        danger: item.releaseStatus !== 1,
+                                        onSelect: () =>
+                                          releaseMutation.mutate({
+                                            id: item.id,
+                                            release: item.releaseStatus !== 1,
+                                          }),
+                                        icon: <ShieldCheck size={12} />,
+                                      },
+                                    ]
+                                  : []),
+                                { label: '删除', danger: true, onSelect: () => remove(item), icon: <Trash2 size={12} /> },
                               ]}
                             />
                           </div>
