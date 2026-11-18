@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, Search, X } from 'lucide-react'
+import { Check, ChevronDown, Download, Search, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
@@ -185,6 +185,106 @@ const inputCls =
   'h-[30px] w-full border border-[#2f4f6d] bg-[#16293c] px-2 text-[12px] text-[#c6dbef] outline-none transition-colors disabled:cursor-default disabled:opacity-95 focus:border-[#1890ff]'
 
 const linkCls = 'text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]'
+
+interface SelectOption {
+  value: string
+  label: string
+}
+
+function SelectBox({
+  value,
+  options,
+  onChange,
+  disabled,
+  placeholder = '请选择',
+  searchable,
+  className,
+}: {
+  value: string
+  options: SelectOption[]
+  onChange: (value: string) => void
+  disabled?: boolean
+  placeholder?: string
+  searchable?: boolean
+  className?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const current = options.find((option) => option.value === value)
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  const list = keyword
+    ? options.filter((option) => option.label.toLowerCase().includes(keyword.toLowerCase()))
+    : options
+
+  return (
+    <div ref={rootRef} className={cn('relative', className)}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((prev) => !prev)}
+        className={cn(inputCls, 'flex items-center justify-between gap-1 text-left', open && 'border-[#1890ff]')}
+      >
+        <span className={cn('truncate', current ? 'text-[#c6dbef]' : 'text-[#6f8aa5]')}>
+          {current?.label || placeholder}
+        </span>
+        {searchable ? (
+          <Search size={11} className="flex-none text-[#6f8aa5]" />
+        ) : (
+          <ChevronDown size={12} className="flex-none text-[#6f8aa5]" />
+        )}
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-40 mt-0.5 max-h-[220px] w-full overflow-auto border border-[#2f4f6d] bg-[#1a2733] py-1 shadow-[0_8px_20px_rgba(0,0,0,0.45)]">
+          {searchable && (
+            <div className="px-2 pb-1">
+              <input
+                autoFocus
+                className="h-[26px] w-full border border-[#2f4f6d] bg-[#16293c] px-2 text-[12px] text-[#c6dbef] outline-none placeholder:text-[#6f8aa5] focus:border-[#1890ff]"
+                placeholder="搜索"
+                value={keyword}
+                onChange={(event) => setKeyword(event.target.value)}
+              />
+            </div>
+          )}
+          {list.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onChange(option.value)
+                setOpen(false)
+                setKeyword('')
+              }}
+              className={cn(
+                'flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-[12px] transition-colors',
+                option.value === value
+                  ? 'bg-[#1670c2] text-white'
+                  : 'text-[#c6dbef] hover:bg-[#15395c]',
+              )}
+            >
+              <span className="flex w-3 flex-none justify-center">
+                {option.value === value && <Check size={11} />}
+              </span>
+              <span className="truncate">{option.label}</span>
+            </button>
+          ))}
+          {list.length === 0 && <div className="px-2 py-1.5 text-[12px] text-[#6f8aa5]">无匹配项</div>}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function FieldRow({
   label,
@@ -1130,23 +1230,19 @@ export default function ServiceConfigPage() {
                   </div>
                 </FieldRow>
                 <FieldRow label="资源优先级" action={basicEditLink('priority', () => priorityMutation.mutate())}>
-                  <select
-                    className={inputCls}
-                    disabled={editingField !== 'priority'}
+                  <SelectBox
                     value={basic.priority}
-                    onChange={(event) => setBasic({ ...basic, priority: event.target.value })}
-                  >
-                    <option value="">无</option>
-                    {priorityClasses.map((item) => {
-                      const name = item.metadata?.name || ''
-                      if (!name) return null
-                      return (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      )
-                    })}
-                  </select>
+                    disabled={editingField !== 'priority'}
+                    placeholder="无"
+                    options={[
+                      { value: '', label: '无' },
+                      ...priorityClasses
+                        .map((item) => item.metadata?.name || '')
+                        .filter(Boolean)
+                        .map((name) => ({ value: name, label: name })),
+                    ]}
+                    onChange={(value) => setBasic({ ...basic, priority: value })}
+                  />
                 </FieldRow>
                 <FieldRow label="实例数量" action={basicEditLink('replicas', () => scaleMutation.mutate())}>
                   <input
@@ -1225,9 +1321,12 @@ export default function ServiceConfigPage() {
                         }
                       />
                       {envEditing ? (
-                        <select className={cn(inputCls, 'w-[14%]')} disabled>
-                          <option>普通变量</option>
-                        </select>
+                        <SelectBox
+                          className="w-[14%]"
+                          value="text"
+                          options={[{ value: 'text', label: '普通变量' }]}
+                          onChange={() => {}}
+                        />
                       ) : (
                         <div className="flex h-[30px] w-[14%] items-center border border-[#2f4f6d] bg-[#16293c] px-2 text-[12px] text-[#c6dbef]">
                           普通变量
@@ -1455,19 +1554,20 @@ export default function ServiceConfigPage() {
                           )
                         }
                       />
-                      <select
-                        className={cn(inputCls, 'w-[40%]')}
+                      <SelectBox
+                        className="w-[40%]"
                         disabled={!accessEditing}
                         value={row.protocol}
-                        onChange={(event) =>
+                        options={[
+                          { value: 'TCP', label: 'TCP' },
+                          { value: 'UDP', label: 'UDP' },
+                        ]}
+                        onChange={(value) =>
                           setPortRows((rows) =>
-                            rows.map((item, i) => (i === index ? { ...item, protocol: event.target.value } : item)),
+                            rows.map((item, i) => (i === index ? { ...item, protocol: value } : item)),
                           )
                         }
-                      >
-                        <option value="TCP">TCP</option>
-                        <option value="UDP">UDP</option>
-                      </select>
+                      />
                       <span className="w-[20%]">
                         <button
                           type="button"
@@ -1745,35 +1845,22 @@ export default function ServiceConfigPage() {
                             )
                           }
                         />
-                        <div className="relative w-[26%]">
-                          <select
-                            className={cn(inputCls, 'appearance-none pr-7')}
-                            disabled={!configEditing}
-                            value={row.configmap}
-                            onChange={(event) =>
-                              setConfigRows((rows) =>
-                                rows.map((item, i) =>
-                                  i === index ? { ...item, configmap: event.target.value, keys: [] } : item,
-                                ),
-                              )
-                            }
-                          >
-                            <option value="">请选择配置组</option>
-                            {configMaps.map((item) => {
-                              const name = item.metadata?.name || ''
-                              if (!name) return null
-                              return (
-                                <option key={name} value={name}>
-                                  {name}
-                                </option>
-                              )
-                            })}
-                          </select>
-                          <Search
-                            size={11}
-                            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#6f8aa5]"
-                          />
-                        </div>
+                        <SelectBox
+                          className="w-[26%]"
+                          searchable
+                          placeholder="请选择配置组"
+                          disabled={!configEditing}
+                          value={row.configmap}
+                          options={configMaps
+                            .map((item) => item.metadata?.name || '')
+                            .filter(Boolean)
+                            .map((name) => ({ value: name, label: name }))}
+                          onChange={(value) =>
+                            setConfigRows((rows) =>
+                              rows.map((item, i) => (i === index ? { ...item, configmap: value, keys: [] } : item)),
+                            )
+                          }
+                        />
                         <div className="relative w-[36%]">
                           <div className="flex min-h-[30px] flex-wrap items-center gap-1 border border-[#2f4f6d] bg-[#16293c] px-1.5 py-0.5">
                             {row.keys.map((key) => (
@@ -1905,21 +1992,20 @@ export default function ServiceConfigPage() {
                           )
                         }
                       />
-                      <select
-                        className={cn(inputCls, 'w-[36%]')}
+                      <SelectBox
+                        className="w-[36%]"
                         disabled={!configEditing}
                         value={row.readOnly ? '2' : '1'}
-                        onChange={(event) =>
+                        options={[
+                          { value: '1', label: '可读可写' },
+                          { value: '2', label: '只读' },
+                        ]}
+                        onChange={(value) =>
                           setVolumeRows((rows) =>
-                            rows.map((item, i) =>
-                              i === index ? { ...item, readOnly: event.target.value === '2' } : item,
-                            ),
+                            rows.map((item, i) => (i === index ? { ...item, readOnly: value === '2' } : item)),
                           )
                         }
-                      >
-                        <option value="1">可读可写</option>
-                        <option value="2">只读</option>
-                      </select>
+                      />
                       <span className="w-[12%]">
                         <button
                           type="button"
@@ -2013,20 +2099,16 @@ export default function ServiceConfigPage() {
                 </div>
                 {nodeMode === '2' && (
                   <FieldRow label="指定节点" wide>
-                    <select
-                      className={inputCls}
+                    <SelectBox
                       disabled={!nodeEditing}
+                      placeholder="请选择节点"
                       value={advNode}
-                      onChange={(event) => setAdvNode(event.target.value)}
-                    >
-                      <option value="">请选择节点</option>
-                      {nodeList.map((node) => (
-                        <option key={node.name} value={node.name}>
-                          {node.name}
-                          {node.ip ? ` | ${node.ip}` : ''}
-                        </option>
-                      ))}
-                    </select>
+                      options={nodeList.map((node) => ({
+                        value: node.name || '',
+                        label: `${node.name || ''}${node.ip ? ` | ${node.ip}` : ''}`,
+                      }))}
+                      onChange={(value) => setAdvNode(value)}
+                    />
                   </FieldRow>
                 )}
                 {nodeMode === '3' && (
@@ -2042,52 +2124,50 @@ export default function ServiceConfigPage() {
                     <div className="space-y-2">
                       {nodeAffinityRows.map((row, index) => (
                         <div key={index} className="grid grid-cols-[110px_1fr_160px_1fr_80px] items-center gap-3">
-                          <select
-                            className={inputCls}
+                          <SelectBox
                             disabled={!nodeEditing}
                             value={row.mode}
-                            onChange={(event) =>
+                            options={[
+                              { value: '1', label: '最好' },
+                              { value: '0', label: '必须' },
+                              { value: '2', label: '最好不' },
+                              { value: '3', label: '必须不' },
+                            ]}
+                            onChange={(value) =>
                               setNodeAffinityRows((rows) =>
-                                rows.map((item, i) => (i === index ? { ...item, mode: event.target.value } : item)),
+                                rows.map((item, i) => (i === index ? { ...item, mode: value } : item)),
                               )
                             }
-                          >
-                            <option value="1">最好</option>
-                            <option value="0">必须</option>
-                            <option value="2">最好不</option>
-                            <option value="3">必须不</option>
-                          </select>
-                          <select
-                            className={inputCls}
+                          />
+                          <SelectBox
                             disabled={!nodeEditing}
+                            placeholder="请选择"
                             value={row.host}
-                            onChange={(event) =>
+                            options={[
+                              { value: 'kubernetes.io/hostname', label: '主机名及IP' },
+                              { value: 'kubernetes.io/os', label: '系统默认选择器' },
+                            ]}
+                            onChange={(value) =>
                               setNodeAffinityRows((rows) =>
-                                rows.map((item, i) => (i === index ? { ...item, host: event.target.value } : item)),
+                                rows.map((item, i) => (i === index ? { ...item, host: value } : item)),
                               )
                             }
-                          >
-                            <option value="">请选择</option>
-                            <option value="kubernetes.io/hostname">主机名及IP</option>
-                            <option value="kubernetes.io/os">系统默认选择器</option>
-                          </select>
-                          <select
-                            className={inputCls}
+                          />
+                          <SelectBox
                             disabled={!nodeEditing}
                             value={row.operator}
-                            onChange={(event) =>
+                            options={[
+                              { value: 'In', label: 'In' },
+                              { value: 'NotIn', label: 'NotIn' },
+                              { value: 'Exists', label: 'Exists' },
+                              { value: 'DoesNotExist', label: 'DoesNotExist' },
+                            ]}
+                            onChange={(value) =>
                               setNodeAffinityRows((rows) =>
-                                rows.map((item, i) =>
-                                  i === index ? { ...item, operator: event.target.value } : item,
-                                ),
+                                rows.map((item, i) => (i === index ? { ...item, operator: value } : item)),
                               )
                             }
-                          >
-                            <option value="In">In</option>
-                            <option value="NotIn">NotIn</option>
-                            <option value="Exists">Exists</option>
-                            <option value="DoesNotExist">DoesNotExist</option>
-                          </select>
+                          />
                           <input
                             className={inputCls}
                             disabled={!nodeEditing}
@@ -2139,60 +2219,50 @@ export default function ServiceConfigPage() {
                     <div className="space-y-2">
                       {serviceAffinityRows.map((row, index) => (
                         <div key={index} className="grid grid-cols-[110px_1fr_160px_1fr_80px] items-center gap-3">
-                          <select
-                            className={inputCls}
+                          <SelectBox
                             disabled={!nodeEditing}
                             value={row.mode}
-                            onChange={(event) =>
+                            options={[
+                              { value: '1', label: '最好' },
+                              { value: '0', label: '必须' },
+                              { value: '2', label: '最好不' },
+                              { value: '3', label: '必须不' },
+                            ]}
+                            onChange={(value) =>
                               setServiceAffinityRows((rows) =>
-                                rows.map((item, i) => (i === index ? { ...item, mode: event.target.value } : item)),
+                                rows.map((item, i) => (i === index ? { ...item, mode: value } : item)),
                               )
                             }
-                          >
-                            <option value="1">最好</option>
-                            <option value="0">必须</option>
-                            <option value="2">最好不</option>
-                            <option value="3">必须不</option>
-                          </select>
-                          <select
-                            className={inputCls}
+                          />
+                          <SelectBox
                             disabled={!nodeEditing}
+                            placeholder="请选择"
                             value={row.service}
-                            onChange={(event) =>
+                            options={services
+                              .map((service) => serviceNameOf(service))
+                              .filter(Boolean)
+                              .map((name) => ({ value: name, label: name }))}
+                            onChange={(value) =>
                               setServiceAffinityRows((rows) =>
-                                rows.map((item, i) =>
-                                  i === index ? { ...item, service: event.target.value } : item,
-                                ),
+                                rows.map((item, i) => (i === index ? { ...item, service: value } : item)),
                               )
                             }
-                          >
-                            <option value="">请选择</option>
-                            {services.map((service) => {
-                              const name = serviceNameOf(service)
-                              return (
-                                <option key={name} value={name}>
-                                  {name}
-                                </option>
-                              )
-                            })}
-                          </select>
-                          <select
-                            className={inputCls}
+                          />
+                          <SelectBox
                             disabled={!nodeEditing}
                             value={row.operator}
-                            onChange={(event) =>
+                            options={[
+                              { value: 'In', label: 'In' },
+                              { value: 'NotIn', label: 'NotIn' },
+                              { value: 'Exists', label: 'Exists' },
+                              { value: 'DoesNotExist', label: 'DoesNotExist' },
+                            ]}
+                            onChange={(value) =>
                               setServiceAffinityRows((rows) =>
-                                rows.map((item, i) =>
-                                  i === index ? { ...item, operator: event.target.value } : item,
-                                ),
+                                rows.map((item, i) => (i === index ? { ...item, operator: value } : item)),
                               )
                             }
-                          >
-                            <option value="In">In</option>
-                            <option value="NotIn">NotIn</option>
-                            <option value="Exists">Exists</option>
-                            <option value="DoesNotExist">DoesNotExist</option>
-                          </select>
+                          />
                           <input
                             className={inputCls}
                             disabled={!nodeEditing}
