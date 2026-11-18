@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, Check, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
+import { AppWindow, Check, ChevronDown, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -222,6 +222,7 @@ export default function SoftwareListPage() {
   const [form, setForm] = useState(emptyForm)
   const [seatTarget, setSeatTarget] = useState<Software | null>(null)
   const [seatKeys, setSeatKeys] = useState<string[]>([])
+  const [seatSelectOpen, setSeatSelectOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [exportIds, setExportIds] = useState<string[]>([])
   const [exporting, setExporting] = useState(false)
@@ -401,10 +402,14 @@ export default function SoftwareListPage() {
 
   const rolesQuery = useQuery({
     queryKey: ['roles-for-software'],
-    queryFn: () => api.get<{ list: RoleItem[]; total: number }>('/v1/role', { page: 1, size: 300 }),
+    queryFn: () => api.get<{ list: RoleItem[]; total: number }>('/v1/role/switchRole', { type: 1, size: 300 }),
     enabled: !!seatTarget,
     staleTime: 60_000,
   })
+
+  const roleOptions = (rolesQuery.data?.list ?? []).flatMap((role) =>
+    role.key ? [{ key: role.key, name: role.name }] : [],
+  )
 
   const detailQuery = useQuery({
     queryKey: ['software-detail', editing?.id],
@@ -583,6 +588,7 @@ export default function SoftwareListPage() {
 
   function openSeats(item: Software) {
     setSeatTarget(item)
+    setSeatSelectOpen(false)
     setSeatKeys((item.roleList ?? []).map((role) => role.key).filter((key): key is string => !!key))
   }
 
@@ -1742,57 +1748,100 @@ export default function SoftwareListPage() {
         </div>
       </Modal>
 
-      <Drawer
+      <Modal
         open={!!seatTarget}
-        onOpenChange={(open) => !open && setSeatTarget(null)}
-        kicker="SOFTWARE / SEATS"
-        title={seatTarget ? `${seatTarget.name} · 关联席位` : '关联席位'}
-        description="勾选后，该席位下的用户可在应用门户看到此应用。管理员席位默认可见全部应用。"
-        width={520}
+        onOpenChange={(open) => {
+          if (open) return
+          setSeatSelectOpen(false)
+          setSeatTarget(null)
+        }}
+        title="新增关联席位"
+        width={600}
         footer={
           <>
             <Button size="sm" onClick={() => setSeatTarget(null)}>
               取消
             </Button>
-            <Button size="sm" variant="signal" loading={seatMutation.isPending} onClick={() => seatMutation.mutate()}>
-              保存关联
+            <Button size="sm" variant="primary" loading={seatMutation.isPending} onClick={() => seatMutation.mutate()}>
+              确定
             </Button>
           </>
         }
       >
-        <div className="space-y-2">
-          {(rolesQuery.data?.list ?? [])
-            .filter((role) => role.key !== 'user')
-            .map((role) => {
-              const checked = role.key ? seatKeys.includes(role.key) : false
-              return (
-                <label
-                  key={role.id}
+        <div className="flex w-[500px] max-w-full items-start gap-2 px-4 py-3">
+          <span className="w-[68px] flex-none pt-[7px] text-right text-[12px] text-ink-3">关联席位：</span>
+          <div className="min-w-0 flex-1">
+            <DropdownMenu.Root open={seatSelectOpen} onOpenChange={setSeatSelectOpen}>
+              <DropdownMenu.Trigger asChild>
+                <div
+                  role="button"
+                  tabIndex={0}
                   className={cn(
-                    'flex cursor-pointer items-center gap-3 border px-3 py-2.5 transition-colors',
-                    checked ? 'border-signal bg-signal/[0.04]' : 'border-line hover:border-line-strong',
+                    'field flex min-h-8 w-full cursor-pointer flex-wrap items-center gap-1 px-1.5 py-1 text-[12px]',
+                    seatSelectOpen && 'border-signal',
                   )}
                 >
-                  <input
-                    type="checkbox"
-                    className="accent-[var(--color-signal)]"
-                    checked={checked}
-                    onChange={() => role.key && toggleSeat(role.key)}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[12px] font-medium text-ink">{role.name}</div>
-                    <div className="mono mt-0.5 text-[8.5px] tracking-widest text-mute">KEY / {role.key}</div>
-                  </div>
-                  {role.type === 2 && <Badge tone="info">ADMIN</Badge>}
-                </label>
-              )
-            })}
-          {rolesQuery.isLoading && <div className="py-6 text-center text-[11px] text-mute">正在读取席位…</div>}
-          {!rolesQuery.isLoading && (rolesQuery.data?.list ?? []).length === 0 && (
-            <div className="py-6 text-center text-[11px] text-mute">暂无可关联的席位</div>
-          )}
+                  {seatKeys.length === 0 && <span className="text-mute">请选择席位</span>}
+                  {seatKeys.map((key) => {
+                    const role = roleOptions.find((item) => item.key === key)
+                    return (
+                      <span
+                        key={key}
+                        className="inline-flex items-center gap-1 rounded-sm border border-[#2f6392] bg-[#123a5b] px-1.5 py-[1px] text-[11px] text-[#cfe6ff]"
+                      >
+                        {role?.name || key}
+                        <span
+                          role="button"
+                          tabIndex={-1}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            toggleSeat(key)
+                          }}
+                          className="text-[#7ea7cc] hover:text-white"
+                        >
+                          <X size={10} />
+                        </span>
+                      </span>
+                    )
+                  })}
+                  <ChevronDown size={12} className="ml-auto flex-none text-mute" />
+                </div>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  side="bottom"
+                  align="start"
+                  sideOffset={4}
+                  className="z-[80] max-h-[240px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-auto border border-line bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+                >
+                  {roleOptions.length === 0 && (
+                    <div className="px-3 py-2 text-[12px] text-mute">
+                      {rolesQuery.isLoading ? '加载中…' : '暂无数据'}
+                    </div>
+                  )}
+                  {roleOptions.map((role) => {
+                    const checked = seatKeys.includes(role.key)
+                    return (
+                      <DropdownMenu.CheckboxItem
+                        key={role.key}
+                        checked={checked}
+                        onSelect={(event) => event.preventDefault()}
+                        onCheckedChange={() => toggleSeat(role.key)}
+                        className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink data-[state=checked]:text-ink"
+                      >
+                        <span className="truncate">{role.name}</span>
+                        <DropdownMenu.ItemIndicator>
+                          <Check size={12} className="flex-none text-signal" />
+                        </DropdownMenu.ItemIndicator>
+                      </DropdownMenu.CheckboxItem>
+                    )
+                  })}
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </div>
         </div>
-      </Drawer>
+      </Modal>
 
       <Drawer
         open={exportOpen}
