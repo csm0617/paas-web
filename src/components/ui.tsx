@@ -379,6 +379,7 @@ export function Drawer({
   description,
   children,
   footer,
+  actions,
   width = 760,
 }: {
   open: boolean
@@ -388,6 +389,7 @@ export function Drawer({
   description?: ReactNode
   children: ReactNode
   footer?: ReactNode
+  actions?: ReactNode
   width?: number
 }) {
   return (
@@ -408,9 +410,12 @@ export function Drawer({
                 </Dialog.Description>
               )}
             </div>
-            <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded text-ink-3 outline-none transition-colors hover:bg-[#16304a] hover:text-white">
-              <X size={14} />
-            </Dialog.Close>
+            <div className="flex flex-none items-center gap-2">
+              {actions}
+              <Dialog.Close className="inline-flex h-7 w-7 items-center justify-center rounded text-ink-3 outline-none transition-colors hover:bg-[#16304a] hover:text-white">
+                <X size={14} />
+              </Dialog.Close>
+            </div>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3.5">{children}</div>
           {footer && (

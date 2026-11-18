@@ -13,7 +13,6 @@ import {
   PageHeader,
   Panel,
   StatusDot,
-  TabStrip,
   useConfirm,
 } from '@/components/ui'
 import { toast } from '@/stores/toast'
@@ -749,11 +748,41 @@ export default function ServiceConfigPage() {
         kicker="SERVICE CONFIG"
         title={selected || '服务配置'}
         description="环境变量、端口暴露、健康检查、存储挂载与高级调度。保存后由平台下发至 Deployment。"
-        width={880}
+        width={820}
+        actions={
+          <Button
+            size="sm"
+            variant="primary"
+            loading={servicesQuery.isFetching || detailQuery.isFetching}
+            onClick={() => {
+              servicesQuery.refetch()
+              detailQuery.refetch()
+              configMapQuery.refetch()
+            }}
+          >
+            <RefreshCw size={11} /> 更新配置
+          </Button>
+        }
       >
-        <div className="mb-3">
-          <TabStrip value={tab} onChange={setTab} tabs={tabs} />
-        </div>
+        <div className="flex items-start gap-4">
+          <nav className="sticky top-0 w-[120px] flex-none space-y-0.5 border-r border-line pr-3">
+            {tabs.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => setTab(item.value)}
+                className={cn(
+                  'flex h-[34px] w-full items-center rounded px-2.5 text-left text-[13px] transition-colors',
+                  tab === item.value
+                    ? 'bg-[#16395a] text-white'
+                    : 'text-ink-3 hover:bg-[#142a3e] hover:text-white',
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <div className="min-w-0 flex-1">
 
           {tab === 'env' && (
             <Panel
@@ -1322,6 +1351,8 @@ export default function ServiceConfigPage() {
               </Panel>
             </div>
           )}
+          </div>
+        </div>
       </Drawer>
 
       <Modal
