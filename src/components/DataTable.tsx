@@ -220,43 +220,47 @@ export function DataTable<T>({
               style={{ width: `${(current / totalPages) * 100}%` }}
             />
           </div>
-          <span className="flex-none text-[12px] text-ink-3">
-            当前第 {current} / {totalPages} 页
-            {selectedKeys.length > 0 && ` · 已选 ${selectedKeys.length}`}
-          </span>
-          <div className="flex flex-none items-center gap-0.5">
-            <button
-              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
-              disabled={current <= 1}
-              onClick={() => setPage(1)}
-              aria-label="首页"
-            >
-              <ChevronsLeft size={14} />
-            </button>
-            <button
-              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
-              disabled={current <= 1}
-              onClick={() => setPage(current - 1)}
-              aria-label="上一页"
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <button
-              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
-              disabled={current >= totalPages}
-              onClick={() => setPage(current + 1)}
-              aria-label="下一页"
-            >
-              <ChevronRight size={14} />
-            </button>
-            <button
-              className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
-              disabled={current >= totalPages}
-              onClick={() => setPage(totalPages)}
-              aria-label="末页"
-            >
-              <ChevronsRight size={14} />
-            </button>
+          <div className="flex flex-none items-center gap-2">
+            <div className="flex items-center gap-0.5">
+              <button
+                className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
+                disabled={current <= 1}
+                onClick={() => setPage(1)}
+                aria-label="首页"
+              >
+                <ChevronsLeft size={14} />
+              </button>
+              <button
+                className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
+                disabled={current <= 1}
+                onClick={() => setPage(current - 1)}
+                aria-label="上一页"
+              >
+                <ChevronLeft size={14} />
+              </button>
+            </div>
+            <span className="text-[12px] text-ink-3">
+              当前第 {current} / {totalPages} 页
+              {selectedKeys.length > 0 && ` · 已选 ${selectedKeys.length}`}
+            </span>
+            <div className="flex items-center gap-0.5">
+              <button
+                className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
+                disabled={current >= totalPages}
+                onClick={() => setPage(current + 1)}
+                aria-label="下一页"
+              >
+                <ChevronRight size={14} />
+              </button>
+              <button
+                className="inline-flex h-6 w-6 items-center justify-center text-[#8fb4d4] transition-colors hover:text-white disabled:opacity-30 disabled:hover:text-[#8fb4d4]"
+                disabled={current >= totalPages}
+                onClick={() => setPage(totalPages)}
+                aria-label="末页"
+              >
+                <ChevronsRight size={14} />
+              </button>
+            </div>
           </div>
         </div>
       )}

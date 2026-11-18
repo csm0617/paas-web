@@ -8,6 +8,7 @@ import type { ImageProject, NodesResponse, ServiceItem, ServiceList } from '@/ty
 import { AreaTrend } from '@/components/charts'
 import { DataTable, type Column } from '@/components/DataTable'
 import {
+  ActionMenu,
   Badge,
   Button,
   CopyText,
@@ -34,6 +35,11 @@ function imageOf(service: ServiceItem) {
   if (typeof service.imageInfo === 'string') return service.imageInfo
   if (service.imageInfo?.image) return service.imageInfo.image
   return '—'
+}
+
+function authOf(service: ServiceItem) {
+  const auth = service.serviceAuth as { auth?: number } | null | undefined
+  return auth?.auth === 1
 }
 
 function statusOf(service: ServiceItem) {
@@ -389,134 +395,173 @@ export default function ServiceManagePage() {
 
   const columns: Array<Column<ServiceItem>> = [
     {
-      key: 'name',
-      header: '服务 / SERVICE',
-      sortValue: (row) => serviceName(row),
-      cell: (row) => {
-        const status = statusOf(row)
-        return (
-          <div className="flex items-center gap-2.5">
-            <StatusDot tone={status.tone === 'ok' ? 'ok' : status.tone === 'warn' ? 'warn' : 'idle'} />
-            <div className="min-w-0">
-              <button
-                onClick={() => setDetail(row)}
-                className="block max-w-[220px] truncate text-left font-mono text-[11.5px] text-ink hover:text-signal hover:underline"
-              >
-                {serviceName(row)}
-              </button>
-              <div className="mono mt-0.5 max-w-[220px] truncate text-[8.5px] tracking-wider text-mute">
-                {imageOf(row).split('/').pop()}
-              </div>
-            </div>
-          </div>
-        )
-      },
-    },
-    {
-      key: 'namespace',
-      header: '命名空间',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.service?.metadata?.namespace || '—'}</span>,
-    },
-    {
-      key: 'replicas',
-      header: '副本 READY/DESIRED',
+      key: 'index',
+      header: '序号',
+      width: 56,
       align: 'center',
-      sortValue: (row) => row.deployment?.status?.readyReplicas ?? 0,
+      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
+    },
+    {
+      key: 'name',
+      header: '服务名称',
+      sortValue: (row) => serviceName(row),
+      cell: (row) => (
+        <button
+          onClick={() => setDetail(row)}
+          className="block max-w-[180px] truncate text-left text-[12px] text-ink hover:text-signal hover:underline"
+        >
+          {serviceName(row)}
+        </button>
+      ),
+    },
+    {
+      key: 'key',
+      header: '服务标识',
+      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{row.nameUs || row.nameFr || '—'}</span>,
+    },
+    {
+      key: 'serviceType',
+      header: '服务类型',
       cell: (row) => {
-        const status = statusOf(row)
+        const appType = row.service?.metadata?.labels?.['system/appType']
         return (
-          <span className={cn('num text-[13px]', status.ready < status.desired ? 'text-warn' : 'text-ink')}>
-            {status.ready}
-            <span className="text-[10px] text-mute"> / {status.desired}</span>
+          <span className="text-[12px] text-ink-3">
+            {appType === 'business' ? '前台服务' : appType ? '后台服务' : '—'}
           </span>
         )
       },
     },
     {
-      key: 'ports',
-      header: '端口',
+      key: 'software',
+      header: '所属应用',
       cell: (row) => {
-        const ports = row.service?.spec?.ports ?? []
-        return (
-          <div className="flex flex-wrap gap-1">
-            {ports.length === 0 && <span className="text-mute">—</span>}
-            {ports.slice(0, 2).map((port) => (
-              <Badge key={`${port.name}-${port.port}`}>
-                {port.port}
-                {port.nodePort ? `:${port.nodePort}` : ''}
-              </Badge>
-            ))}
-          </div>
+        const apps = (row.softwareNameList ?? []).filter(Boolean)
+        return apps.length > 0 ? (
+          <span className="text-[12px] text-ink-3">{apps.join('、')}</span>
+        ) : (
+          <span className="text-[12px] text-mute">暂无关联应用</span>
         )
       },
-    },
-    {
-      key: 'type',
-      header: '类型',
-      cell: (row) => <span className="mono text-[9.5px] text-ink-3">{row.service?.spec?.type || '—'}</span>,
-    },
-    {
-      key: 'restart',
-      header: '重启',
-      align: 'center',
-      sortValue: (row) => row.restartCount ?? 0,
-      cell: (row) => (
-        <span className={cn('mono text-[10.5px]', (row.restartCount ?? 0) > 0 ? 'text-signal' : 'text-mute')}>
-          {row.restartCount ?? 0}
-        </span>
-      ),
     },
     {
       key: 'status',
       header: '状态',
       cell: (row) => {
         const status = statusOf(row)
-        return <Badge tone={status.tone}>{status.label}</Badge>
+        return (
+          <div className="leading-tight">
+            <div className="flex items-center gap-1.5 text-[12px] text-ink">
+              <StatusDot tone={status.tone === 'ok' ? 'ok' : status.tone === 'warn' ? 'warn' : 'idle'} />
+              <span>
+                {status.ready}/{status.desired}
+              </span>
+              <span className="text-[11px] text-mute">
+                {status.label === 'RUNNING' ? '全部运行中' : status.label === 'PENDING' ? '启动中' : '已停止'}
+              </span>
+            </div>
+            <div className="mt-0.5 pl-[18px] text-[11px] text-mute">运行中 : {status.ready}</div>
+          </div>
+        )
       },
     },
     {
-      key: 'actions',
-      header: '',
-      align: 'right',
+      key: 'image',
+      header: '镜像',
       cell: (row) => (
-        <div className="flex items-center justify-end gap-2.5 text-[12px]">
-          <button
-            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-            onClick={() =>
-              navigate(`/software/application/service-params?service=${encodeURIComponent(serviceName(row))}`)
-            }
-          >
-            配置
-          </button>
-          <button
-            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-            onClick={() => setConsoleState({ service: serviceName(row), mode: 'logs' })}
-          >
-            日志
-          </button>
-          <button
-            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-            onClick={() => actionMutation.mutate({ path: '/v1/service/start', names: [serviceName(row)] })}
-          >
-            启动
-          </button>
-          <button
-            className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
-            onClick={() => actionMutation.mutate({ path: '/v1/service/stop', names: [serviceName(row)] })}
-          >
-            停止
-          </button>
-          <button
-            className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-            onClick={() => {
-              setScaleTarget(row)
-              setScaleValue(row.deployment?.spec?.replicas ?? 1)
-            }}
-          >
-            扩容
-          </button>
-        </div>
+        <span className="block max-w-[200px] truncate font-mono text-[11px] text-ink-3" title={imageOf(row)}>
+          {imageOf(row)}
+        </span>
       ),
+    },
+    {
+      key: 'auth',
+      header: '授权状态',
+      sortValue: (row) => (authOf(row) ? 1 : 0),
+      cell: (row) => (
+        <span className={cn('text-[12px]', authOf(row) ? 'text-ok' : 'text-mute')}>
+          {authOf(row) ? '已授权' : '未授权'}
+        </span>
+      ),
+    },
+    {
+      key: 'updatedAt',
+      header: '版本更新时间',
+      sortValue: (row) => row.deployment?.metadata?.creationTimestamp || '',
+      cell: (row) => (
+        <span className="mono whitespace-nowrap text-[11px] text-ink-3">
+          {formatDate(row.deployment?.metadata?.creationTimestamp, true)}
+        </span>
+      ),
+    },
+    {
+      key: 'createdAt',
+      header: '创建时间',
+      sortValue: (row) => row.service?.metadata?.creationTimestamp || '',
+      cell: (row) => (
+        <span className="mono whitespace-nowrap text-[11px] text-ink-3">
+          {formatDate(row.service?.metadata?.creationTimestamp, true)}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '操作',
+      align: 'right',
+      cell: (row) => {
+        const status = statusOf(row)
+        const running = status.label === 'RUNNING' || status.label === 'PENDING'
+        return (
+          <div className="flex items-center justify-end gap-2.5 text-[12px]">
+            <button
+              className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+              onClick={() =>
+                navigate(`/software/application/service-params?service=${encodeURIComponent(serviceName(row))}`)
+              }
+            >
+              配置
+            </button>
+            <button
+              className={cn(
+                'transition-colors',
+                running ? 'text-[#ff7b7b] hover:text-[#ff9a9a]' : 'text-[#4aa3f0] hover:text-[#7cc4ff]',
+              )}
+              onClick={() =>
+                actionMutation.mutate({
+                  path: running ? '/v1/service/stop' : '/v1/service/start',
+                  names: [serviceName(row)],
+                })
+              }
+            >
+              {running ? '停止' : '启动'}
+            </button>
+            <button
+              className="text-[#ff7b7b] transition-colors hover:text-[#ff9a9a]"
+              onClick={() => batch('/v1/service', [serviceName(row)], '删除', true)}
+            >
+              删除
+            </button>
+            <ActionMenu
+              triggerText="更多"
+              items={[
+                { label: '服务详情', onSelect: () => setDetail(row) },
+                { label: '实时日志', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'logs' }) },
+                { label: '容器终端', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'terminal' }) },
+                {
+                  label: '重启服务',
+                  onSelect: () => actionMutation.mutate({ path: '/v1/service/reStart', names: [serviceName(row)] }),
+                },
+                {
+                  label: '扩容',
+                  onSelect: () => {
+                    setScaleTarget(row)
+                    setScaleValue(row.deployment?.spec?.replicas ?? 1)
+                  },
+                },
+              ]}
+            />
+          </div>
+        )
+      },
     },
   ]
 

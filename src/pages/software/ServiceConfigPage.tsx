@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils'
 
 type ConfigTab = 'env' | 'ports' | 'health' | 'volumes' | 'configmaps' | 'advanced'
 
+const SECTION_IDS: ConfigTab[] = ['env', 'ports', 'health', 'volumes', 'configmaps', 'advanced']
+
 interface ConfigMapItem {
   metadata?: { name?: string; creationTimestamp?: string }
   data?: Record<string, string> | null
@@ -113,6 +115,7 @@ export default function ServiceConfigPage() {
   const targetService = searchParams.get('service') || ''
   const [selected, setSelected] = useState('')
   const [tab, setTab] = useState<ConfigTab>('env')
+  const bodyRef = useRef<HTMLDivElement>(null)
   const [envRows, setEnvRows] = useState<EnvRow[]>([{ name: '', value: '' }])
   const [portRows, setPortRows] = useState<PortRow[]>([{ port: '', protocol: 'TCP', nodePort: '' }])
   const [exposeType, setExposeType] = useState('ClusterIP')
@@ -237,6 +240,24 @@ export default function ServiceConfigPage() {
     appliedTargetRef.current = targetService
     setSelected(targetService)
   }, [services, targetService])
+
+  useEffect(() => {
+    if (!selected) return
+    const scroller = bodyRef.current?.parentElement
+    if (!scroller) return
+    const onScroll = () => {
+      let active: ConfigTab = 'env'
+      for (const id of SECTION_IDS) {
+        const el = document.getElementById(`sec-${id}`)
+        if (!el) continue
+        if (el.getBoundingClientRect().top - scroller.getBoundingClientRect().top <= 96) active = id
+      }
+      setTab(active)
+    }
+    onScroll()
+    scroller.addEventListener('scroll', onScroll, { passive: true })
+    return () => scroller.removeEventListener('scroll', onScroll)
+  }, [selected])
 
   const detailQuery = useQuery({
     queryKey: ['config-service-detail', selected],
@@ -573,7 +594,7 @@ export default function ServiceConfigPage() {
   const tabs = useMemo(
     () => [
       { value: 'env' as const, label: '环境变量', count: envRows.filter((row) => row.name).length },
-      { value: 'ports' as const, label: '端口与 NodePort', count: portRows.filter((row) => row.port).length },
+      { value: 'ports' as const, label: '端口配置', count: portRows.filter((row) => row.port).length },
       { value: 'health' as const, label: '健康检查' },
       { value: 'volumes' as const, label: '存储挂载', count: volumeRows.filter((row) => row.hostPath).length },
       { value: 'configmaps' as const, label: '配置字典', count: configMaps.length },
@@ -745,9 +766,7 @@ export default function ServiceConfigPage() {
             setSearchParams(next, { replace: true })
           }
         }}
-        kicker="SERVICE CONFIG"
-        title={selected || '服务配置'}
-        description="环境变量、端口暴露、健康检查、存储挂载与高级调度。保存后由平台下发至 Deployment。"
+        title={selected ? `服务配置: ${selected}` : '服务配置'}
         width={820}
         actions={
           <Button
@@ -765,14 +784,17 @@ export default function ServiceConfigPage() {
         }
       >
         <div className="flex items-start gap-4">
-          <nav className="sticky top-0 w-[120px] flex-none space-y-0.5 border-r border-line pr-3">
+          <nav className="sticky top-0 w-[112px] flex-none space-y-0.5 border-r border-line pr-3">
             {tabs.map((item) => (
               <button
                 key={item.value}
                 type="button"
-                onClick={() => setTab(item.value)}
+                onClick={() => {
+                  setTab(item.value)
+                  document.getElementById(`sec-${item.value}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
                 className={cn(
-                  'flex h-[34px] w-full items-center rounded px-2.5 text-left text-[13px] transition-colors',
+                  'flex h-[34px] w-full items-center whitespace-nowrap rounded px-2 text-left text-[12px] transition-colors',
                   tab === item.value
                     ? 'bg-[#16395a] text-white'
                     : 'text-ink-3 hover:bg-[#142a3e] hover:text-white',
@@ -782,9 +804,9 @@ export default function ServiceConfigPage() {
               </button>
             ))}
           </nav>
-          <div className="min-w-0 flex-1">
+          <div ref={bodyRef} className="min-w-0 flex-1">
 
-          {tab === 'env' && (
+          <div id="sec-env" className="scroll-mt-2">
             <Panel
               kicker="ENVIRONMENT"
               title={`环境变量 · ${selected || '—'}`}
@@ -830,9 +852,9 @@ export default function ServiceConfigPage() {
                 </button>
               </div>
             </Panel>
-          )}
+          </div>
 
-          {tab === 'ports' && (
+          <div id="sec-ports" className="scroll-mt-2">
             <Panel
               kicker="PORTS"
               title={`端口暴露 · ${selected || '—'}`}
@@ -900,9 +922,9 @@ export default function ServiceConfigPage() {
                 </button>
               </div>
             </Panel>
-          )}
+          </div>
 
-          {tab === 'health' && (
+          <div id="sec-health" className="scroll-mt-2">
             <Panel
               kicker="PROBES"
               title={`健康检查 · ${selected || '—'}`}
@@ -917,9 +939,9 @@ export default function ServiceConfigPage() {
                 {probeEditor(liveness, setLiveness, 'LIVENESS / 存活检查')}
               </div>
             </Panel>
-          )}
+          </div>
 
-          {tab === 'volumes' && (
+          <div id="sec-volumes" className="scroll-mt-2">
             <Panel
               kicker="VOLUMES"
               title={`存储挂载 · ${selected || '—'}`}
@@ -983,9 +1005,9 @@ export default function ServiceConfigPage() {
                 </div>
               </div>
             </Panel>
-          )}
+          </div>
 
-          {tab === 'configmaps' && (
+          <div id="sec-configmaps" className="scroll-mt-2">
             <Panel
               kicker="CONFIG MAPS"
               title="配置字典"
@@ -1068,9 +1090,9 @@ export default function ServiceConfigPage() {
                 )}
               </div>
             </Panel>
-          )}
+          </div>
 
-          {tab === 'advanced' && (
+          <div id="sec-advanced" className="scroll-mt-2">
             <div className="space-y-4">
               <Panel
                 kicker="IDENTITY"
@@ -1350,7 +1372,7 @@ export default function ServiceConfigPage() {
                 )}
               </Panel>
             </div>
-          )}
+          </div>
           </div>
         </div>
       </Drawer>
