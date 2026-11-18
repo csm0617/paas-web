@@ -538,6 +538,9 @@ export function Modal({
   children,
   footer,
   width = 520,
+  titleAlign = 'left',
+  headerClassName,
+  bodyClassName,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -547,6 +550,9 @@ export function Modal({
   children: ReactNode
   footer?: ReactNode
   width?: number
+  titleAlign?: 'left' | 'center'
+  headerClassName?: string
+  bodyClassName?: string
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -556,21 +562,41 @@ export function Modal({
           className="dialog-content fixed left-1/2 top-1/2 z-[71] max-h-[88vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded border border-line bg-paper-2 shadow-[0_18px_48px_rgba(0,0,0,0.55)] outline-none"
           style={{ maxWidth: width }}
         >
-          <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-paper-2 px-4 py-3">
-            <div>
-              {kicker && <div className="label mb-1">{kicker}</div>}
-              <Dialog.Title className="text-[16px] font-semibold leading-6 text-ink">{title}</Dialog.Title>
-              {description && (
-                <Dialog.Description className="mt-1.5 text-[12px] leading-relaxed text-ink-3">
-                  {description}
-                </Dialog.Description>
-              )}
-            </div>
-            <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded text-ink-3 outline-none transition-colors hover:bg-[#16304a] hover:text-white">
-              <X size={14} />
-            </Dialog.Close>
+          <div
+            className={cn(
+              'sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-paper-2 px-4 py-3',
+              titleAlign === 'center' && 'items-center justify-center gap-0 px-2.5 py-0',
+              headerClassName,
+            )}
+          >
+            {titleAlign === 'center' ? (
+              <>
+                <span className="h-7 w-7 flex-none" />
+                <Dialog.Title className="flex-1 text-center text-[14px] font-medium leading-[30px] text-white">
+                  {title}
+                </Dialog.Title>
+                <Dialog.Close className="inline-flex h-7 w-7 flex-none items-center justify-center rounded text-white/85 outline-none transition-colors hover:bg-white/10 hover:text-white">
+                  <X size={14} />
+                </Dialog.Close>
+              </>
+            ) : (
+              <>
+                <div className="min-w-0">
+                  {kicker && <div className="label mb-1">{kicker}</div>}
+                  <Dialog.Title className="text-[16px] font-semibold leading-6 text-ink">{title}</Dialog.Title>
+                  {description && (
+                    <Dialog.Description className="mt-1.5 text-[12px] leading-relaxed text-ink-3">
+                      {description}
+                    </Dialog.Description>
+                  )}
+                </div>
+                <Dialog.Close className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded text-ink-3 outline-none transition-colors hover:bg-[#16304a] hover:text-white">
+                  <X size={14} />
+                </Dialog.Close>
+              </>
+            )}
           </div>
-          <div className="px-4 py-3.5">{children}</div>
+          <div className={cn('px-4 py-3.5', bodyClassName)}>{children}</div>
           {footer && (
             <div className="flex items-center justify-end gap-2 border-t border-line bg-paper-3 px-4 py-2.5">{footer}</div>
           )}

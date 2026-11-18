@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, Box, Filter, History, Info, Layers, Plus, RefreshCw, SquareTerminal, Trash2, Upload } from 'lucide-react'
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Activity, Box, Filter, History, Info, Layers, Plus, RefreshCw, SquareTerminal, Trash2, Upload, X } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate, formatNumber } from '@/lib/format'
@@ -15,6 +15,7 @@ import {
   Drawer,
   Field,
   KV,
+  Modal,
   PageToolbar,
   Panel,
   Select,
@@ -95,6 +96,185 @@ function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
   }))
 }
 
+const CREATE_INPUT = 'field h-[32px] rounded-none border-[#3a6288] bg-[#182445] text-[14px]'
+const CREATE_SELECT = 'h-[32px] rounded-none border-[#3a6288] bg-[#182445] text-[14px]'
+
+const RESOURCE_PRESETS = [
+  { key: '1X', memory: '128M 内存', cpu: '0.1-0.5CPU', memoryMin: '100', memoryMax: '128', cpuMin: '0.1', cpuMax: '0.5' },
+  { key: '4X', memory: '1GB 内存', cpu: '0.4-1CPU', memoryMin: '800', memoryMax: '1024', cpuMin: '0.4', cpuMax: '1' },
+  { key: '8X', memory: '2GB 内存', cpu: '0.8-1CPU', memoryMin: '1600', memoryMax: '2048', cpuMin: '0.8', cpuMax: '1' },
+  { key: '16X', memory: '4GB 内存', cpu: '1CPU', memoryMin: '3200', memoryMax: '4096', cpuMin: '1', cpuMax: '1' },
+  { key: '32X', memory: '8GB 内存', cpu: '2CPU', memoryMin: '6400', memoryMax: '8192', cpuMin: '2', cpuMax: '2' },
+]
+
+interface CreateFormState {
+  serviceName: string
+  nameUs: string
+  nameFr: string
+  serviceKey: string
+  serviceType: '后台服务' | '前台服务'
+  serverKeys: string[]
+  projectName: string
+  imageName: string
+  imageTagName: string
+  priority: string
+  arch: '1' | '2'
+  gpuCount: string
+  preset: string
+  memoryMin: string
+  memoryMax: string
+  cpuMin: string
+  cpuMax: string
+  ports: Array<{ port: string; protocol: string }>
+  files: Array<{ mountPath: string; configMap: string; files: string }>
+  entryMode: 'default' | 'custom'
+  entryPoint: string
+  commandMode: 'default' | 'custom'
+  command: string
+  nodePort: '0' | '1'
+  scheduleMode: 'default' | 'host'
+  hostName: string
+}
+
+const emptyCreateForm: CreateFormState = {
+  serviceName: '',
+  nameUs: '',
+  nameFr: '',
+  serviceKey: '',
+  serviceType: '后台服务',
+  serverKeys: [],
+  projectName: 'gaop',
+  imageName: '',
+  imageTagName: '',
+  priority: '',
+  arch: '1',
+  gpuCount: '1',
+  preset: '1X',
+  memoryMin: '100',
+  memoryMax: '100',
+  cpuMin: '0.5',
+  cpuMax: '0.5',
+  ports: [],
+  files: [],
+  entryMode: 'default',
+  entryPoint: '',
+  commandMode: 'default',
+  command: '',
+  nodePort: '0',
+  scheduleMode: 'default',
+  hostName: '',
+}
+
+function CreateField({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <div className="w-[112px] flex-none pt-[7px] text-[14px] leading-4 text-white">
+        {required && <span className="mr-1 text-[#ff5c5c]">*</span>}
+        {label}：
+      </div>
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  )
+}
+
+function RadioDot({ checked, onChange, children }: { checked: boolean; onChange: () => void; children: ReactNode }) {
+  return (
+    <button type="button" onClick={onChange} className="inline-flex items-center gap-1.5 text-[14px] text-white">
+      <span
+        className={cn(
+          'flex h-[14px] w-[14px] flex-none items-center justify-center rounded-full border transition-colors',
+          checked ? 'border-signal' : 'border-[#5b7a99]',
+        )}
+      >
+        {checked && <span className="h-[6px] w-[6px] rounded-full bg-signal" />}
+      </span>
+      {children}
+    </button>
+  )
+}
+
+function MultiSelectBox({
+  value,
+  options,
+  onChange,
+  placeholder,
+}: {
+  value: string[]
+  options: string[]
+  onChange: (value: string[]) => void
+  placeholder?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (event: MouseEvent) => {
+      if (!ref.current?.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  const list = options.filter(
+    (option) => !value.includes(option) && option.toLowerCase().includes(keyword.toLowerCase()),
+  )
+
+  return (
+    <div ref={ref} className="relative">
+      <div className={cn(CREATE_INPUT, 'flex min-h-[32px] flex-wrap items-center gap-1 py-[2px]')}>
+        {value.map((item) => (
+          <span
+            key={item}
+            className="inline-flex items-center gap-1 border border-[#3a6288] bg-[#223a5e] px-1.5 py-[1px] text-[11px] text-white"
+          >
+            {item}
+            <button
+              type="button"
+              onClick={() => onChange(value.filter((entry) => entry !== item))}
+              className="text-white/70 transition-colors hover:text-white"
+            >
+              <X size={10} />
+            </button>
+          </span>
+        ))}
+        <input
+          value={keyword}
+          onChange={(event) => {
+            setKeyword(event.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder={value.length === 0 ? placeholder : ''}
+          className="h-5 min-w-[80px] flex-1 bg-transparent text-[12px] text-white outline-none placeholder:text-[#5d7892]"
+        />
+      </div>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-30 mt-0.5 max-h-[180px] overflow-auto border border-[#3a6288] bg-[#16293c] py-1 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+          {list.length > 0 ? (
+            list.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => {
+                  onChange([...value, option])
+                  setKeyword('')
+                }}
+                className="block w-full px-2 py-1.5 text-left text-[12px] text-ink-3 transition-colors hover:bg-line/40 hover:text-ink"
+              >
+                {option}
+              </button>
+            ))
+          ) : (
+            <div className="px-2 py-1.5 text-[12px] text-mute">无匹配项</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ServiceManagePage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
@@ -119,19 +299,8 @@ export default function ServiceManagePage() {
     history?: boolean
   } | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
-  const [createForm, setCreateForm] = useState({
-    serviceName: '',
-    projectName: 'gaop',
-    imageName: '',
-    imageTagName: '',
-    cpuSize: '200',
-    memory: '200',
-    inBound: '',
-    outBound: '',
-    bindNodeName: '',
-    args: '',
-  })
-  const [envRows, setEnvRows] = useState<Array<{ name: string; value: string }>>([{ name: '', value: '' }])
+  const [createForm, setCreateForm] = useState<CreateFormState>(emptyCreateForm)
+  const [envRows, setEnvRows] = useState<Array<{ name: string; type: string; value: string }>>([])
 
   const query = useQuery({
     queryKey: ['services'],
@@ -237,6 +406,22 @@ export default function ServiceManagePage() {
       }),
     enabled: createOpen && !!createForm.projectName && !!createForm.imageName,
   })
+  const priorityQuery = useQuery({
+    queryKey: ['service-create-priority'],
+    queryFn: () =>
+      api.get<{ items?: Array<{ metadata?: { name?: string } }> }>('/k8s/apis/scheduling.k8s.io/v1/priorityclasses'),
+    enabled: createOpen,
+  })
+  const serviceKeysQuery = useQuery({
+    queryKey: ['service-create-keys'],
+    queryFn: () => api.get<string[]>('/v1/pub/serviceKeyList', { name: '', serviceName: '' }),
+    enabled: createOpen,
+  })
+  const configMapsQuery = useQuery({
+    queryKey: ['service-create-configmaps'],
+    queryFn: () => api.get<{ items?: Array<{ metadata?: { name?: string } }> }>('/v1/config_map'),
+    enabled: createOpen,
+  })
 
   const projectOptions = useMemo(() => {
     const list = (projectsQuery.data?.list ?? []).map((item) => item.name)
@@ -253,6 +438,21 @@ export default function ServiceManagePage() {
 
   const tagOptions = useMemo(() => (tagsQuery.data?.list ?? []).map((item) => item.name), [tagsQuery.data])
   const nodeOptions = nodesQuery.data?.nodes?.nodes ?? []
+  const priorityOptions = useMemo(() => {
+    const names = (priorityQuery.data?.items ?? [])
+      .map((item) => item.metadata?.name || '')
+      .filter(Boolean)
+    return [{ value: '', label: '无' }, ...names.map((name) => ({ value: name, label: name }))]
+  }, [priorityQuery.data])
+  const serviceKeyOptions = useMemo(() => serviceKeysQuery.data ?? [], [serviceKeysQuery.data])
+  const configMapOptions = useMemo(
+    () =>
+      (configMapsQuery.data?.items ?? [])
+        .map((item) => item.metadata?.name || '')
+        .filter(Boolean)
+        .map((name) => ({ value: name, label: name })),
+    [configMapsQuery.data],
+  )
 
   useEffect(() => {
     if (!createOpen) return
@@ -260,20 +460,6 @@ export default function ServiceManagePage() {
       setCreateForm((prev) => ({ ...prev, projectName: projectOptions[0] }))
     }
   }, [createOpen, projectOptions, createForm.projectName])
-
-  useEffect(() => {
-    if (!createOpen) return
-    if (!imageOptions.includes(createForm.imageName)) {
-      setCreateForm((prev) => ({ ...prev, imageName: imageOptions[0] || '', imageTagName: '' }))
-    }
-  }, [createOpen, imageOptions, createForm.imageName])
-
-  useEffect(() => {
-    if (!createOpen) return
-    if (!tagOptions.includes(createForm.imageTagName)) {
-      setCreateForm((prev) => ({ ...prev, imageTagName: tagOptions[0] || '' }))
-    }
-  }, [createOpen, tagOptions, createForm.imageTagName])
 
   const filtered = useMemo(() => {
     const q = keyword.trim().toLowerCase()
@@ -315,45 +501,36 @@ export default function ServiceManagePage() {
   const createMutation = useMutation({
     mutationFn: () => {
       if (!createForm.serviceName.trim()) throw new Error('服务名称不能为空')
+      if (!createForm.serviceKey.trim()) throw new Error('服务标识不能为空')
+      if (!/^[a-z][a-z0-9-]{1,43}[a-z0-9]$/.test(createForm.serviceKey.trim())) {
+        throw new Error('服务标识只能包含小写字母、数字、中划线，且以小写字母开头、字母或数字结尾（3~45 位）')
+      }
       if (!createForm.imageName || !createForm.imageTagName) throw new Error('请选择镜像与版本')
-      const args = createForm.args
-        .split('\n')
-        .map((item) => item.trim())
-        .filter(Boolean)
-        .map((arg) => ({ arg }))
+      const args = createForm.commandMode === 'custom' && createForm.command.trim() ? [{ arg: createForm.command.trim() }] : undefined
       const env = envRows
         .filter((item) => item.name.trim())
         .map((item) => ({ name: item.name.trim(), value: item.value }))
       return api.post('/v1/pub/createService', {
-        serviceName: createForm.serviceName.trim(),
+        serviceName: createForm.serviceKey.trim(),
+        serviceLabel: createForm.serviceName.trim(),
+        nameUs: createForm.nameUs.trim() || undefined,
+        nameFr: createForm.nameFr.trim() || undefined,
+        serviceType: createForm.serviceType === '前台服务' ? 'business' : 'normal',
         projectName: createForm.projectName,
         imageName: createForm.imageName,
         imageTagName: createForm.imageTagName,
-        memory: createForm.memory || '200',
-        cpuSize: createForm.cpuSize || '200',
-        inBound: createForm.inBound ? Number(createForm.inBound) : undefined,
-        outBound: createForm.outBound ? Number(createForm.outBound) : undefined,
-        bindNodeName: createForm.bindNodeName || undefined,
-        args: args.length ? args : undefined,
+        memory: createForm.memoryMax || '100',
+        cpuSize: String(Math.round(Number(createForm.cpuMin || '0.5') * 1000)),
+        bindNodeName: createForm.scheduleMode === 'host' ? createForm.hostName || undefined : undefined,
+        args,
         env: env.length ? env : undefined,
       })
     },
     onSuccess: () => {
       toast.success('服务创建任务已下发', '可在列表中查看启动进度')
       setCreateOpen(false)
-      setCreateForm({
-        serviceName: '',
-        projectName: 'gaop',
-        imageName: '',
-        imageTagName: '',
-        cpuSize: '200',
-        memory: '200',
-        inBound: '',
-        outBound: '',
-        bindNodeName: '',
-        args: '',
-      })
-      setEnvRows([{ name: '', value: '' }])
+      setCreateForm({ ...emptyCreateForm })
+      setEnvRows([])
       queryClient.invalidateQueries({ queryKey: ['services'] })
     },
     onError: (error) => toast.error('创建失败', errorMessage(error)),
@@ -847,186 +1024,462 @@ export default function ServiceManagePage() {
         </div>
       </Drawer>
 
-      <Drawer
+      <Modal
         open={createOpen}
         onOpenChange={setCreateOpen}
-        kicker="SERVICE / CREATE"
-        title="新建微服务"
-        description="从镜像仓库选择镜像并声明资源。平台将创建 Deployment 与 Service 对象。"
-        width={720}
-        footer={
-          <>
-            <Button size="sm" onClick={() => setCreateOpen(false)}>
-              取消
-            </Button>
-            <Button
-              size="sm"
-              variant="signal"
-              disabled={!createForm.serviceName.trim() || !createForm.imageName || !createForm.imageTagName}
-              loading={createMutation.isPending}
-              onClick={() => createMutation.mutate()}
-            >
-              创建服务
-            </Button>
-          </>
-        }
+        title="创建服务"
+        width={1000}
+        titleAlign="center"
+        headerClassName="h-[30px] border-b-0 bg-[#28538f] px-2.5 py-0"
+        bodyClassName="space-y-[10px] px-5 py-5"
       >
-        <div className="space-y-4">
-          <section>
-            <div className="label mb-2">基本信息</div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Field label="服务名称" required hint="集群内唯一，建议使用小写字母与短横线">
-                <input
-                  className="field font-mono"
-                  value={createForm.serviceName}
-                  onChange={(event) => setCreateForm({ ...createForm, serviceName: event.target.value })}
-                  placeholder="my-service"
-                />
-              </Field>
-              <Field label="镜像仓库组" required>
-                <Select
-                  placeholder="选择仓库组"
-                  value={createForm.projectName}
-                  options={projectOptions.map((project) => ({ value: project, label: project }))}
-                  onChange={(value) =>
-                    setCreateForm({ ...createForm, projectName: value, imageName: '', imageTagName: '' })
-                  }
-                />
-              </Field>
-              <Field label="镜像" required>
-                <Select
-                  className="font-mono"
-                  placeholder={imagesQuery.isLoading ? '读取中…' : '选择镜像'}
-                  value={createForm.imageName}
-                  options={imageOptions.map((image) => ({ value: image, label: image }))}
-                  onChange={(value) => setCreateForm({ ...createForm, imageName: value, imageTagName: '' })}
-                />
-              </Field>
-              <Field label="镜像版本" required>
-                <Select
-                  className="font-mono"
-                  placeholder={tagsQuery.isLoading ? '读取中…' : '选择版本'}
-                  value={createForm.imageTagName}
-                  options={tagOptions.map((tag) => ({ value: tag, label: tag }))}
-                  onChange={(value) => setCreateForm({ ...createForm, imageTagName: value })}
-                />
-              </Field>
-            </div>
-          </section>
+        <CreateField label="服务名称" required>
+          <input
+            className={CREATE_INPUT}
+            value={createForm.serviceName}
+            onChange={(event) => setCreateForm({ ...createForm, serviceName: event.target.value })}
+          />
+        </CreateField>
+        <CreateField label="英文名称">
+          <input
+            className={CREATE_INPUT}
+            value={createForm.nameUs}
+            onChange={(event) => setCreateForm({ ...createForm, nameUs: event.target.value })}
+          />
+        </CreateField>
+        <CreateField label="法文名称">
+          <input
+            className={CREATE_INPUT}
+            value={createForm.nameFr}
+            onChange={(event) => setCreateForm({ ...createForm, nameFr: event.target.value })}
+          />
+        </CreateField>
+        <CreateField label="服务标识" required>
+          <input
+            className={cn(CREATE_INPUT, 'font-mono')}
+            value={createForm.serviceKey}
+            onChange={(event) => setCreateForm({ ...createForm, serviceKey: event.target.value })}
+            placeholder="小写字母、数字、中划线，字母开头"
+          />
+        </CreateField>
+        <CreateField label="服务类型">
+          <div className="flex h-[32px] items-center gap-5">
+            <RadioDot
+              checked={createForm.serviceType === '后台服务'}
+              onChange={() => setCreateForm({ ...createForm, serviceType: '后台服务' })}
+            >
+              后台服务
+            </RadioDot>
+            <RadioDot
+              checked={createForm.serviceType === '前台服务'}
+              onChange={() => setCreateForm({ ...createForm, serviceType: '前台服务' })}
+            >
+              前台服务
+            </RadioDot>
+          </div>
+        </CreateField>
+        <CreateField label="所属可操作服务">
+          <MultiSelectBox
+            value={createForm.serverKeys}
+            options={serviceKeyOptions}
+            onChange={(serverKeys) => setCreateForm({ ...createForm, serverKeys })}
+          />
+        </CreateField>
+        <CreateField label="镜像选择" required>
+          <div className="flex items-center gap-2">
+            <Select
+              className={cn(CREATE_SELECT, 'min-w-0 flex-1 font-mono')}
+              placeholder={imagesQuery.isLoading ? '读取中…' : '请选择包'}
+              value={createForm.imageName}
+              options={imageOptions.map((image) => ({ value: image, label: image }))}
+              onChange={(value) => setCreateForm({ ...createForm, imageName: value, imageTagName: '' })}
+            />
+            <Select
+              className={cn(CREATE_SELECT, 'w-[160px] flex-none font-mono')}
+              placeholder={tagsQuery.isLoading ? '读取中…' : '请选择镜像版本'}
+              value={createForm.imageTagName}
+              options={tagOptions.map((tag) => ({ value: tag, label: tag }))}
+              onChange={(value) => setCreateForm({ ...createForm, imageTagName: value })}
+            />
+          </div>
+        </CreateField>
+        <CreateField label="资源优先级">
+          <Select
+            className={CREATE_SELECT}
+            value={createForm.priority}
+            options={priorityOptions}
+            onChange={(value) => setCreateForm({ ...createForm, priority: value })}
+          />
+        </CreateField>
 
-          <section className="border-t border-line pt-3">
-            <div className="label mb-2">资源与调度</div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Field label="CPU (m)" required hint="1000m = 1 核">
-                <input
-                  className="field font-mono"
-                  value={createForm.cpuSize}
-                  onChange={(event) => setCreateForm({ ...createForm, cpuSize: event.target.value })}
-                />
-              </Field>
-              <Field label="内存 (MiB)" required>
-                <input
-                  className="field font-mono"
-                  value={createForm.memory}
-                  onChange={(event) => setCreateForm({ ...createForm, memory: event.target.value })}
-                />
-              </Field>
-              <Field label="入站带宽" hint="Mbps">
-                <input
-                  className="field font-mono"
-                  value={createForm.inBound}
-                  onChange={(event) => setCreateForm({ ...createForm, inBound: event.target.value })}
-                  placeholder="不限"
-                />
-              </Field>
-              <Field label="出站带宽" hint="Mbps">
-                <input
-                  className="field font-mono"
-                  value={createForm.outBound}
-                  onChange={(event) => setCreateForm({ ...createForm, outBound: event.target.value })}
-                  placeholder="不限"
-                />
-              </Field>
-              <Field label="指定节点" className="col-span-2">
-                <Select
-                  placeholder="由调度器自动选择"
-                  value={createForm.bindNodeName}
-                  options={[
-                    { value: '', label: '由调度器自动选择' },
-                    ...nodeOptions.map((node) => ({
-                      value: node.objectMeta.name,
-                      label: node.objectMeta.name,
-                    })),
-                  ]}
-                  onChange={(value) => setCreateForm({ ...createForm, bindNodeName: value })}
-                />
-              </Field>
-            </div>
-          </section>
-
-          <section className="border-t border-line pt-3">
-            <div className="label mb-2">启动命令</div>
-            <Field label="命令参数" hint="每行一个参数，对应容器 args；留空使用镜像默认启动命令">
-              <textarea
-                className="field font-mono text-[11px]"
-                rows={3}
-                value={createForm.args}
-                onChange={(event) => setCreateForm({ ...createForm, args: event.target.value })}
-                placeholder={'--port=8080\n--profile=prod'}
+        <CreateField label="环境变量">
+          <div className="flex h-8 items-center px-2 text-[14px] text-[#c6dbef]">
+            <span className="w-[25%]">变量名</span>
+            <span className="w-[25%]">类型</span>
+            <span className="flex-1">变量值</span>
+            <span className="w-[48px]">操作</span>
+          </div>
+          {envRows.map((row, index) => (
+            <div key={index} className="mb-1 flex items-center gap-1.5">
+              <input
+                className={cn(CREATE_INPUT, 'h-[30px] w-[25%] flex-none')}
+                placeholder="变量名"
+                value={row.name}
+                onChange={(event) =>
+                  setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, name: event.target.value } : item)))
+                }
               />
-            </Field>
-          </section>
-
-          <section className="border-t border-line pt-3">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="label">环境变量</span>
+              <Select
+                className={cn(CREATE_SELECT, 'h-[30px] w-[25%] flex-none')}
+                value={row.type}
+                options={[
+                  { value: '普通变量', label: '普通变量' },
+                  { value: 'Pod类型', label: 'Pod类型' },
+                ]}
+                onChange={(value) =>
+                  setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, type: value } : item)))
+                }
+              />
+              <input
+                className={cn(CREATE_INPUT, 'h-[30px] min-w-0 flex-1')}
+                placeholder="变量值"
+                value={row.value}
+                onChange={(event) =>
+                  setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)))
+                }
+              />
               <button
-                onClick={() => setEnvRows((rows) => [...rows, { name: '', value: '' }])}
-                className="mono flex items-center gap-1 text-[9px] tracking-widest text-mute transition-colors hover:text-signal"
+                type="button"
+                title="删除"
+                onClick={() => setEnvRows((rows) => rows.filter((_, i) => i !== index))}
+                className="flex h-[30px] w-[48px] flex-none items-center justify-center text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
               >
-                <Plus size={10} /> 添加变量
+                <Trash2 size={12} />
               </button>
             </div>
-            <div className="space-y-2">
-              {envRows.map((row, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <input
-                    className="field h-9 flex-1 font-mono text-[11px]"
-                    placeholder="KEY"
-                    value={row.name}
-                    onChange={(event) =>
-                      setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, name: event.target.value } : item)))
-                    }
-                  />
-                  <span className="text-mute">=</span>
-                  <input
-                    className="field h-9 flex-[2] font-mono text-[11px]"
-                    placeholder="value"
-                    value={row.value}
-                    onChange={(event) =>
-                      setEnvRows((rows) => rows.map((item, i) => (i === index ? { ...item, value: event.target.value } : item)))
-                    }
-                  />
-                  <button
-                    onClick={() => setEnvRows((rows) => rows.filter((_, i) => i !== index))}
-                    className="flex h-9 w-9 flex-none items-center justify-center border border-line-strong text-ink-3 transition-colors hover:border-signal hover:text-signal"
-                    title="删除变量"
-                  >
-                    <Trash2 size={11} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </section>
+          ))}
+          <button
+            type="button"
+            onClick={() => setEnvRows((rows) => [...rows, { name: '', type: '普通变量', value: '' }])}
+            className="mt-0.5 text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+          >
+            添加环境变量
+          </button>
+        </CreateField>
 
-          <div className="border border-line bg-paper-2/40 px-3 py-2">
-            <div className="label mb-1">调度提示</div>
-            <p className="text-[10.5px] leading-relaxed text-ink-3">
-              创建后服务默认以 ClusterIP 暴露。端口映射、存储挂载与 HealthCheck 可在 Deployment 详情中继续调整。
-            </p>
+        <CreateField label="资源分配">
+          <div className="flex h-[30px] items-center gap-5">
+            <RadioDot checked={createForm.arch === '1'} onChange={() => setCreateForm({ ...createForm, arch: '1' })}>
+              X86计算
+            </RadioDot>
+            <RadioDot checked={createForm.arch === '2'} onChange={() => setCreateForm({ ...createForm, arch: '2' })}>
+              高性能计算GPU
+            </RadioDot>
           </div>
-        </div>
-      </Drawer>
+          {createForm.arch === '2' && (
+            <div className="mb-2 flex items-center gap-2 text-[12px] text-[#c6dbef]">
+              <span>GPU数量</span>
+              <input
+                className={cn(CREATE_INPUT, 'h-[26px] w-[70px] px-1 text-center')}
+                value={createForm.gpuCount}
+                onChange={(event) => setCreateForm({ ...createForm, gpuCount: event.target.value })}
+              />
+              <span>颗GPU</span>
+            </div>
+          )}
+          <div className="flex flex-wrap items-stretch gap-2 py-1">
+            {RESOURCE_PRESETS.map((preset) => (
+              <button
+                key={preset.key}
+                type="button"
+                onClick={() =>
+                  setCreateForm({
+                    ...createForm,
+                    preset: preset.key,
+                    memoryMin: preset.memoryMin,
+                    memoryMax: preset.memoryMax,
+                    cpuMin: preset.cpuMin,
+                    cpuMax: preset.cpuMax,
+                  })
+                }
+                className={cn(
+                  'flex w-[62px] flex-col items-start gap-0.5 border px-1 py-1 text-left transition-colors',
+                  createForm.preset === preset.key ? 'border-signal' : 'border-[#3a6288] hover:border-[#5b8ab8]',
+                )}
+              >
+                <span className="text-[12px] font-semibold leading-4 text-white">{preset.key}</span>
+                <span className="whitespace-nowrap text-[10px] leading-4 text-[#4aa3f0]">{preset.memory}</span>
+                <span className="whitespace-nowrap text-[9px] leading-4 text-[#9fb8ce]">{preset.cpu}</span>
+              </button>
+            ))}
+            <div
+              className={cn(
+                'flex w-[156px] flex-col gap-1 border px-2 py-1.5',
+                createForm.preset === 'custom' ? 'border-signal' : 'border-[#3a6288]',
+              )}
+            >
+              <span className="text-[12px] leading-4 text-white">自定义</span>
+              <div className="flex items-center gap-1">
+                <input
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  value={createForm.memoryMin}
+                  onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
+                  onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', memoryMin: event.target.value })}
+                />
+                <span className="text-[11px] text-[#9fb8ce]">~</span>
+                <input
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  value={createForm.memoryMax}
+                  onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
+                  onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', memoryMax: event.target.value })}
+                />
+                <span className="text-[10px] text-[#c6dbef]">MB内存</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <input
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  value={createForm.cpuMin}
+                  onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
+                  onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', cpuMin: event.target.value })}
+                />
+                <span className="text-[11px] text-[#9fb8ce]">~</span>
+                <input
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  value={createForm.cpuMax}
+                  onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
+                  onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', cpuMax: event.target.value })}
+                />
+                <span className="text-[10px] text-[#c6dbef]">核CPU</span>
+              </div>
+            </div>
+          </div>
+        </CreateField>
+
+        <CreateField label="访问方式">
+          <div className="flex h-8 items-center px-2 text-[14px] text-[#c6dbef]">
+            <span className="flex-1">容器端口</span>
+            <span className="flex-1">协议</span>
+            <span className="w-[48px]">操作</span>
+          </div>
+          {createForm.ports.map((row, index) => (
+            <div key={index} className="mb-1 flex items-center gap-1.5">
+              <input
+                className={cn(CREATE_INPUT, 'h-[30px] min-w-0 flex-1')}
+                placeholder="请输入端口号"
+                value={row.port}
+                onChange={(event) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    ports: prev.ports.map((item, i) => (i === index ? { ...item, port: event.target.value } : item)),
+                  }))
+                }
+              />
+              <Select
+                className={cn(CREATE_SELECT, 'h-[30px] min-w-0 flex-1')}
+                value={row.protocol}
+                options={[
+                  { value: 'TCP', label: 'TCP' },
+                  { value: 'UDP', label: 'UDP' },
+                ]}
+                onChange={(value) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    ports: prev.ports.map((item, i) => (i === index ? { ...item, protocol: value } : item)),
+                  }))
+                }
+              />
+              <button
+                type="button"
+                title="删除"
+                onClick={() => setCreateForm((prev) => ({ ...prev, ports: prev.ports.filter((_, i) => i !== index) }))}
+                className="flex h-[30px] w-[48px] flex-none items-center justify-center text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setCreateForm((prev) => ({ ...prev, ports: [...prev.ports, { port: '', protocol: 'TCP' }] }))
+            }
+            className="mt-0.5 text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+          >
+            添加映射端口
+          </button>
+        </CreateField>
+
+        <CreateField label="进入点">
+          <div className="flex h-[32px] items-center gap-5">
+            <RadioDot
+              checked={createForm.entryMode === 'default'}
+              onChange={() => setCreateForm({ ...createForm, entryMode: 'default' })}
+            >
+              镜像默认
+            </RadioDot>
+            <RadioDot
+              checked={createForm.entryMode === 'custom'}
+              onChange={() => setCreateForm({ ...createForm, entryMode: 'custom' })}
+            >
+              自定义
+            </RadioDot>
+          </div>
+          <Select
+            className={cn(CREATE_SELECT, 'mt-2 w-[260px]')}
+            value="镜像默认"
+            options={[{ value: '镜像默认', label: '镜像默认' }]}
+            onChange={() => undefined}
+          />
+        </CreateField>
+
+        <CreateField label="启动命令">
+          <div className="flex h-[32px] items-center gap-5">
+            <RadioDot
+              checked={createForm.commandMode === 'default'}
+              onChange={() => setCreateForm({ ...createForm, commandMode: 'default' })}
+            >
+              镜像默认
+            </RadioDot>
+            <RadioDot
+              checked={createForm.commandMode === 'custom'}
+              onChange={() => setCreateForm({ ...createForm, commandMode: 'custom' })}
+            >
+              自定义
+            </RadioDot>
+          </div>
+          {createForm.commandMode === 'custom' ? (
+            <input
+              className={cn(CREATE_INPUT, 'mt-2 w-[360px] font-mono')}
+              placeholder="请输入启动命令"
+              value={createForm.command}
+              onChange={(event) => setCreateForm({ ...createForm, command: event.target.value })}
+            />
+          ) : (
+            <Select
+              className={cn(CREATE_SELECT, 'mt-2 w-[260px]')}
+              value="镜像默认"
+              options={[{ value: '镜像默认', label: '镜像默认' }]}
+              onChange={() => undefined}
+            />
+          )}
+        </CreateField>
+
+        <CreateField label="文件映射">
+          <div className="flex h-8 items-center px-2 text-[14px] text-[#c6dbef]">
+            <span className="flex-1">挂载目录</span>
+            <span className="w-[25%]">配置组</span>
+            <span className="w-[25%]">配置文件</span>
+            <span className="w-[48px]">操作</span>
+          </div>
+          {createForm.files.map((row, index) => (
+            <div key={index} className="mb-1 flex items-center gap-1.5">
+              <input
+                className={cn(CREATE_INPUT, 'h-[30px] min-w-0 flex-1')}
+                placeholder="挂载目录"
+                value={row.mountPath}
+                onChange={(event) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    files: prev.files.map((item, i) =>
+                      i === index ? { ...item, mountPath: event.target.value } : item,
+                    ),
+                  }))
+                }
+              />
+              <Select
+                className={cn(CREATE_SELECT, 'h-[30px] w-[25%] flex-none')}
+                value={row.configMap}
+                options={configMapOptions}
+                placeholder="请选择配置组"
+                searchable
+                onChange={(value) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    files: prev.files.map((item, i) => (i === index ? { ...item, configMap: value } : item)),
+                  }))
+                }
+              />
+              <input
+                className={cn(CREATE_INPUT, 'h-[30px] w-[25%] flex-none')}
+                placeholder="配置文件"
+                value={row.files}
+                onChange={(event) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    files: prev.files.map((item, i) => (i === index ? { ...item, files: event.target.value } : item)),
+                  }))
+                }
+              />
+              <button
+                type="button"
+                title="删除"
+                onClick={() => setCreateForm((prev) => ({ ...prev, files: prev.files.filter((_, i) => i !== index) }))}
+                className="flex h-[30px] w-[48px] flex-none items-center justify-center text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setCreateForm((prev) => ({
+                ...prev,
+                files: [...prev.files, { mountPath: '', configMap: '', files: '' }],
+              }))
+            }
+            className="mt-0.5 text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+          >
+            添加配置目录
+          </button>
+        </CreateField>
+
+        <CreateField label="NodePort">
+          <div className="flex h-[32px] items-center gap-5">
+            <RadioDot checked={createForm.nodePort === '0'} onChange={() => setCreateForm({ ...createForm, nodePort: '0' })}>
+              禁用
+            </RadioDot>
+            <RadioDot checked={createForm.nodePort === '1'} onChange={() => setCreateForm({ ...createForm, nodePort: '1' })}>
+              启用
+            </RadioDot>
+          </div>
+        </CreateField>
+
+        <CreateField label="节点调度">
+          <div className="flex h-[32px] items-center gap-5">
+            <RadioDot
+              checked={createForm.scheduleMode === 'default'}
+              onChange={() => setCreateForm({ ...createForm, scheduleMode: 'default' })}
+            >
+              系统默认调度
+            </RadioDot>
+            <RadioDot
+              checked={createForm.scheduleMode === 'host'}
+              onChange={() => setCreateForm({ ...createForm, scheduleMode: 'host' })}
+            >
+              指定主机名及IP上运行
+            </RadioDot>
+          </div>
+          {createForm.scheduleMode === 'host' && (
+            <Select
+              className={cn(CREATE_SELECT, 'mt-2 w-[320px]')}
+              placeholder="请选择主机"
+              value={createForm.hostName}
+              options={nodeOptions.map((node) => ({ value: node.objectMeta.name, label: node.objectMeta.name }))}
+              onChange={(value) => setCreateForm({ ...createForm, hostName: value })}
+            />
+          )}
+        </CreateField>
+
+        <button
+          type="button"
+          onClick={() => createMutation.mutate()}
+          disabled={createMutation.isPending}
+          className="mt-4 h-[30px] w-full bg-[#1670c2] text-[13px] text-white transition-colors hover:bg-[#1a82dd] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {createMutation.isPending ? '提交中…' : '提交'}
+        </button>
+      </Modal>
 
       <Drawer
         open={!!restartTarget}
