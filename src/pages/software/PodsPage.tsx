@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dump } from 'js-yaml'
-import { lazy, Suspense, useMemo, useState } from 'react'
-import { api, errorMessage } from '@/lib/api'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import SockJS from 'sockjs-client'
+import { api, API_BASE, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { DataTable, type Column } from '@/components/DataTable'
 import { AreaTrend } from '@/components/charts'
@@ -14,6 +15,11 @@ const ServiceConsole = lazy(() =>
 )
 
 const NAMESPACE = 'gaop-namespace'
+
+const ANSI_RE = /\u001b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g
+const stripAnsi = (value: string) => value.replace(ANSI_RE, '')
+
+type SockJsClient = InstanceType<typeof SockJS>
 
 interface PodItem {
   metadata?: {
@@ -179,6 +185,9 @@ export default function PodsPage() {
   const [customRange, setCustomRange] = useState(false)
   const [rangeStart, setRangeStart] = useState('')
   const [rangeEnd, setRangeEnd] = useState('')
+  const [logText, setLogText] = useState('')
+  const [logState, setLogState] = useState<'idle' | 'connecting' | 'open' | 'closed' | 'error'>('idle')
+  const logBoxRef = useRef<HTMLDivElement | null>(null)
   const [consoleState, setConsoleState] = useState<{ service: string; mode: 'logs' | 'terminal' } | null>(null)
 
   const query = useQuery({
@@ -218,16 +227,61 @@ export default function PodsPage() {
     enabled: !!detail,
   })
 
-  const podLogQuery = useQuery({
-    queryKey: ['pod-log', podName],
-    queryFn: () =>
-      api.get<string>(`/k8s/api/v1/namespaces/${NAMESPACE}/pods/${podName}/log`, {
-        container: detail?.spec?.containers?.[0]?.name,
-        tailLines: 300,
-      }),
-    enabled: !!detail && detailTab === 'log',
-    refetchInterval: detailTab === 'log' ? 5_000 : false,
-  })
+  /* 日志走厂商同款 SockJS 流式接口（REST k8s 代理会把纯文本日志按 JSON 解析导致 500） */
+  useEffect(() => {
+    if (!detail || detailTab !== 'log') return
+    const pod = detail.metadata?.name || ''
+    const container = detail.spec?.containers?.[0]?.name || ''
+    if (!pod) return
+    setLogText('')
+    setLogState('connecting')
+    let socket: SockJsClient | null = null
+    let disposed = false
+    const timer = window.setTimeout(() => {
+      if (disposed) return
+      try {
+        socket = new SockJS(
+          `${API_BASE}/logs?pod=${encodeURIComponent(pod)}&container=${encodeURIComponent(container)}&namespace=${encodeURIComponent(NAMESPACE)}`,
+        )
+      } catch {
+        setLogState('error')
+        return
+      }
+      socket.onopen = () => {
+        if (!disposed) setLogState('open')
+      }
+      socket.onmessage = (event: MessageEvent) => {
+        if (disposed) return
+        const chunk = typeof event.data === 'string' ? stripAnsi(event.data) : ''
+        if (!chunk) return
+        setLogText((prev) => {
+          const next = prev + chunk
+          return next.length > 900_000 ? next.slice(next.length - 700_000) : next
+        })
+      }
+      socket.onclose = () => {
+        if (!disposed) setLogState((prev) => (prev === 'error' ? 'error' : 'closed'))
+      }
+      socket.onerror = () => {
+        if (!disposed) setLogState('error')
+      }
+    }, 300)
+    return () => {
+      disposed = true
+      window.clearTimeout(timer)
+      try {
+        socket?.close()
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [detail, detailTab])
+
+  useEffect(() => {
+    if (detailTab === 'log' && logBoxRef.current) {
+      logBoxRef.current.scrollTop = logBoxRef.current.scrollHeight
+    }
+  }, [logText, detailTab])
 
   const podEventsQuery = useQuery({
     queryKey: ['pod-events', podName],
@@ -605,15 +659,16 @@ export default function PodsPage() {
               </div>
             )}
             {detailTab === 'log' && (
-              <div className="h-[540px] overflow-auto border border-line bg-[#0e2233] px-3 py-2 font-mono text-[11px] leading-[18px] text-[#cfe3f5]">
-                {podLogQuery.isLoading ? (
-                  <div className="py-16 text-center font-sans text-[12px] text-mute">正在读取日志…</div>
+              <div
+                ref={logBoxRef}
+                className="h-[540px] overflow-auto border border-line bg-[#0e2233] px-3 py-2 font-mono text-[11px] leading-[18px] text-[#cfe3f5]"
+              >
+                {logState === 'connecting' && !logText ? (
+                  <div className="py-16 text-center font-sans text-[12px] text-mute">正在连接日志…</div>
+                ) : logState === 'error' ? (
+                  <div className="py-16 text-center font-sans text-[12px] text-danger">日志连接失败，请确认 Pod 处于运行状态</div>
                 ) : (
-                  <pre className="whitespace-pre-wrap break-all">
-                    {typeof podLogQuery.data === 'string' && podLogQuery.data
-                      ? podLogQuery.data
-                      : '暂无日志'}
-                  </pre>
+                  <pre className="whitespace-pre-wrap break-all">{logText || '暂无日志'}</pre>
                 )}
               </div>
             )}
