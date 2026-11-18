@@ -336,6 +336,20 @@ body {
   .table-scroll {
     overflow-x: auto;
   }
+  .data-table tbody tr {
+    background: #0f2133;
+  }
+  .data-table .is-sticky-right {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: inherit;
+    box-shadow: -8px 0 8px -8px rgba(0, 0, 0, 0.65);
+  }
+  .data-table thead th.is-sticky-right {
+    z-index: 2;
+    background: #14293e;
+  }
   .table-scroll::-webkit-scrollbar {
     height: 10px;
   }

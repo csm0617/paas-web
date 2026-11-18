@@ -12,6 +12,7 @@ export interface Column<T> {
   width?: number | string
   className?: string
   headerClassName?: string
+  fixed?: 'right'
   sortValue?: (row: T) => string | number
 }
 
@@ -115,6 +116,7 @@ export function DataTable<T>({
                   className={cn(
                     column.align === 'right' && 'text-right',
                     column.align === 'center' && 'text-center',
+                    column.fixed === 'right' && 'is-sticky-right',
                     column.headerClassName,
                   )}
                 >
@@ -193,6 +195,7 @@ export function DataTable<T>({
                           column.align === 'right' && 'text-right',
                           column.align === 'center' && 'text-center',
                           dense && 'py-2',
+                          column.fixed === 'right' && 'is-sticky-right',
                           column.className,
                         )}
                       >

@@ -528,6 +528,7 @@ export default function ServiceManagePage() {
       key: 'actions',
       header: '操作',
       align: 'right',
+      fixed: 'right',
       cell: (row) => {
         const status = statusOf(row)
         const running = status.label === 'RUNNING' || status.label === 'PENDING'
