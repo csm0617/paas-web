@@ -806,7 +806,7 @@ export default function SoftwareListPage() {
         </Panel>
       ) : viewMode === 'table' ? (
         <Panel bodyClassName="p-0">
-          <div className="overflow-x-auto">
+          <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>

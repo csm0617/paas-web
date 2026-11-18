@@ -99,8 +99,8 @@ export function DataTable<T>({
 
   return (
     <div className={cn('w-full', className)}>
-      <div className="overflow-x-auto">
-        <table className="data-table">
+      <div className="table-scroll">
+        <table className="data-table min-w-max">
           <thead>
             <tr>
               {selectable && (

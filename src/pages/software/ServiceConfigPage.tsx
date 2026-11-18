@@ -699,8 +699,8 @@ export default function ServiceConfigPage() {
       </PageToolbar>
 
       <Panel bodyClassName="p-0">
-        <div className="overflow-x-auto">
-          <table className="data-table">
+        <div className="table-scroll">
+          <table className="data-table min-w-max">
             <thead>
               <tr>
                 <th className="w-14 text-center">序号</th>

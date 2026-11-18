@@ -389,8 +389,8 @@ export default function OpsMonitorPage() {
         </div>
 
         <Panel className="xl:col-span-12" kicker="ANOMALY QUEUE" title="异常服务队列" bodyClassName="p-0">
-          <div className="overflow-x-auto">
-            <table className="data-table">
+          <div className="table-scroll">
+            <table className="data-table min-w-max">
               <thead>
                 <tr>
                   <th>服务</th>

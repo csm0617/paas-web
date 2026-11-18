@@ -333,6 +333,22 @@ body {
     border-collapse: collapse;
     font-size: 13px;
   }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  .table-scroll::-webkit-scrollbar {
+    height: 10px;
+  }
+  .table-scroll::-webkit-scrollbar-track {
+    background: #0d2033;
+  }
+  .table-scroll::-webkit-scrollbar-thumb {
+    background: #3c668c;
+    border-radius: 0;
+  }
+  .table-scroll::-webkit-scrollbar-thumb:hover {
+    background: #4d7ba5;
+  }
   .data-table thead th {
     font-family: var(--font-sans);
     font-size: 13px;

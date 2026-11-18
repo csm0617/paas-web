@@ -176,8 +176,8 @@ export default function ContainerOverviewPage() {
         }
         bodyClassName="p-0"
       >
-        <div className="overflow-x-auto">
-          <table className="data-table">
+        <div className="table-scroll">
+          <table className="data-table min-w-max">
             <thead>
               <tr>
                 <th>Top5 容器实例</th>

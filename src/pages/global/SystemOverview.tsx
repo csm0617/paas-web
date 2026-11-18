@@ -352,8 +352,8 @@ export default function SystemOverviewPage() {
           }
           bodyClassName="p-0"
         >
-          <div className="overflow-x-auto">
-            <table className="data-table">
+          <div className="table-scroll">
+            <table className="data-table min-w-max">
               <thead>
                 <tr>
                   <th>节点 / NODE</th>
@@ -755,8 +755,8 @@ export default function SystemOverviewPage() {
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-line">
-              <table className="data-table">
+            <div className="table-scroll border border-line">
+              <table className="data-table min-w-max">
                 <thead>
                   <tr>
                     <th className="w-8">
