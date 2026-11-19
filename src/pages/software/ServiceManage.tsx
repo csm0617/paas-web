@@ -608,7 +608,7 @@ export default function ServiceManagePage() {
       cell: (row) => (
         <button
           onClick={() => setDetail(row)}
-          className="block max-w-[180px] truncate text-left text-[14px] text-ink hover:text-signal hover:underline"
+          className="mx-auto block max-w-[180px] truncate text-[14px] text-ink hover:text-signal hover:underline"
         >
           {serviceName(row)}
         </button>
@@ -637,7 +637,7 @@ export default function ServiceManagePage() {
       cell: (row) => {
         const apps = (row.softwareNameList ?? []).filter(Boolean)
         return apps.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap justify-center gap-1">
             {apps.map((app) => (
               <Badge key={app} tone="ok">
                 {app}
@@ -673,7 +673,7 @@ export default function ServiceManagePage() {
                 : 'text-mute'
         return (
           <div className="leading-[1.5]">
-            <div className={cn('flex items-center gap-1 text-[14px]', tone)}>
+            <div className={cn('flex items-center justify-center gap-1 text-[14px]', tone)}>
               {text}
               <Info size={10} />
             </div>
