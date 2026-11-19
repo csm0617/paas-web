@@ -217,13 +217,7 @@ export function DataTable<T>({
       {footer}
 
       {!hidePager && rows.length > 0 && (
-        <div className="flex items-center gap-4 border-t border-line px-4 py-3">
-          <div className="relative h-1.5 min-w-[80px] flex-1 overflow-hidden rounded-full bg-[#14293e]">
-            <i
-              className="absolute inset-y-0 left-0 rounded-full bg-signal"
-              style={{ width: `${(current / totalPages) * 100}%` }}
-            />
-          </div>
+        <div className="flex items-center justify-end gap-4 border-t border-line px-4 py-3">
           <div className="flex flex-none items-center gap-2">
             <div className="flex items-center gap-0.5">
               <button
