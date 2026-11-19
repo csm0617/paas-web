@@ -58,9 +58,9 @@ export default function AppPortalPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{role?.name || '未分配席位'}</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{role?.name || '未分配席位'}</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">{user?.nickname || user?.username} · {released.length} RELEASED</span>
+            <span className="mono text-[12px] tracking-widest text-mute">{user?.nickname || user?.username} · {released.length} RELEASED</span>
           </>
         }
         toolbar={
@@ -70,7 +70,7 @@ export default function AppPortalPage() {
                 key={item}
                 onClick={() => setType(item)}
                 className={cn(
-                  'h-[30px] px-3 text-[12px] transition-colors',
+                  'h-[30px] px-3 text-[14px] transition-colors',
                   type === item ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
                 )}
               >
@@ -90,22 +90,22 @@ export default function AppPortalPage() {
       <section className="mb-4 rounded border border-line bg-paper-2 px-5 py-4">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="text-[11px] text-mute">应用门户 / APPLICATION HALL</div>
+            <div className="text-[12px] text-mute">应用门户 / APPLICATION HALL</div>
             <h2 className="mt-1.5 text-[22px] font-semibold text-ink">
               选择一个系统<span className="text-signal">开始作业</span>
             </h2>
-            <p className="mt-1.5 max-w-[560px] text-[12px] leading-relaxed text-ink-3">
+            <p className="mt-1.5 max-w-[560px] text-[14px] leading-relaxed text-ink-3">
               应用入口已在网关侧完成鉴权与路由注册。若入口不可用，请联系平台管理员核查席位授权或服务状态。
             </p>
           </div>
           <div className="flex flex-none gap-6">
             <div>
-              <div className="text-[11px] text-mute">可用应用</div>
+              <div className="text-[12px] text-mute">可用应用</div>
               <div className="num mt-1 text-[28px] leading-none text-ink">{apps.length}</div>
             </div>
             <div className="border-l border-line pl-6">
-              <div className="text-[11px] text-mute">当前席位</div>
-              <div className="mt-2 text-[13px] text-ink">{role?.name || '—'}</div>
+              <div className="text-[12px] text-mute">当前席位</div>
+              <div className="mt-2 text-[14px] text-ink">{role?.name || '—'}</div>
             </div>
           </div>
         </div>
@@ -142,17 +142,17 @@ export default function AppPortalPage() {
                     <span className="truncate text-[14px] font-semibold text-ink">{app.name}</span>
                     <Badge tone={app.type === 'CS' ? 'warn' : 'info'}>{app.type || 'BS'}</Badge>
                   </div>
-                  <div className="mt-1 truncate text-[11px] text-mute">{app.routerKey || '未登记入口'}</div>
-                  <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed text-ink-3">
+                  <div className="mt-1 truncate text-[12px] text-mute">{app.routerKey || '未登记入口'}</div>
+                  <p className="mt-2 line-clamp-2 text-[14px] leading-relaxed text-ink-3">
                     {app.desc || '平台已登记的业务应用，点击进入。'}
                   </p>
                 </div>
               </div>
               <div className="mt-auto flex items-center justify-between border-t border-line px-4 py-2">
-                <span className="flex items-center gap-1 text-[11px] text-mute">
+                <span className="flex items-center gap-1 text-[12px] text-mute">
                   <ShieldCheck size={11} /> {available ? '已发布' : '未发布'}
                 </span>
-                <span className="flex items-center gap-1 text-[12px] text-ink-3 transition-colors group-hover:text-signal">
+                <span className="flex items-center gap-1 text-[14px] text-ink-3 transition-colors group-hover:text-signal">
                   打开应用 <ArrowUpRight size={11} />
                 </span>
               </div>
@@ -164,8 +164,8 @@ export default function AppPortalPage() {
             <Panel>
               <div className="flex flex-col items-center gap-2 py-14 text-mute">
                 <Grid2X2 size={26} strokeWidth={1.2} />
-                <span className="text-[11.5px]">当前席位暂无可用应用</span>
-                <span className="text-[10px]">请管理员在「应用管理」中登记应用并放行。</span>
+                <span className="text-[12px]">当前席位暂无可用应用</span>
+                <span className="text-[12px]">请管理员在「应用管理」中登记应用并放行。</span>
               </div>
             </Panel>
           </div>
@@ -174,18 +174,18 @@ export default function AppPortalPage() {
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Panel kicker="GATEWAY" title="网关入口">
-          <div className="mono text-[10px] text-ink-3">{platformHost}</div>
+          <div className="mono text-[12px] text-ink-3">{platformHost}</div>
           <div className="mt-2 flex items-center gap-2">
             <StatusDot tone="ok" />
-            <span className="mono text-[8.5px] tracking-widest text-mute">ISTIO / ENVOY ROUTING</span>
+            <span className="mono text-[12px] tracking-widest text-mute">ISTIO / ENVOY ROUTING</span>
           </div>
         </Panel>
         <Panel kicker="SESSION" title="当前身份">
-          <div className="text-[12px] text-ink">{user?.nickname || user?.username}</div>
-          <div className="mono mt-1 text-[8.5px] tracking-widest text-mute">ROLE / {role?.key || '—'}</div>
+          <div className="text-[14px] text-ink">{user?.nickname || user?.username}</div>
+          <div className="mono mt-1 text-[12px] tracking-widest text-mute">ROLE / {role?.key || '—'}</div>
         </Panel>
         <Panel kicker="POLICY" title="访问策略">
-          <div className="text-[11px] leading-relaxed text-ink-3">
+          <div className="text-[12px] leading-relaxed text-ink-3">
             应用入口遵循席位授权与网关放行策略，未放行应用不会出现在门户中。
           </div>
         </Panel>

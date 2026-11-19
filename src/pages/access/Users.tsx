@@ -225,15 +225,15 @@ export default function UsersPage() {
       cell: (row) => (
         <div className="flex items-center gap-2.5">
           <div className="relative flex h-8 w-8 flex-none items-center justify-center border border-line-strong bg-paper-2">
-            <span className="mono text-[9px] text-ink-3">{(row.nickname || row.username).slice(0, 2).toUpperCase()}</span>
+            <span className="mono text-[12px] text-ink-3">{(row.nickname || row.username).slice(0, 2).toUpperCase()}</span>
             <span className={cn('absolute -bottom-px -right-px h-1.5 w-1.5', row.status === 1 ? 'bg-ok' : 'bg-line-strong')} />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-[12px] text-ink">{row.nickname || row.username}</span>
+              <span className="truncate text-[14px] text-ink">{row.nickname || row.username}</span>
               {row.id === currentUser?.id && <Badge tone="info">YOU</Badge>}
             </div>
-            <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.username}</div>
+            <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.username}</div>
           </div>
         </div>
       ),
@@ -242,9 +242,9 @@ export default function UsersPage() {
       key: 'contact',
       header: '联系方式',
       cell: (row) => (
-        <div className="mono text-[10px] text-ink-3">
+        <div className="mono text-[12px] text-ink-3">
           <div>{row.email || '—'}</div>
-          <div className="mt-0.5 text-[8.5px] text-mute">{row.phone || '—'}</div>
+          <div className="mt-0.5 text-[12px] text-mute">{row.phone || '—'}</div>
         </div>
       ),
     },
@@ -273,7 +273,7 @@ export default function UsersPage() {
       cell: (row) => (
         <div className="flex items-center gap-1.5">
           <StatusDot tone={row.status === 1 ? 'ok' : 'idle'} />
-          <span className="mono text-[9px] uppercase tracking-wider text-ink-3">{row.status === 1 ? 'ACTIVE' : 'DISABLED'}</span>
+          <span className="mono text-[12px] uppercase tracking-wider text-ink-3">{row.status === 1 ? 'ACTIVE' : 'DISABLED'}</span>
         </div>
       ),
     },
@@ -282,8 +282,8 @@ export default function UsersPage() {
       header: '最近登录',
       cell: (row) => (
         <div>
-          <div className="mono text-[10px] text-ink-3">{relativeTime(row.updatedAt)}</div>
-          <div className="mono mt-0.5 text-[8px] text-mute">{formatDate(row.updatedAt, false)}</div>
+          <div className="mono text-[12px] text-ink-3">{relativeTime(row.updatedAt)}</div>
+          <div className="mono mt-0.5 text-[12px] text-mute">{formatDate(row.updatedAt, false)}</div>
         </div>
       ),
     },
@@ -313,9 +313,9 @@ export default function UsersPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{users.length} ACCOUNTS</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{users.length} ACCOUNTS</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">
+            <span className="mono text-[12px] tracking-widest text-mute">
               {users.filter((user) => user.status === 1).length} ACTIVE · {roles.length} SEATS
             </span>
           </>
@@ -380,7 +380,7 @@ export default function UsersPage() {
             </div>
           </Panel>
           <Panel kicker="NOTICE" title="账户策略">
-            <ul className="space-y-2 text-[10.5px] leading-relaxed text-ink-3">
+            <ul className="space-y-2 text-[12px] leading-relaxed text-ink-3">
               <li className="flex gap-2">
                 <span className="mt-1 h-1 w-1 flex-none bg-signal" />
                 新建账户必须设置初始密码，建议首次登录后修改。
@@ -475,12 +475,12 @@ export default function UsersPage() {
                         }))
                       }
                     />
-                    <span className="flex-1 truncate text-[11px] text-ink">{role.name}</span>
-                    <span className="mono text-[8.5px] text-mute">{role.key}</span>
+                    <span className="flex-1 truncate text-[12px] text-ink">{role.name}</span>
+                    <span className="mono text-[12px] text-mute">{role.key}</span>
                   </label>
                 )
               })}
-              {roles.length === 0 && <div className="col-span-2 py-2 text-center text-[10.5px] text-mute">暂无可用席位</div>}
+              {roles.length === 0 && <div className="col-span-2 py-2 text-center text-[12px] text-mute">暂无可用席位</div>}
             </div>
           </Field>
           <Field label="备注" className="sm:col-span-2">
@@ -529,14 +529,14 @@ export default function UsersPage() {
             className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 py-8 text-mute hover:border-signal hover:text-signal"
           >
             <Upload size={18} strokeWidth={1.4} />
-            <span className="text-[11px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>
-            <span className="mono text-[8.5px] tracking-widest">XLS / XLSX</span>
+            <span className="text-[12px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>
+            <span className="mono text-[12px] tracking-widest">XLS / XLSX</span>
           </button>
           <label className="flex items-center gap-2 border border-line px-3 py-2">
             <input type="checkbox" className="check" checked={importCover} onChange={(event) => setImportCover(event.target.checked)} />
-            <span className="text-[11px] text-ink-3">覆盖同名用户</span>
+            <span className="text-[12px] text-ink-3">覆盖同名用户</span>
           </label>
-          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[8.5px] leading-relaxed tracking-wider text-mute">
+          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] leading-relaxed tracking-wider text-mute">
             模板包含用户名、昵称、密码、邮箱、手机号、席位等列。请先下载模板填写后再上传。
           </div>
         </div>

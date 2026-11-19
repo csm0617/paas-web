@@ -56,20 +56,20 @@ export default function WhitelistPage() {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <StatusDot tone="ok" />
-          <span className="font-mono text-[11px] text-ink">{row.path}</span>
+          <span className="font-mono text-[12px] text-ink">{row.path}</span>
         </div>
       ),
     },
     {
       key: 'id',
       header: '标识',
-      cell: (row) => <span className="mono text-[9px] text-mute">{row.id}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{row.id}</span>,
     },
     {
       key: 'time',
       header: '创建时间',
       sortValue: (row) => row.createdAt ?? 0,
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{formatDate(row.createdAt)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{formatDate(row.createdAt)}</span>,
     },
     {
       key: 'actions',
@@ -94,9 +94,9 @@ export default function WhitelistPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={list.length ? 'warn' : 'ok'} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{list.length} ALLOWED PATHS</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{list.length} ALLOWED PATHS</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">GATEWAY POLICY</span>
+            <span className="mono text-[12px] tracking-widest text-mute">GATEWAY POLICY</span>
           </>
         }
         actions={
@@ -110,7 +110,7 @@ export default function WhitelistPage() {
         <Panel className="xl:col-span-8" kicker="ALLOWLIST" title="放行路径" bodyClassName="p-0">
           <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
             <input
-              className="field h-9 flex-1 text-[12px]"
+              className="field h-9 flex-1 text-[14px]"
               placeholder="输入需要放行的路径，例如 /v1/pub/health"
               value={path}
               onChange={(event) => setPath(event.target.value)}
@@ -143,7 +143,7 @@ export default function WhitelistPage() {
           <Panel kicker="SECURITY NOTICE" title="风险提示">
             <div className="flex items-start gap-3">
               <ShieldOff size={20} className="mt-0.5 flex-none text-signal" />
-              <div className="space-y-2 text-[10.5px] leading-relaxed text-ink-3">
+              <div className="space-y-2 text-[12px] leading-relaxed text-ink-3">
                 <p>放行路径将跳过平台 Token 校验，直接由后端服务处理。</p>
                 <p>请勿放行包含业务数据、配置写入或用户信息的接口。</p>
                 <p>新增路径后建议立即验证鉴权边界，并记录变更原因。</p>
@@ -161,7 +161,7 @@ export default function WhitelistPage() {
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="label">网关</span>
-              <span className="mono text-[10px] text-ink-3">ISTIO / ENVOY</span>
+              <span className="mono text-[12px] text-ink-3">ISTIO / ENVOY</span>
             </div>
           </Panel>
         </div>

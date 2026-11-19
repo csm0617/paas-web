@@ -200,20 +200,20 @@ export default function AutoscalePage() {
       header: '序号',
       width: 80,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
     },
     {
       key: 'name',
       header: '策略名称',
       align: 'center',
-      cell: (row) => <span className="text-[12px] text-ink">{row.metadata?.name || '—'}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{row.metadata?.name || '—'}</span>,
     },
     {
       key: 'target',
       header: '服务标识',
       align: 'center',
       cell: (row) => (
-        <span className="mono text-[11.5px] text-ink-3">
+        <span className="mono text-[12px] text-ink-3">
           {(row.spec?.scaleTargetRef?.name || '').replace('-disabled', '') || '—'}
         </span>
       ),
@@ -224,9 +224,9 @@ export default function AutoscalePage() {
       align: 'center',
       cell: (row) =>
         isDisabled(row) ? (
-          <span className="text-[12px] text-danger">禁用</span>
+          <span className="text-[14px] text-danger">禁用</span>
         ) : (
-          <span className="text-[12px] text-ok">启用</span>
+          <span className="text-[14px] text-ok">启用</span>
         ),
     },
     {
@@ -236,13 +236,13 @@ export default function AutoscalePage() {
       cell: (row) => {
         const lines = thresholdLines(row)
         return lines.length ? (
-          <div className="leading-[1.6] text-[12px] text-ink-3">
+          <div className="leading-[1.6] text-[14px] text-ink-3">
             {lines.map((line) => (
               <div key={line}>{line}</div>
             ))}
           </div>
         ) : (
-          <span className="text-[12px] text-mute">—</span>
+          <span className="text-[14px] text-mute">—</span>
         )
       },
     },
@@ -251,7 +251,7 @@ export default function AutoscalePage() {
       header: '最小实例',
       align: 'center',
       cell: (row) => (
-        <span className="num text-[12px] text-ink">{Math.round(row.spec?.minReplicas ?? 0)}</span>
+        <span className="num text-[14px] text-ink">{Math.round(row.spec?.minReplicas ?? 0)}</span>
       ),
     },
     {
@@ -259,7 +259,7 @@ export default function AutoscalePage() {
       header: '最大实例',
       align: 'center',
       cell: (row) => (
-        <span className="num text-[12px] text-ink">{Math.round(row.spec?.maxReplicas ?? 0)}</span>
+        <span className="num text-[14px] text-ink">{Math.round(row.spec?.maxReplicas ?? 0)}</span>
       ),
     },
     {
@@ -269,7 +269,7 @@ export default function AutoscalePage() {
       align: 'center',
       headerAlign: 'center',
       cell: (row) => (
-        <div className="flex items-center justify-center gap-2.5 text-[12px]">
+        <div className="flex items-center justify-center gap-2.5 text-[14px]">
           <button
             className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
             onClick={() => setEventsTarget(row)}
@@ -327,7 +327,7 @@ export default function AutoscalePage() {
         />
       </Panel>
 
-      <div className="mono mt-3 flex items-center gap-2 text-[8px] tracking-wider text-mute">
+      <div className="mono mt-3 flex items-center gap-2 text-[12px] tracking-wider text-mute">
         <Activity size={10} /> 依赖 metrics-server 提供容器 CPU 指标；指标缺失时水平伸缩不会触发。
       </div>
 
@@ -396,7 +396,7 @@ export default function AutoscalePage() {
               />
             </Field>
           </div>
-          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[8px] leading-relaxed tracking-wider text-mute">
+          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] leading-relaxed tracking-wider text-mute">
             HPA 需要 metrics-server 支持；创建后在「工作负载」中可观察副本变化。
           </div>
         </div>
@@ -416,7 +416,7 @@ export default function AutoscalePage() {
         <div className="max-h-[520px] space-y-2 overflow-y-auto">
           {(eventsQuery.data?.items ?? []).map((event, index) => (
             <div key={index} className="border border-line px-3 py-2">
-              <div className="flex items-center gap-3 text-[12px]">
+              <div className="flex items-center gap-3 text-[14px]">
                 <span
                   className={cn(
                     'w-[120px] flex-none',
@@ -427,14 +427,14 @@ export default function AutoscalePage() {
                 </span>
                 <span className="flex-none text-ink-3">消息</span>
                 <span className="min-w-0 flex-1 text-ink">{event.message || '—'}</span>
-                <span className="mono flex-none text-[11px] text-mute">
+                <span className="mono flex-none text-[12px] text-mute">
                   {event.lastTimestamp ? formatDate(event.lastTimestamp, true) : ''}
                 </span>
               </div>
             </div>
           ))}
           {!eventsQuery.isLoading && (eventsQuery.data?.items ?? []).length === 0 && (
-            <div className="py-8 text-center text-[12px] text-mute">暂无事件</div>
+            <div className="py-8 text-center text-[14px] text-mute">暂无事件</div>
           )}
         </div>
       </Modal>

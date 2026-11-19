@@ -64,7 +64,7 @@ function BootScreen() {
         </svg>
         <span className="num text-[24px] tracking-[0.08em] text-ink">MSOP</span>
       </div>
-      <div className="flex items-center gap-2 font-mono text-[9px] tracking-[0.2em] text-mute">
+      <div className="flex items-center gap-2 font-mono text-[12px] tracking-[0.2em] text-mute">
         <Spinner size={11} /> LOADING CONSOLE MODULE
       </div>
     </div>

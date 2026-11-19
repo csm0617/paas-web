@@ -116,14 +116,14 @@ export default function ContainerOverviewPage() {
           return (
             <Panel key={card.key} bodyClassName="px-4 py-3">
               <div className="mb-1 text-center">
-                <div className="text-[13px] text-ink">{card.label}</div>
-                <div className="mt-0.5 text-[10.5px] text-mute">
+                <div className="text-[14px] text-ink">{card.label}</div>
+                <div className="mt-0.5 text-[12px] text-mute">
                   全部{card.label} {total} 个
                 </div>
               </div>
               <div className="flex items-center justify-center gap-5">
                 <StatusRing running={running} stop={stop} pending={pending} />
-                <div className="space-y-2 text-[11.5px] text-ink-3">
+                <div className="space-y-2 text-[12px] text-ink-3">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-[1px] bg-ok" />
                     运行中 {running} 个
@@ -151,11 +151,11 @@ export default function ContainerOverviewPage() {
         }
         actions={
           <div className="flex items-center gap-2">
-            <span className="flex h-[30px] items-center border border-signal/60 bg-signal/10 px-3 text-[12px] text-signal">
+            <span className="flex h-[30px] items-center border border-signal/60 bg-signal/10 px-3 text-[14px] text-signal">
               资源使用量 Top5
             </span>
             <Select
-              className="h-[30px] w-[132px] text-[12px]"
+              className="h-[30px] w-[132px] text-[14px]"
               value={topType}
               options={[
                 { value: 'cpu', label: 'CPU使用量' },
@@ -196,32 +196,32 @@ export default function ContainerOverviewPage() {
                 return (
                   <tr key={item.podName}>
                     <td>
-                      <span className="font-mono text-[11.5px] text-ink">{item.podName}</span>
+                      <span className="font-mono text-[12px] text-ink">{item.podName}</span>
                     </td>
                     <td>
-                      <span className="num text-[12px] text-ink">{Math.round(cpu * 1000)}m</span>
+                      <span className="num text-[14px] text-ink">{Math.round(cpu * 1000)}m</span>
                     </td>
                     <td>
-                      <span className="mono text-[11.5px] text-ink-3">{formatBytes(Number(item.memory ?? 0))}</span>
+                      <span className="mono text-[12px] text-ink-3">{formatBytes(Number(item.memory ?? 0))}</span>
                     </td>
                     <td>
-                      <span className="mono text-[11.5px] text-ink-3">{rate(item.networkOutBound)}</span>
+                      <span className="mono text-[12px] text-ink-3">{rate(item.networkOutBound)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[11.5px] text-ink-3">{rate(item.networkInBound)}</span>
+                      <span className="mono text-[12px] text-ink-3">{rate(item.networkInBound)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[11.5px] text-ink-3">{rate(item.diskRead)}</span>
+                      <span className="mono text-[12px] text-ink-3">{rate(item.diskRead)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[11.5px] text-ink-3">{rate(item.diskWrite)}</span>
+                      <span className="mono text-[12px] text-ink-3">{rate(item.diskWrite)}</span>
                     </td>
                   </tr>
                 )
               })}
               {top.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-[11.5px] text-mute">
+                  <td colSpan={7} className="py-10 text-center text-[12px] text-mute">
                     {topQuery.isLoading ? '正在采集容器指标…' : '暂无容器指标，可能监控组件尚未就绪'}
                   </td>
                 </tr>
@@ -238,7 +238,7 @@ export default function ContainerOverviewPage() {
           >
             ‹
           </button>
-          <span className="text-[11.5px] text-ink-3">
+          <span className="text-[12px] text-ink-3">
             当前显示 1-{top.length} 共 {top.length} 条
           </span>
           <button
@@ -249,7 +249,7 @@ export default function ContainerOverviewPage() {
             ›
           </button>
           <Select
-            className="ml-2 h-[26px] w-[112px] text-[11.5px]"
+            className="ml-2 h-[26px] w-[112px] text-[12px]"
             value="5"
             options={[
               { value: '5', label: '每页显示 5 条' },
@@ -260,7 +260,7 @@ export default function ContainerOverviewPage() {
         </div>
       </Panel>
 
-      <div className="mt-4 flex items-center justify-between border border-line bg-paper-2 px-4 py-2 text-[11.5px] text-mute">
+      <div className="mt-4 flex items-center justify-between border border-line bg-paper-2 px-4 py-2 text-[12px] text-mute">
         <span>«</span>
         <span>内容仅显示资源使用前5名，如需查看更多，请进入容器页面</span>
         <span>»</span>

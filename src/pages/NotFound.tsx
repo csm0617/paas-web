@@ -6,9 +6,9 @@ export default function NotFoundPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-6">
       <div className="w-full max-w-[480px] border border-line bg-paper/80 p-8">
-        <div className="mono text-[9px] tracking-[0.24em] text-signal">ERROR / 404</div>
+        <div className="mono text-[12px] tracking-[0.24em] text-signal">ERROR / 404</div>
         <h1 className="serif-title mt-3 text-[38px] leading-none text-ink">页面不存在</h1>
-        <p className="mt-3 text-[12px] leading-relaxed text-ink-3">
+        <p className="mt-3 text-[14px] leading-relaxed text-ink-3">
           请求的控制台资源不存在或已被移除。请检查地址，或返回系统总览继续操作。
         </p>
         <div className="mt-6 flex gap-2">
@@ -20,7 +20,7 @@ export default function NotFoundPage() {
           </button>
         </div>
       </div>
-      <div className="mono mt-6 text-[8.5px] tracking-[0.18em] text-mute">MSOP CONSOLE / BUILD 0.0.3</div>
+      <div className="mono mt-6 text-[12px] tracking-[0.18em] text-mute">MSOP CONSOLE / BUILD 0.0.3</div>
     </div>
   )
 }

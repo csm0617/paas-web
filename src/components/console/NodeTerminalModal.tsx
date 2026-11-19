@@ -218,10 +218,10 @@ export function NodeTerminalModal({
             <Server size={15} />
           </div>
           <div className="min-w-0">
-            <div className="font-mono text-[7.5px] tracking-[0.24em] text-[#68716f]">NODE SSH CONSOLE / SOCKJS</div>
+            <div className="font-mono text-[12px] tracking-[0.24em] text-[#68716f]">NODE SSH CONSOLE / SOCKJS</div>
             <div className="flex items-baseline gap-2">
-              <span className="truncate text-[13.5px] font-medium text-[#ece7db]">{nodeName}</span>
-              <span className="mono truncate text-[9px] text-[#7f8987]">{host} / {username}</span>
+              <span className="truncate text-[14px] font-medium text-[#ece7db]">{nodeName}</span>
+              <span className="mono truncate text-[12px] text-[#7f8987]">{host} / {username}</span>
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -232,7 +232,7 @@ export function NodeTerminalModal({
                   conn === 'open' ? 'bg-[#3fa87a]' : conn === 'connecting' ? 'bg-[#d29a1c]' : conn === 'error' ? 'bg-signal' : 'bg-[#6b7275]',
                 )}
               />
-              <span className="font-mono text-[8.5px] tracking-[0.14em] text-[#aab1b0]">{stateLabel[conn]}</span>
+              <span className="font-mono text-[12px] tracking-[0.14em] text-[#aab1b0]">{stateLabel[conn]}</span>
             </div>
             <Tip content="重新获取 ticket 并连接">
               <button
@@ -258,7 +258,7 @@ export function NodeTerminalModal({
             <div className="w-full max-w-[380px]">
               <div className="mb-4 flex items-center gap-2 text-[#d9d5c9]">
                 <KeyRound size={14} className="text-signal" />
-                <span className="text-[12px]">SSH 凭据验证</span>
+                <span className="text-[14px]">SSH 凭据验证</span>
               </div>
               <div className="space-y-3">
                 <Field label="主机地址">
@@ -284,7 +284,7 @@ export function NodeTerminalModal({
                   />
                 </Field>
                 {error && (
-                  <div className="border-l-2 border-signal bg-signal/[0.08] px-3 py-2 text-[10.5px] leading-relaxed text-[#e7b1a4]">
+                  <div className="border-l-2 border-signal bg-signal/[0.08] px-3 py-2 text-[12px] leading-relaxed text-[#e7b1a4]">
                     {error}
                   </div>
                 )}
@@ -297,7 +297,7 @@ export function NodeTerminalModal({
                   <span>验证并打开终端</span>
                   <SquareTerminal size={13} />
                 </Button>
-                <p className="text-[9.5px] leading-relaxed text-[#68716f]">
+                <p className="text-[12px] leading-relaxed text-[#68716f]">
                   凭据仅用于本次 SSH 会话，ticket 由后端一次性签发，不写入浏览器存储。
                 </p>
               </div>
@@ -310,7 +310,7 @@ export function NodeTerminalModal({
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#0d1012]/70">
                 <div className="flex items-center gap-2 border border-[#343c41] bg-[#14181b] px-3 py-2">
                   <Loader2 size={12} className="animate-spin text-[#d29a1c]" />
-                  <span className="font-mono text-[9px] tracking-[0.16em] text-[#aab1b0]">REQUESTING TICKET…</span>
+                  <span className="font-mono text-[12px] tracking-[0.16em] text-[#aab1b0]">REQUESTING TICKET…</span>
                 </div>
               </div>
             )}
@@ -318,22 +318,22 @@ export function NodeTerminalModal({
               <div className="absolute inset-0 flex items-center justify-center bg-[#0d1012]/60">
                 <div className="flex items-center gap-2 border border-[#343c41] bg-[#14181b] px-3 py-2">
                   <span className="h-1.5 w-1.5 bg-signal" />
-                  <span className="font-mono text-[9px] tracking-[0.16em] text-[#aab1b0]">SSH SESSION CLOSED</span>
-                  <button onClick={() => connect(false)} className="mono ml-2 text-[9px] tracking-widest text-signal hover:underline">
+                  <span className="font-mono text-[12px] tracking-[0.16em] text-[#aab1b0]">SSH SESSION CLOSED</span>
+                  <button onClick={() => connect(false)} className="mono ml-2 text-[12px] tracking-widest text-signal hover:underline">
                     RECONNECT
                   </button>
                 </div>
               </div>
             )}
             {conn === 'error' && error && (
-              <div className="absolute bottom-2 left-2 right-2 border border-signal/40 bg-signal/[0.08] px-3 py-2 text-[10px] text-[#e7b1a4]">
+              <div className="absolute bottom-2 left-2 right-2 border border-signal/40 bg-signal/[0.08] px-3 py-2 text-[12px] text-[#e7b1a4]">
                 {error}
               </div>
             )}
           </div>
         )}
 
-        <footer className="flex h-7 flex-none items-center gap-3 border-t border-[#262d31] bg-[#14181b] px-4 font-mono text-[8px] tracking-[0.14em] text-[#5f6967]">
+        <footer className="flex h-7 flex-none items-center gap-3 border-t border-[#262d31] bg-[#14181b] px-4 font-mono text-[12px] tracking-[0.14em] text-[#5f6967]">
           <span className="flex items-center gap-1.5">
             <span className="h-1 w-1 bg-signal" />
             SOCKJS /node/exec

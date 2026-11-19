@@ -514,7 +514,7 @@ export function ServiceConsole({
   }
 
   const darkSelect =
-    'h-8 max-w-[260px] border border-[#343c41] bg-[#1a1f23] px-2 font-mono text-[10px] text-[#c8cecd] outline-none transition-colors hover:border-[#59656b] focus:border-[#d8401d]'
+    'h-8 max-w-[260px] border border-[#343c41] bg-[#1a1f23] px-2 font-mono text-[12px] text-[#c8cecd] outline-none transition-colors hover:border-[#59656b] focus:border-[#d8401d]'
 
   return (
     <div className="fixed inset-0 z-[95] flex bg-[#090b0d]/80 backdrop-blur-[3px]" role="dialog" aria-modal="true">
@@ -530,10 +530,10 @@ export function ServiceConsole({
             <SquareTerminal size={15} />
           </div>
           <div className="min-w-0">
-            <div className="font-mono text-[7.5px] tracking-[0.24em] text-[#68716f]">CONTAINER CONSOLE / SOCKJS</div>
+            <div className="font-mono text-[12px] tracking-[0.24em] text-[#68716f]">CONTAINER CONSOLE / SOCKJS</div>
             <div className="flex items-baseline gap-2">
-              <span className="truncate text-[13.5px] font-medium text-[#ece7db]">{serviceName}</span>
-              <span className="mono truncate text-[9px] text-[#7f8987]">
+              <span className="truncate text-[14px] font-medium text-[#ece7db]">{serviceName}</span>
+              <span className="mono truncate text-[12px] text-[#7f8987]">
                 {pod || 'NO POD'} / {container || 'NO CONTAINER'}
               </span>
             </div>
@@ -550,7 +550,7 @@ export function ServiceConsole({
                 key={item.value}
                 onClick={() => setMode(item.value)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 font-mono text-[9.5px] tracking-[0.12em] transition-colors',
+                  'flex items-center gap-1.5 px-3 font-mono text-[12px] tracking-[0.12em] transition-colors',
                   mode === item.value
                     ? 'bg-signal text-[#fff8ef]'
                     : 'text-[#8b9492] hover:bg-white/[0.04] hover:text-[#d5d9d8]',
@@ -565,7 +565,7 @@ export function ServiceConsole({
           <div className="ml-auto flex items-center gap-2">
             <div className="flex h-8 items-center gap-2 border border-[#343c41] px-2.5">
               <StateDot state={conn} />
-              <span className="font-mono text-[8.5px] tracking-[0.14em] text-[#aab1b0]">{stateLabel[conn]}</span>
+              <span className="font-mono text-[12px] tracking-[0.14em] text-[#aab1b0]">{stateLabel[conn]}</span>
             </div>
             <button
               onClick={reconnect}
@@ -594,7 +594,7 @@ export function ServiceConsole({
         {/* toolbar */}
         <div className="flex min-h-11 flex-wrap items-center gap-2 border-b border-[#262d31] bg-[#14181b] px-4 py-1.5">
           <div className="flex items-center gap-1.5">
-            <span className="font-mono text-[8px] tracking-[0.16em] text-[#68716f]">POD</span>
+            <span className="font-mono text-[12px] tracking-[0.16em] text-[#68716f]">POD</span>
             <Select
               className={cn(darkSelect, 'flex items-center')}
               placeholder="无运行 Pod"
@@ -604,7 +604,7 @@ export function ServiceConsole({
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="font-mono text-[8px] tracking-[0.16em] text-[#68716f]">CONTAINER</span>
+            <span className="font-mono text-[12px] tracking-[0.16em] text-[#68716f]">CONTAINER</span>
             <Select
               className={cn(darkSelect, 'flex items-center')}
               placeholder="无容器"
@@ -614,7 +614,7 @@ export function ServiceConsole({
             />
           </div>
           <div className="hidden h-5 w-px bg-[#2b3236] sm:block" />
-          <span className="hidden font-mono text-[8px] tracking-[0.14em] text-[#68716f] sm:inline">NS / {namespace}</span>
+          <span className="hidden font-mono text-[12px] tracking-[0.14em] text-[#68716f] sm:inline">NS / {namespace}</span>
 
           {mode === 'logs' && (
             <>
@@ -624,10 +624,10 @@ export function ServiceConsole({
                   value={keyword}
                   onChange={(event) => setKeyword(event.target.value)}
                   placeholder="检索日志"
-                  className="h-8 w-[180px] border border-[#343c41] bg-[#1a1f23] pl-7 pr-14 font-mono text-[10px] text-[#d5d9d8] outline-none transition-colors placeholder:text-[#5e6765] focus:border-[#d8401d]"
+                  className="h-8 w-[180px] border border-[#343c41] bg-[#1a1f23] pl-7 pr-14 font-mono text-[12px] text-[#d5d9d8] outline-none transition-colors placeholder:text-[#5e6765] focus:border-[#d8401d]"
                 />
                 {keyword && (
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[8px] text-[#7f8987]">
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[12px] text-[#7f8987]">
                     {matchCount} 行
                   </span>
                 )}
@@ -691,7 +691,7 @@ export function ServiceConsole({
           {mode === 'terminal' && (
             <>
               <div className="ml-auto flex items-center gap-2">
-                <span className="font-mono text-[8.5px] tracking-[0.14em] text-[#6b7472]">
+                <span className="font-mono text-[12px] tracking-[0.14em] text-[#6b7472]">
                   TTY / {pod || '—'} · {namespace} · AUTO SHELL
                 </span>
                 {error && <Badge tone="bad">{error}</Badge>}
@@ -707,7 +707,7 @@ export function ServiceConsole({
               <div
                 ref={logRef}
                 className={cn(
-                  'min-h-0 flex-1 overflow-auto px-4 py-3 font-mono text-[11px] leading-[1.85] text-[#c9cfce]',
+                  'min-h-0 flex-1 overflow-auto px-4 py-3 font-mono text-[12px] leading-[1.85] text-[#c9cfce]',
                   !wrap && 'overflow-x-auto whitespace-pre',
                 )}
               >
@@ -723,7 +723,7 @@ export function ServiceConsole({
                         matched && 'border-signal/70 bg-signal/[0.06]',
                       )}
                     >
-                      <span className="mr-4 inline-block w-10 select-none text-right text-[9px] text-[#4d5655]">
+                      <span className="mr-4 inline-block w-10 select-none text-right text-[12px] text-[#4d5655]">
                         {String(index + 1).padStart(3, '0')}
                       </span>
                       {highlightLine(line, keyword.trim())}
@@ -733,14 +733,14 @@ export function ServiceConsole({
                 {displayLines.length === 0 && (
                   <div className="flex h-full flex-col items-center justify-center gap-2 text-[#68716f]">
                     <ScrollText size={22} strokeWidth={1.2} />
-                    <span className="font-mono text-[10px] tracking-[0.16em]">
+                    <span className="font-mono text-[12px] tracking-[0.16em]">
                       {podsQuery.isLoading || historyQuery.isLoading ? 'LOADING LOG STREAM…' : 'NO LOG OUTPUT'}
                     </span>
-                    <span className="text-[10.5px]">等待容器日志输出，或检查 Pod 是否正在运行。</span>
+                    <span className="text-[12px]">等待容器日志输出，或检查 Pod 是否正在运行。</span>
                   </div>
                 )}
                 {paused && (
-                  <div className="sticky bottom-2 ml-auto w-fit border border-warn/50 bg-[#241b0b] px-2 py-1 font-mono text-[8.5px] tracking-widest text-[#e0b04a]">
+                  <div className="sticky bottom-2 ml-auto w-fit border border-warn/50 bg-[#241b0b] px-2 py-1 font-mono text-[12px] tracking-widest text-[#e0b04a]">
                     STREAM PAUSED · {formatNumber(pendingRef.current.length, 0)} BYTES BUFFERED
                   </div>
                 )}
@@ -748,8 +748,8 @@ export function ServiceConsole({
               {error && (
                 <div className="flex flex-none items-center gap-2 border-t border-signal/30 bg-signal/[0.08] px-4 py-1.5">
                   <PlugZap size={11} className="text-signal" />
-                  <span className="text-[10px] text-[#e7b1a4]">{error}</span>
-                  <button onClick={reconnect} className="mono ml-auto text-[9px] tracking-widest text-signal hover:underline">
+                  <span className="text-[12px] text-[#e7b1a4]">{error}</span>
+                  <button onClick={reconnect} className="mono ml-auto text-[12px] tracking-widest text-signal hover:underline">
                     重连
                   </button>
                 </div>
@@ -762,11 +762,11 @@ export function ServiceConsole({
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#0d1012]/60">
                   <div className="flex items-center gap-2 border border-[#343c41] bg-[#14181b] px-3 py-2">
                     <StateDot state={conn} />
-                    <span className="font-mono text-[9px] tracking-[0.16em] text-[#aab1b0]">
+                    <span className="font-mono text-[12px] tracking-[0.16em] text-[#aab1b0]">
                       {conn === 'connecting' ? 'ESTABLISHING SHELL…' : conn === 'error' ? 'SHELL CONNECTION FAILED' : 'SHELL DISCONNECTED'}
                     </span>
                     {(conn === 'error' || conn === 'closed') && (
-                      <button onClick={reconnect} className="mono ml-2 text-[9px] tracking-widest text-signal hover:underline">
+                      <button onClick={reconnect} className="mono ml-2 text-[12px] tracking-widest text-signal hover:underline">
                         RECONNECT
                       </button>
                     )}
@@ -778,7 +778,7 @@ export function ServiceConsole({
         </div>
 
         {/* footer */}
-        <footer className="flex h-7 flex-none items-center gap-3 border-t border-[#262d31] bg-[#14181b] px-4 font-mono text-[8px] tracking-[0.14em] text-[#5f6967]">
+        <footer className="flex h-7 flex-none items-center gap-3 border-t border-[#262d31] bg-[#14181b] px-4 font-mono text-[12px] tracking-[0.14em] text-[#5f6967]">
           <span className="flex items-center gap-1.5">
             <span className="h-1 w-1 bg-signal" />
             {mode === 'logs' ? 'SOCKJS /api/gaop/logs' : 'SOCKJS /api/gaop/exec'}

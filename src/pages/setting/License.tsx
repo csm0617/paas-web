@@ -296,9 +296,9 @@ export default function LicensePage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={valid ? 'ok' : 'bad'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{valid ? 'LICENCE ACTIVE' : 'LICENCE INVALID'}</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{valid ? 'LICENCE ACTIVE' : 'LICENCE INVALID'}</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">{version?.tag || '—'}</span>
+            <span className="mono text-[12px] tracking-widest text-mute">{version?.tag || '—'}</span>
           </>
         }
         actions={
@@ -340,7 +340,7 @@ export default function LicensePage() {
         <section className="panel relative xl:col-span-7">
           <div className="flex items-start justify-between border-b border-line px-5 py-4">
             <div>
-              <div className="mono text-[8.5px] tracking-[0.24em] text-mute">LICENCE STATUS</div>
+              <div className="mono text-[12px] tracking-[0.24em] text-mute">LICENCE STATUS</div>
               <div className="mt-2 text-[24px] font-semibold text-ink">
                 {valid ? '授权有效' : licence?.expired ? '授权已过期' : '未激活'}
               </div>
@@ -353,41 +353,41 @@ export default function LicensePage() {
           </div>
           <div className="grid grid-cols-2 divide-x divide-line border-b border-line">
             <div className="px-5 py-4">
-              <div className="mono text-[8px] tracking-[0.18em] text-mute">EXPIRES AT</div>
+              <div className="mono text-[12px] tracking-[0.18em] text-mute">EXPIRES AT</div>
               <div className="num mt-2 text-[24px] text-ink">
                 {licence?.endIso8601?.slice(0, 10) || '—'}
               </div>
-              <div className="mono mt-1 text-[9px] tracking-wider text-mute">
+              <div className="mono mt-1 text-[12px] tracking-wider text-mute">
                 {daysLeft !== null ? `${daysLeft} DAYS REMAINING` : 'UNLIMITED / UNKNOWN'}
               </div>
             </div>
             <div className="px-5 py-4">
-              <div className="mono text-[8px] tracking-[0.18em] text-mute">MACHINE BINDING</div>
+              <div className="mono text-[12px] tracking-[0.18em] text-mute">MACHINE BINDING</div>
               <div className="num mt-2 text-[24px] text-ink">{machine?.existGis ? 'GIS + CORE' : 'CORE'}</div>
-              <div className="mono mt-1 text-[9px] tracking-wider text-mute">HARDWARE LOCKED</div>
+              <div className="mono mt-1 text-[12px] tracking-wider text-mute">HARDWARE LOCKED</div>
             </div>
           </div>
           <div className="px-5 py-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="mono text-[8px] tracking-[0.18em] text-mute">LICENCE COVERAGE</span>
-              <span className="mono text-[9px] text-ink-3">{valid ? '100%' : '0%'}</span>
+              <span className="mono text-[12px] tracking-[0.18em] text-mute">LICENCE COVERAGE</span>
+              <span className="mono text-[12px] text-ink-3">{valid ? '100%' : '0%'}</span>
             </div>
             <div className="h-[4px] w-full bg-white/10">
               <div className="h-full bg-signal transition-[width] duration-700" style={{ width: valid ? '100%' : '4%' }} />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
-                <div className="mono text-[8px] tracking-[0.16em] text-mute">AUTHORIZATION CODE</div>
-                <div className="mono mt-1 truncate text-[10px] text-ink-3">{licence?.code || '—'}</div>
+                <div className="mono text-[12px] tracking-[0.16em] text-mute">AUTHORIZATION CODE</div>
+                <div className="mono mt-1 truncate text-[12px] text-ink-3">{licence?.code || '—'}</div>
               </div>
               <div>
-                <div className="mono text-[8px] tracking-[0.16em] text-mute">TRIAL PERIOD</div>
-                <div className="mono mt-1 text-[10px] text-ink-3">{licence?.trialPeriod ? formatDate(licence.trialPeriod, false) : '—'}</div>
+                <div className="mono text-[12px] tracking-[0.16em] text-mute">TRIAL PERIOD</div>
+                <div className="mono mt-1 text-[12px] text-ink-3">{licence?.trialPeriod ? formatDate(licence.trialPeriod, false) : '—'}</div>
               </div>
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-line px-5 py-3">
-            <span className="mono text-[8px] tracking-[0.16em] text-mute">MSOP LICENCE SERVICE</span>
+            <span className="mono text-[12px] tracking-[0.16em] text-mute">MSOP LICENCE SERVICE</span>
             <Button size="sm" variant="danger" onClick={clearLicence} loading={clearMutation.isPending}>
               <Trash2 size={10} /> 清除授权
             </Button>
@@ -413,14 +413,14 @@ export default function LicensePage() {
           </Panel>
 
           <Panel kicker="MACHINE CODE" title="机器码">
-            <p className="mb-3 text-[10.5px] leading-relaxed text-ink-3">
+            <p className="mb-3 text-[12px] leading-relaxed text-ink-3">
               将机器码提交至授权方以获取激活文件。机器码变化通常意味着硬件或容器环境发生变化。
             </p>
             <div className="border border-line bg-paper-2/40 p-3">
-              <div className="mono break-all text-[9.5px] leading-relaxed text-ink-3">{machine?.code || '读取中…'}</div>
+              <div className="mono break-all text-[12px] leading-relaxed text-ink-3">{machine?.code || '读取中…'}</div>
             </div>
             <div className="mt-3 flex items-center justify-between">
-              <span className="mono text-[8.5px] tracking-widest text-mute">HARDWARE FINGERPRINT</span>
+              <span className="mono text-[12px] tracking-widest text-mute">HARDWARE FINGERPRINT</span>
               {machine?.code && <CopyText value={machine.code} label="复制机器码" />}
             </div>
           </Panel>
@@ -436,10 +436,10 @@ export default function LicensePage() {
               <div key={name} className={index > 0 ? 'px-5 py-4 sm:border-l sm:border-line' : 'px-5 py-4'}>
                 <div className="flex items-center gap-2">
                   <Cpu size={13} className="text-mute" />
-                  <span className="mono text-[9px] tracking-[0.18em] text-mute">{name}</span>
+                  <span className="mono text-[12px] tracking-[0.18em] text-mute">{name}</span>
                 </div>
                 <div className="num mt-2 text-[28px] leading-none text-ink">{value || '—'}</div>
-                <div className="mono mt-2 text-[8px] tracking-[0.14em] text-mute">{hint}</div>
+                <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
                 <div className="mt-3">
                   <Meter value={100} tone="ok" />
                 </div>
@@ -475,7 +475,7 @@ export default function LicensePage() {
       >
         <Field label="激活码" required hint="激活码仅可绑定当前机器码，请勿在多台环境间混用。">
           <textarea
-            className="field font-mono text-[11px]"
+            className="field font-mono text-[12px]"
             rows={6}
             value={activeCode}
             onChange={(event) => setActiveCode(event.target.value)}
@@ -484,7 +484,7 @@ export default function LicensePage() {
         </Field>
         <div className="mt-3 border border-line bg-paper-2/40 px-3 py-2">
           <div className="label mb-1">当前机器码</div>
-          <div className="mono break-all text-[9px] leading-relaxed text-ink-3">{machine?.code || '—'}</div>
+          <div className="mono break-all text-[12px] leading-relaxed text-ink-3">{machine?.code || '—'}</div>
         </div>
       </Drawer>
 
@@ -514,7 +514,7 @@ export default function LicensePage() {
       >
         <Field label="框架公钥" required hint="粘贴完整的公钥内容，保存后将立即生效。">
           <textarea
-            className="field min-h-[180px] font-mono text-[10.5px] leading-relaxed"
+            className="field min-h-[180px] font-mono text-[12px] leading-relaxed"
             value={frameworkKey}
             onChange={(event) => setFrameworkKey(event.target.value)}
             placeholder="-----BEGIN PUBLIC KEY-----"
@@ -539,7 +539,7 @@ export default function LicensePage() {
           <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-paper-2/40 px-3 py-2">
             <div>
               <div className="label">当前语言</div>
-              <div className="mono mt-0.5 text-[11px] text-ink">
+              <div className="mono mt-0.5 text-[12px] text-ink">
                 {langQuery.data?.language || 'zh_CN'} / {langQuery.data?.version || 'default'}
               </div>
             </div>
@@ -579,10 +579,10 @@ export default function LicensePage() {
                 key={`${item.lang}-${item.langVersion}`}
                 className="grid grid-cols-[1fr_1fr_0.7fr_1.2fr_160px] items-center gap-2 border-b border-line/60 px-3 py-2 last:border-b-0"
               >
-                <span className="mono text-[10.5px] text-ink">{item.lang}</span>
-                <span className="mono text-[10.5px] text-ink-3">{item.langVersion}</span>
+                <span className="mono text-[12px] text-ink">{item.lang}</span>
+                <span className="mono text-[12px] text-ink-3">{item.langVersion}</span>
                 <Badge tone={item.used ? 'ok' : 'default'}>{item.used ? '使用中' : '未启用'}</Badge>
-                <span className="mono text-[9px] text-ink-3">{formatDate(item.createTime)}</span>
+                <span className="mono text-[12px] text-ink-3">{formatDate(item.createTime)}</span>
                 <div className="flex justify-end gap-1">
                   <Button
                     size="sm"
@@ -619,7 +619,7 @@ export default function LicensePage() {
               </div>
             ))}
             {(langVersionsQuery.data?.versionList ?? []).length === 0 && (
-              <div className="px-3 py-8 text-center text-[11px] text-mute">
+              <div className="px-3 py-8 text-center text-[12px] text-mute">
                 {langVersionsQuery.isLoading ? '正在读取语言包…' : '暂无语言包版本'}
               </div>
             )}
@@ -628,7 +628,7 @@ export default function LicensePage() {
           {langDetail && (
             <div className="border border-line">
               <div className="flex items-center justify-between border-b border-line bg-paper-2/40 px-3 py-2">
-                <span className="mono text-[9px] tracking-widest text-ink-3">
+                <span className="mono text-[12px] tracking-widest text-ink-3">
                   {langDetail.lang} / {langDetail.langVersion} · {langDetailQuery.data?.languageList?.length ?? 0} KEYS
                 </span>
                 <Button size="sm" variant="ghost" onClick={() => setLangDetail(null)}>
@@ -638,12 +638,12 @@ export default function LicensePage() {
               <div className="max-h-[220px] overflow-y-auto">
                 {(langDetailQuery.data?.languageList ?? []).slice(0, 100).map((entry, index) => (
                   <div key={`${entry.textKey}-${index}`} className="grid grid-cols-[180px_1fr] gap-2 border-b border-line/50 px-3 py-1.5 last:border-b-0">
-                    <span className="mono truncate text-[9px] text-mute">{entry.textKey}</span>
-                    <span className="truncate text-[10px] text-ink-3">{entry.content}</span>
+                    <span className="mono truncate text-[12px] text-mute">{entry.textKey}</span>
+                    <span className="truncate text-[12px] text-ink-3">{entry.content}</span>
                   </div>
                 ))}
                 {langDetailQuery.isLoading && (
-                  <div className="px-3 py-6 text-center text-[11px] text-mute">正在读取语言标识…</div>
+                  <div className="px-3 py-6 text-center text-[12px] text-mute">正在读取语言标识…</div>
                 )}
               </div>
             </div>
@@ -679,7 +679,7 @@ export default function LicensePage() {
                 <Upload size={11} /> {jarFile ? jarFile.name : '选择 Jar 文件'}
               </Button>
               <input
-                className="field h-8 font-mono text-[10.5px]"
+                className="field h-8 font-mono text-[12px]"
                 placeholder="className（可选）"
                 value={jarClass}
                 onChange={(event) => setJarClass(event.target.value)}
@@ -709,14 +709,14 @@ export default function LicensePage() {
                 key={item.id || item.jarName}
                 className="grid grid-cols-[1.3fr_1.3fr_0.6fr_1fr] items-center gap-2 border-b border-line/60 px-3 py-2 last:border-b-0"
               >
-                <span className="mono truncate text-[10px] text-ink">{item.jarName || item.storeJarName || '—'}</span>
-                <span className="mono truncate text-[9.5px] text-mute">{item.className || '—'}</span>
+                <span className="mono truncate text-[12px] text-ink">{item.jarName || item.storeJarName || '—'}</span>
+                <span className="mono truncate text-[12px] text-mute">{item.className || '—'}</span>
                 <Badge tone={item.used ? 'ok' : 'default'}>{item.used ? '启用' : '未启用'}</Badge>
-                <span className="mono text-[9px] text-ink-3">{formatDate(item.updateAt ?? item.createAt)}</span>
+                <span className="mono text-[12px] text-ink-3">{formatDate(item.updateAt ?? item.createAt)}</span>
               </div>
             ))}
             {(jarQuery.data?.list ?? []).length === 0 && (
-              <div className="px-3 py-8 text-center text-[11px] text-mute">
+              <div className="px-3 py-8 text-center text-[12px] text-mute">
                 {jarQuery.isLoading ? '正在读取授权扩展…' : '暂无授权扩展 Jar'}
               </div>
             )}
@@ -725,7 +725,7 @@ export default function LicensePage() {
           <div className="border border-line px-3 py-3">
             <div className="label mb-2">默认解密公钥</div>
             <textarea
-              className="field min-h-[110px] font-mono text-[10px] leading-relaxed"
+              className="field min-h-[110px] font-mono text-[12px] leading-relaxed"
               placeholder="粘贴默认解密公钥"
               value={jarKey}
               onChange={(event) => setJarKey(event.target.value)}

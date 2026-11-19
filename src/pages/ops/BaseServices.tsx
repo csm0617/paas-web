@@ -207,21 +207,21 @@ export default function BaseServicesPage() {
       header: '序号',
       width: 80,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
     },
     {
       key: 'label',
       header: '服务名称',
       width: 120,
       align: 'center',
-      cell: (row) => <span className="text-[12px] text-ink">{serviceLabel(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{serviceLabel(row)}</span>,
     },
     {
       key: 'key',
       header: '服务标识',
       width: 120,
       align: 'center',
-      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{k8sName(row)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{k8sName(row)}</span>,
     },
     {
       key: 'status',
@@ -233,12 +233,12 @@ export default function BaseServicesPage() {
         const allRunning = status.desired > 0 && status.ready === status.desired
         return (
           <div className="leading-[1.5]">
-            <div className={cn('text-[12px]', status.tone)}>{status.label}</div>
-            <div className="text-[11.5px] text-ink-3">
+            <div className={cn('text-[14px]', status.tone)}>{status.label}</div>
+            <div className="text-[12px] text-ink-3">
               {status.ready}/{status.desired}
               {status.desired === 0 ? '全部停止' : allRunning ? '全部运行' : '部分运行'}
             </div>
-            <div className="text-[11.5px] text-ink-3">已重启 {row.restartCount ?? 0} 次</div>
+            <div className="text-[12px] text-ink-3">已重启 {row.restartCount ?? 0} 次</div>
           </div>
         )
       },
@@ -248,7 +248,7 @@ export default function BaseServicesPage() {
       header: '镜像',
       width: 350,
       align: 'center',
-      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{imageShort(row)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{imageShort(row)}</span>,
     },
     {
       key: 'created',
@@ -256,7 +256,7 @@ export default function BaseServicesPage() {
       width: 180,
       align: 'center',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
           {row.deployment?.metadata?.creationTimestamp
             ? formatDate(row.deployment.metadata.creationTimestamp, true)
             : '--'}
@@ -271,7 +271,7 @@ export default function BaseServicesPage() {
       cell: (row) => {
         const stamp = row.deployment?.spec?.template?.metadata?.annotations?.['gaop/updateTimestamp']
         return (
-          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
             {stamp ? formatDate(Number(stamp), true) : '--'}
           </span>
         )
@@ -288,7 +288,7 @@ export default function BaseServicesPage() {
         const status = statusOf(row)
         const running = status.label === '运行中' || status.label === '滚动发布中' || status.label === '启动中'
         return (
-          <div className="flex items-center justify-center gap-2.5 text-[12px]">
+          <div className="flex items-center justify-center gap-2.5 text-[14px]">
             <button
               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
               onClick={() =>
@@ -437,7 +437,7 @@ export default function BaseServicesPage() {
               key={range}
               onClick={() => setMonitorRange(range)}
               className={cn(
-                'px-3 py-1.5 text-[12px] transition-colors',
+                'px-3 py-1.5 text-[14px] transition-colors',
                 monitorRange === range ? 'bg-[#1670c2] text-white' : 'text-ink-3 hover:text-white',
               )}
             >
@@ -446,19 +446,19 @@ export default function BaseServicesPage() {
           ))}
         </div>
         {monitorQuery.isLoading ? (
-          <div className="py-10 text-center text-[12px] text-mute">正在采集服务指标…</div>
+          <div className="py-10 text-center text-[14px] text-mute">正在采集服务指标…</div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <div>
-              <div className="mb-2 text-[12px] text-ink-3">CPU 使用量（m）</div>
+              <div className="mb-2 text-[14px] text-ink-3">CPU 使用量（m）</div>
               <AreaTrend series={monitorTrend(monitorQuery.data?.cpu, 1000)} height={170} unit=" m" />
             </div>
             <div>
-              <div className="mb-2 text-[12px] text-ink-3">内存使用量（MB）</div>
+              <div className="mb-2 text-[14px] text-ink-3">内存使用量（MB）</div>
               <AreaTrend series={monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024)} height={170} unit=" MB" />
             </div>
             <div>
-              <div className="mb-2 text-[12px] text-ink-3">网络吞吐（KB/s）</div>
+              <div className="mb-2 text-[14px] text-ink-3">网络吞吐（KB/s）</div>
               <AreaTrend
                 series={[
                   ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
@@ -475,7 +475,7 @@ export default function BaseServicesPage() {
               />
             </div>
             <div>
-              <div className="mb-2 text-[12px] text-ink-3">磁盘 IO（KB/s）</div>
+              <div className="mb-2 text-[14px] text-ink-3">磁盘 IO（KB/s）</div>
               <AreaTrend
                 series={[
                   ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
@@ -493,7 +493,7 @@ export default function BaseServicesPage() {
             </div>
           </div>
         )}
-        <div className="mono mt-3 flex items-center gap-2 text-[11px] text-mute">
+        <div className="mono mt-3 flex items-center gap-2 text-[12px] text-mute">
           <Activity size={11} /> 指标来自 Prometheus，采样间隔约 1 分钟。
         </div>
       </Drawer>

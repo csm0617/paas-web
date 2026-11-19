@@ -148,10 +148,10 @@ function ConfigRow({
 }) {
   return (
     <div className="flex items-start gap-2">
-      <span className="w-[68px] flex-none pt-[7px] text-right text-[12px] text-ink-3">{label}：</span>
+      <span className="w-[68px] flex-none pt-[7px] text-right text-[14px] text-ink-3">{label}：</span>
       <div className="min-w-0 flex-1">{children}</div>
       {editing ? (
-        <div className="flex flex-none items-start gap-2 pt-[7px] text-[12px]">
+        <div className="flex flex-none items-start gap-2 pt-[7px] text-[14px]">
           <button onClick={onSave} className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
             保存
           </button>
@@ -162,7 +162,7 @@ function ConfigRow({
       ) : onEdit ? (
         <button
           onClick={onEdit}
-          className="w-8 flex-none pt-[7px] text-left text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+          className="w-8 flex-none pt-[7px] text-left text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
         >
           修改
         </button>
@@ -186,7 +186,7 @@ function MappingPopover({
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="whitespace-nowrap text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
+        <button className="whitespace-nowrap text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
           {text}
         </button>
       </DropdownMenu.Trigger>
@@ -198,7 +198,7 @@ function MappingPopover({
           className="z-[75] w-[300px] rounded border border-line bg-paper-2 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
         >
           {mapping ? (
-            <div className="flex items-center gap-1.5 text-[11.5px]">
+            <div className="flex items-center gap-1.5 text-[12px]">
               <span className="flex-none text-ink-3">{mapping.port}</span>
               <span className="flex-none text-ink-3">-&gt;</span>
               <a
@@ -213,7 +213,7 @@ function MappingPopover({
               <DropdownMenu.Item
                 onSelect={onToggle}
                 className={cn(
-                  'flex-none cursor-pointer whitespace-nowrap text-[11.5px] outline-none transition-opacity data-[highlighted]:opacity-80',
+                  'flex-none cursor-pointer whitespace-nowrap text-[12px] outline-none transition-opacity data-[highlighted]:opacity-80',
                   mapping.web ? 'text-[#ff5c5c]' : 'text-[#4aa3f0]',
                 )}
               >
@@ -221,7 +221,7 @@ function MappingPopover({
               </DropdownMenu.Item>
             </div>
           ) : (
-            <div className="text-[11.5px] text-mute">暂无映射，请先在网络管理中配置端口</div>
+            <div className="text-[12px] text-mute">暂无映射，请先在网络管理中配置端口</div>
           )}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
@@ -249,7 +249,7 @@ function FormRow({
 }) {
   return (
     <div className="flex items-start gap-2">
-      <span className="w-[90px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
+      <span className="w-[90px] flex-none pt-[7px] text-right text-[14px] text-ink-3">
         {required && <span className="text-danger">* </span>}
         {label}：
       </span>
@@ -277,7 +277,7 @@ function TagSelect({
           role="button"
           tabIndex={0}
           className={cn(
-            'field flex min-h-8 w-full cursor-pointer flex-wrap items-center gap-1 px-1.5 py-1 text-[12px]',
+            'field flex min-h-8 w-full cursor-pointer flex-wrap items-center gap-1 px-1.5 py-1 text-[14px]',
             open && 'border-signal',
           )}
         >
@@ -287,7 +287,7 @@ function TagSelect({
             return (
               <span
                 key={item}
-                className="inline-flex items-center gap-1 rounded-sm border border-[#2f6392] bg-[#123a5b] px-1.5 py-[1px] text-[11px] text-[#cfe6ff]"
+                className="inline-flex items-center gap-1 rounded-sm border border-[#2f6392] bg-[#123a5b] px-1.5 py-[1px] text-[12px] text-[#cfe6ff]"
               >
                 {label}
                 <span
@@ -314,7 +314,7 @@ function TagSelect({
           sideOffset={4}
           className="z-[80] max-h-[220px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-auto border border-line bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
         >
-          {options.length === 0 && <div className="px-3 py-2 text-[12px] text-mute">暂无数据</div>}
+          {options.length === 0 && <div className="px-3 py-2 text-[14px] text-mute">暂无数据</div>}
           {options.map((option) => {
             const checked = value.includes(option.value)
             return (
@@ -329,7 +329,7 @@ function TagSelect({
                       : [...value, option.value],
                   )
                 }
-                className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink data-[state=checked]:text-ink"
+                className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[14px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink data-[state=checked]:text-ink"
               >
                 <span className="truncate">{option.label}</span>
                 <DropdownMenu.ItemIndicator>
@@ -1094,13 +1094,13 @@ export default function SoftwareListPage() {
                           </button>
                         </td>
                         <td className="text-center">
-                          <span className="mono text-[11.5px] text-ink-3">{(current - 1) * pageSize + index + 1}</span>
+                          <span className="mono text-[12px] text-ink-3">{(current - 1) * pageSize + index + 1}</span>
                         </td>
                         <td>
-                          <span className="text-[12px] text-ink">{item.name}</span>
+                          <span className="text-[14px] text-ink">{item.name}</span>
                         </td>
                         <td>
-                          <span className="mono text-[11.5px] text-ink-3">{item.key}</span>
+                          <span className="mono text-[12px] text-ink-3">{item.key}</span>
                         </td>
                         <td>
                           <div className="flex flex-wrap items-center gap-1">
@@ -1111,7 +1111,7 @@ export default function SoftwareListPage() {
                             ))}
                             {(item.roleList ?? []).length > 2 && (
                               <span
-                                className="text-[11px] text-[#4aa3f0]"
+                                className="text-[12px] text-[#4aa3f0]"
                                 title={(item.roleList ?? []).map((role) => role.name || role.key).join('、')}
                               >
                                 ...
@@ -1122,34 +1122,34 @@ export default function SoftwareListPage() {
                                 event.stopPropagation()
                                 openSeats(item)
                               }}
-                              className="inline-flex items-center gap-0.5 border border-[#2f6fa8] bg-[#12314c] px-1.5 py-0.5 text-[11px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+                              className="inline-flex items-center gap-0.5 border border-[#2f6fa8] bg-[#12314c] px-1.5 py-0.5 text-[12px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
                             >
                               <Plus size={9} /> 添加席位
                             </button>
                           </div>
                         </td>
                         <td>
-                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+                          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
                             {updatedAt ? formatDate(updatedAt, true) : ''}
                           </span>
                         </td>
                         <td>
-                          <span className="block max-w-[150px] truncate text-[12px] text-ink-3">{item.desc || ''}</span>
+                          <span className="block max-w-[150px] truncate text-[14px] text-ink-3">{item.desc || ''}</span>
                         </td>
                         <td className="text-center">
                           {item.orderTop ? (
-                            <span className="inline-flex items-center rounded-[2px] border border-[#6b8098] px-1.5 py-0.5 text-[11px] text-[#c9d6e3]">
+                            <span className="inline-flex items-center rounded-[2px] border border-[#6b8098] px-1.5 py-0.5 text-[12px] text-[#c9d6e3]">
                               已置顶
                             </span>
                           ) : null}
                         </td>
                         <td>
-                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+                          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
                             {formatDate(item.createdAt, true)}
                           </span>
                         </td>
                         <td onClick={(event) => event.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-2.5 text-[12px]">
+                          <div className="flex items-center justify-end gap-2.5 text-[14px]">
                             <button
                               disabled={item.framework !== 'CS' && (!item.routerKey || item.web !== 1)}
                               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff] disabled:cursor-not-allowed disabled:text-mute"
@@ -1240,7 +1240,7 @@ export default function SoftwareListPage() {
                                               <DropdownMenu.Item
                                                 key={option.key}
                                                 onSelect={() => setAuthFilter(option.key)}
-                                                className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink"
+                                                className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[14px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink"
                                               >
                                                 {option.label}
                                                 {authFilter === option.key && (
@@ -1263,47 +1263,47 @@ export default function SoftwareListPage() {
                                     return (
                                       <tr key={name}>
                                         <td>
-                                          <span className="text-[12px] text-ink">{name}</span>
+                                          <span className="text-[14px] text-ink">{name}</span>
                                         </td>
                                         <td>
-                                          <span className="mono text-[11.5px] text-ink-3">{service.nameUs || service.nameFr}</span>
+                                          <span className="mono text-[12px] text-ink-3">{service.nameUs || service.nameFr}</span>
                                         </td>
                                         <td>
                                           <div className="leading-[1.5]">
-                                            <div className={cn('flex items-center gap-1 text-[12px]', status.tone)}>
+                                            <div className={cn('flex items-center gap-1 text-[14px]', status.tone)}>
                                               {status.text}
                                               <Info size={10} />
                                             </div>
-                                            <div className="text-[11.5px] text-ink-3">
+                                            <div className="text-[12px] text-ink-3">
                                               {status.ready}/{status.desired}部分运行
                                             </div>
-                                            <div className="flex items-center gap-1 text-[11.5px] text-ink-3">
+                                            <div className="flex items-center gap-1 text-[12px] text-ink-3">
                                               已重启 {service.restartCount ?? 0} 次
                                               <Info size={10} />
                                             </div>
                                           </div>
                                         </td>
                                         <td>
-                                          <span className="block max-w-[200px] truncate font-mono text-[11px] text-ink-3">
+                                          <span className="block max-w-[200px] truncate font-mono text-[12px] text-ink-3">
                                             {serviceImageOf(service)}
                                           </span>
                                         </td>
                                         <td>
-                                          <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+                                          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
                                             {formatDate(service.deployment?.metadata?.creationTimestamp, true)}
                                           </span>
                                         </td>
                                         <td>
                                           {auth ? (
-                                            <span className={cn('text-[12px]', auth.auth === 1 ? 'text-ok' : 'text-ink-3')}>
+                                            <span className={cn('text-[14px]', auth.auth === 1 ? 'text-ok' : 'text-ink-3')}>
                                               {auth.auth === 1 ? '已授权' : '未授权'}
                                             </span>
                                           ) : (
-                                            <span className="text-[12px] text-ink-3">—</span>
+                                            <span className="text-[14px] text-ink-3">—</span>
                                           )}
                                         </td>
                                         <td>
-                                          <div className="flex items-center justify-end gap-2.5 text-[12px]">
+                                          <div className="flex items-center justify-end gap-2.5 text-[14px]">
                                             <button
                                               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
                                               onClick={() =>
@@ -1367,7 +1367,7 @@ export default function SoftwareListPage() {
                                   })}
                                   {related.length === 0 && (
                                     <tr>
-                                      <td colSpan={7} className="py-6 text-center text-[11.5px] text-mute">
+                                      <td colSpan={7} className="py-6 text-center text-[12px] text-mute">
                                         该应用暂未关联服务
                                       </td>
                                     </tr>
@@ -1402,7 +1402,7 @@ export default function SoftwareListPage() {
             >
               ‹
             </button>
-            <span className="text-[11.5px] text-ink-3">
+            <span className="text-[12px] text-ink-3">
               当前第 {current} / {totalPages} 页
             </span>
             <button
@@ -1442,10 +1442,10 @@ export default function SoftwareListPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="truncate text-[13.5px] font-semibold text-ink">{item.name}</h3>
+                    <h3 className="truncate text-[14px] font-semibold text-ink">{item.name}</h3>
                     <Badge tone={item.type === 'CS' ? 'warn' : 'info'}>{item.type || item.framework || 'BS'}</Badge>
                   </div>
-                  <div className="mono mt-1 truncate text-[9px] tracking-[0.12em] text-mute">KEY / {item.key}</div>
+                  <div className="mono mt-1 truncate text-[12px] tracking-[0.12em] text-mute">KEY / {item.key}</div>
                 </div>
                 <ActionMenu
                   items={[
@@ -1485,21 +1485,21 @@ export default function SoftwareListPage() {
               </div>
 
               <div className="flex-1 px-4 py-3">
-                <p className="line-clamp-2 min-h-[32px] text-[11.5px] leading-relaxed text-ink-3">
+                <p className="line-clamp-2 min-h-[32px] text-[12px] leading-relaxed text-ink-3">
                   {item.desc || '暂无描述。该应用由平台统一注册，可通过席位授权向用户开放。'}
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
                   <div>
                     <div className="label">路由入口</div>
-                    <div className="mono mt-0.5 truncate text-[10px] text-ink">{item.routerKey || '—'}</div>
+                    <div className="mono mt-0.5 truncate text-[12px] text-ink">{item.routerKey || '—'}</div>
                   </div>
                   <div>
                     <div className="label">软件版本</div>
-                    <div className="mono mt-0.5 text-[10px] text-ink">{item.version || '—'}</div>
+                    <div className="mono mt-0.5 text-[12px] text-ink">{item.version || '—'}</div>
                   </div>
                   <div>
                     <div className="label">创建时间</div>
-                    <div className="mono mt-0.5 text-[10px] text-ink">{formatDate(item.createdAt)}</div>
+                    <div className="mono mt-0.5 text-[12px] text-ink">{formatDate(item.createdAt)}</div>
                   </div>
                   <div>
                     <div className="label">放行状态</div>
@@ -1516,7 +1516,7 @@ export default function SoftwareListPage() {
                     {(item.roleList ?? []).length === 0 && (
                       <button
                         onClick={() => openSeats(item)}
-                        className="mono text-[8.5px] tracking-widest text-mute hover:text-signal"
+                        className="mono text-[12px] tracking-widest text-mute hover:text-signal"
                       >
                         添加席位
                       </button>
@@ -1530,7 +1530,7 @@ export default function SoftwareListPage() {
                   {(item.roleList ?? []).length > 0 && (
                     <button
                       onClick={() => openSeats(item)}
-                      className="mono ml-auto text-[8px] tracking-widest text-mute hover:text-signal"
+                      className="mono ml-auto text-[12px] tracking-widest text-mute hover:text-signal"
                     >
                       配置
                     </button>
@@ -1539,10 +1539,10 @@ export default function SoftwareListPage() {
               </div>
 
               <div className="flex items-center justify-between border-t border-line px-4 py-2">
-                <span className="mono text-[8px] tracking-[0.16em] text-mute">ID {item.id.slice(0, 8).toUpperCase()}</span>
+                <span className="mono text-[12px] tracking-[0.16em] text-mute">ID {item.id.slice(0, 8).toUpperCase()}</span>
                 <button
                   onClick={() => releaseMutation.mutate({ id: item.id, release: item.releaseStatus !== 1 })}
-                  className="mono flex items-center gap-1 text-[8.5px] tracking-widest text-ink-3 transition-colors hover:text-signal"
+                  className="mono flex items-center gap-1 text-[12px] tracking-widest text-ink-3 transition-colors hover:text-signal"
                 >
                   {item.releaseStatus === 1 ? '限制访问' : '放行访问'}
                   <AppWindow size={10} />
@@ -1580,27 +1580,27 @@ export default function SoftwareListPage() {
         <div className="space-y-3 px-2 py-1">
           <FormRow label="应用名称" required>
             <input
-              className="field h-8 w-full text-[12px]"
+              className="field h-8 w-full text-[14px]"
               value={form.name}
               onChange={(event) => setForm({ ...form, name: event.target.value })}
             />
           </FormRow>
           <FormRow label="英文名称">
             <input
-              className="field h-8 w-full text-[12px]"
+              className="field h-8 w-full text-[14px]"
               value={form.nameUs}
               onChange={(event) => setForm({ ...form, nameUs: event.target.value })}
             />
           </FormRow>
           <FormRow label="法文名称">
             <input
-              className="field h-8 w-full text-[12px]"
+              className="field h-8 w-full text-[14px]"
               value={form.nameFr}
               onChange={(event) => setForm({ ...form, nameFr: event.target.value })}
             />
           </FormRow>
           <FormRow label="应用类型" required>
-            <div className="flex h-8 items-center text-[12px] text-ink-3">
+            <div className="flex h-8 items-center text-[14px] text-ink-3">
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="radio"
@@ -1615,7 +1615,7 @@ export default function SoftwareListPage() {
           </FormRow>
           <FormRow label="应用标识" required>
             <input
-              className="field h-8 w-full text-[12px]"
+              className="field h-8 w-full text-[14px]"
               value={form.key}
               onChange={(event) => setForm({ ...form, key: event.target.value })}
             />
@@ -1630,7 +1630,7 @@ export default function SoftwareListPage() {
           </FormRow>
           <FormRow label="应用描述">
             <textarea
-              className="field text-[12px]"
+              className="field text-[14px]"
               rows={3}
               value={form.desc}
               onChange={(event) => setForm({ ...form, desc: event.target.value })}
@@ -1646,13 +1646,13 @@ export default function SoftwareListPage() {
                   <img src={iconSrc(shot)} alt="" className="h-full w-full object-cover" />
                   <button
                     onClick={() => setShots((prev) => prev.filter((_, i) => i !== index))}
-                    className="absolute right-0 top-0 bg-black/60 px-1 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    className="absolute right-0 top-0 bg-black/60 px-1 text-[12px] text-white opacity-0 transition-opacity group-hover:opacity-100"
                   >
                     ×
                   </button>
                 </div>
               ))}
-              <label className="flex h-[130px] w-[130px] cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line-strong text-[12px] text-ink-3 transition-colors hover:border-signal hover:text-signal">
+              <label className="flex h-[130px] w-[130px] cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line-strong text-[14px] text-ink-3 transition-colors hover:border-signal hover:text-signal">
                 <Plus size={18} />
                 上传图片
                 <input
@@ -1670,7 +1670,7 @@ export default function SoftwareListPage() {
           </FormRow>
           <FormRow label="应用图标">
             <div className="flex items-start gap-3">
-              <label className="flex h-[130px] w-[130px] cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line-strong text-[12px] text-ink-3 transition-colors hover:border-signal hover:text-signal">
+              <label className="flex h-[130px] w-[130px] cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-line-strong text-[14px] text-ink-3 transition-colors hover:border-signal hover:text-signal">
                 {form.icon ? (
                   <img src={iconSrc(form.icon)} alt="" className="h-full w-full object-contain p-2" />
                 ) : (
@@ -1693,7 +1693,7 @@ export default function SoftwareListPage() {
               {form.icon && (
                 <button
                   onClick={() => setForm({ ...form, icon: '' })}
-                  className="text-[12px] text-mute transition-colors hover:text-danger"
+                  className="text-[14px] text-mute transition-colors hover:text-danger"
                 >
                   移除
                 </button>
@@ -1738,7 +1738,7 @@ export default function SoftwareListPage() {
                 onCancel={cancelFieldEdit}
               >
                 <input
-                  className="field h-8 text-[12px]"
+                  className="field h-8 text-[14px]"
                   readOnly={editField !== 'name'}
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
@@ -1752,7 +1752,7 @@ export default function SoftwareListPage() {
                 onCancel={cancelFieldEdit}
               >
                 <input
-                  className="field h-8 text-[12px]"
+                  className="field h-8 text-[14px]"
                   readOnly={editField !== 'nameUs'}
                   value={form.nameUs}
                   onChange={(event) => setForm({ ...form, nameUs: event.target.value })}
@@ -1766,7 +1766,7 @@ export default function SoftwareListPage() {
                 onCancel={cancelFieldEdit}
               >
                 <input
-                  className="field h-8 text-[12px]"
+                  className="field h-8 text-[14px]"
                   readOnly={editField !== 'nameFr'}
                   value={form.nameFr}
                   onChange={(event) => setForm({ ...form, nameFr: event.target.value })}
@@ -1780,7 +1780,7 @@ export default function SoftwareListPage() {
                 onCancel={cancelFieldEdit}
               >
                 <input
-                  className="field h-8 text-[12px]"
+                  className="field h-8 text-[14px]"
                   readOnly={editField !== 'key'}
                   value={form.key}
                   onChange={(event) => setForm({ ...form, key: event.target.value })}
@@ -1788,7 +1788,7 @@ export default function SoftwareListPage() {
               </ConfigRow>
               <ConfigRow label="应用类型">
                 <Select
-                  className="h-8 text-[12px]"
+                  className="h-8 text-[14px]"
                   value={form.type}
                   options={[
                     { value: 'BS', label: '容器化应用（B/S）' },
@@ -1799,7 +1799,7 @@ export default function SoftwareListPage() {
               </ConfigRow>
               <ConfigRow label="关联席位" onEdit={() => editing && openSeats(editing)}>
                 <input
-                  className="field h-8 text-[12px]"
+                  className="field h-8 text-[14px]"
                   readOnly
                   value={
                     (detailQuery.data?.roleNameList ?? []).join('、') ||
@@ -1816,7 +1816,7 @@ export default function SoftwareListPage() {
                 onCancel={cancelFieldEdit}
               >
                 <textarea
-                  className="field text-[12px]"
+                  className="field text-[14px]"
                   rows={2}
                   readOnly={editField !== 'desc'}
                   value={form.desc}
@@ -1830,13 +1830,13 @@ export default function SoftwareListPage() {
                       <img src={iconSrc(shot)} alt="" className="h-full w-full object-cover" />
                       <button
                         onClick={() => setShots((prev) => prev.filter((_, i) => i !== index))}
-                        className="absolute right-0 top-0 bg-black/60 px-1 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-100"
+                        className="absolute right-0 top-0 bg-black/60 px-1 text-[12px] text-white opacity-0 transition-opacity group-hover:opacity-100"
                       >
                         ×
                       </button>
                     </div>
                   ))}
-                  <label className="flex h-[68px] w-[68px] cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line-strong text-[10px] text-ink-3 hover:border-signal hover:text-signal">
+                  <label className="flex h-[68px] w-[68px] cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line-strong text-[12px] text-ink-3 hover:border-signal hover:text-signal">
                     <Plus size={12} />
                     修改
                     <input
@@ -1861,7 +1861,7 @@ export default function SoftwareListPage() {
                       <span className="num text-[16px] text-mute">{(form.name || form.key || 'A').slice(0, 1).toUpperCase()}</span>
                     )}
                   </div>
-                  <label className="cursor-pointer text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
+                  <label className="cursor-pointer text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">
                     修改
                     <input
                       type="file"
@@ -1877,7 +1877,7 @@ export default function SoftwareListPage() {
                   {form.icon && (
                     <button
                       onClick={() => setForm({ ...form, icon: '' })}
-                      className="text-[12px] text-mute transition-colors hover:text-danger"
+                      className="text-[14px] text-mute transition-colors hover:text-danger"
                     >
                       移除
                     </button>
@@ -1890,7 +1890,7 @@ export default function SoftwareListPage() {
           <div>
             <SectionTitle>运行状态</SectionTitle>
             <div className="flex items-center justify-between border border-line bg-paper-2/40 px-3 py-2">
-              <span className="text-[12px] text-ink-3">一键启停</span>
+              <span className="text-[14px] text-ink-3">一键启停</span>
               <div className="flex items-center gap-2">
                 <button
                   role="switch"
@@ -1913,7 +1913,7 @@ export default function SoftwareListPage() {
                 </button>
                 <span
                   className={cn(
-                    'flex items-center gap-1 text-[11px]',
+                    'flex items-center gap-1 text-[12px]',
                     appRunning ? 'text-ok' : 'text-mute',
                   )}
                 >
@@ -1930,15 +1930,15 @@ export default function SoftwareListPage() {
         <div className="mt-6">
           <SectionTitle>访问方式</SectionTitle>
           <div className="flex items-start gap-2">
-            <span className="w-[68px] flex-none pt-[7px] text-right text-[12px] text-ink-3">url：</span>
+            <span className="w-[68px] flex-none pt-[7px] text-right text-[14px] text-ink-3">url：</span>
             <input
-              className="field h-8 flex-1 text-[12px]"
+              className="field h-8 flex-1 text-[14px]"
               readOnly={editField !== 'routerKey'}
               value={form.routerKey}
               onChange={(event) => setForm({ ...form, routerKey: event.target.value })}
             />
             {editField === 'routerKey' ? (
-              <div className="flex flex-none items-start gap-2 pt-[7px] text-[12px]">
+              <div className="flex flex-none items-start gap-2 pt-[7px] text-[14px]">
                 <button
                   onClick={() => fieldSaveMutation.mutate()}
                   className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
@@ -1955,7 +1955,7 @@ export default function SoftwareListPage() {
             ) : (
               <button
                 onClick={() => setEditField('routerKey')}
-                className="w-8 flex-none pt-[7px] text-left text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+                className="w-8 flex-none pt-[7px] text-left text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
               >
                 修改
               </button>
@@ -2028,20 +2028,20 @@ export default function SoftwareListPage() {
                     </td>
                     <td>
                       {mapping?.web ? (
-                        <span className="inline-flex items-center whitespace-nowrap rounded-sm border border-[#3d5b76] px-1.5 py-0.5 text-[12px] text-[#4aa3f0]">
+                        <span className="inline-flex items-center whitespace-nowrap rounded-sm border border-[#3d5b76] px-1.5 py-0.5 text-[14px] text-[#4aa3f0]">
                           {name}（入口）
                         </span>
                       ) : (
-                        <span className="whitespace-nowrap text-[12px] text-ink">{name}</span>
+                        <span className="whitespace-nowrap text-[14px] text-ink">{name}</span>
                       )}
                     </td>
                     <td>
-                      <span className="text-[12px] text-ink-3">
+                      <span className="text-[14px] text-ink-3">
                         {appType === 'business' ? '前台服务' : appType ? '后台服务' : '—'}
                       </span>
                     </td>
                     <td>
-                      <span className={cn('text-[12px]', status.tone)}>{status.text}</span>
+                      <span className={cn('text-[14px]', status.tone)}>{status.text}</span>
                     </td>
                     <td>
                       <MappingPopover
@@ -2058,7 +2058,7 @@ export default function SoftwareListPage() {
                       />
                     </td>
                     <td>
-                      <div className="flex items-center justify-end gap-2.5 whitespace-nowrap text-[12px]">
+                      <div className="flex items-center justify-end gap-2.5 whitespace-nowrap text-[14px]">
                         <button
                           className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
                           onClick={() => {
@@ -2092,7 +2092,7 @@ export default function SoftwareListPage() {
               })}
               {relatedServices.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-[11.5px] text-mute">
+                  <td colSpan={6} className="py-6 text-center text-[12px] text-mute">
                     该应用暂未关联服务
                   </td>
                 </tr>
@@ -2137,11 +2137,11 @@ export default function SoftwareListPage() {
       >
         <div className="border border-line bg-paper-2/40">
           <div className="flex min-h-[36px] flex-wrap items-center gap-1 border-b border-line px-2 py-1.5">
-            {relationSelection.length === 0 && <span className="text-[11.5px] text-mute">请选择服务</span>}
+            {relationSelection.length === 0 && <span className="text-[12px] text-mute">请选择服务</span>}
             {relationSelection.map((name) => (
               <span
                 key={name}
-                className="inline-flex items-center gap-1 border border-line-strong bg-[#132c44] px-1.5 py-0.5 text-[11.5px] text-ink-3"
+                className="inline-flex items-center gap-1 border border-line-strong bg-[#132c44] px-1.5 py-0.5 text-[12px] text-ink-3"
               >
                 {name}
                 <button
@@ -2166,7 +2166,7 @@ export default function SoftwareListPage() {
                     )
                   }
                   className={cn(
-                    'flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-[12px] transition-colors',
+                    'flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-[14px] transition-colors',
                     checked ? 'bg-[#16395a] text-white' : 'text-ink-3 hover:bg-[#142a3e]',
                   )}
                 >
@@ -2176,7 +2176,7 @@ export default function SoftwareListPage() {
               )
             })}
             {services.length === 0 && (
-              <div className="px-2.5 py-4 text-center text-[11.5px] text-mute">暂无服务</div>
+              <div className="px-2.5 py-4 text-center text-[12px] text-mute">暂无服务</div>
             )}
           </div>
         </div>
@@ -2217,11 +2217,11 @@ export default function SoftwareListPage() {
       >
         <div className="space-y-3">
           <div className="flex items-start gap-2">
-            <span className="w-[48px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
+            <span className="w-[48px] flex-none pt-[7px] text-right text-[14px] text-ink-3">
               <span className="text-danger">*</span> 端口：
             </span>
             <Select
-              className="h-8 flex-1 text-[12px]"
+              className="h-8 flex-1 text-[14px]"
               placeholder="请选择端口"
               value={mappingPort}
               options={
@@ -2236,11 +2236,11 @@ export default function SoftwareListPage() {
             />
           </div>
           <div className="flex items-start gap-2">
-            <span className="w-[48px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
+            <span className="w-[48px] flex-none pt-[7px] text-right text-[14px] text-ink-3">
               <span className="text-danger">*</span> 路径：
             </span>
             <input
-              className="field h-8 flex-1 text-[12px]"
+              className="field h-8 flex-1 text-[14px]"
               value={mappingPath}
               onChange={(event) => setMappingPath(event.target.value)}
             />
@@ -2269,7 +2269,7 @@ export default function SoftwareListPage() {
         }
       >
         <div className="flex w-[500px] max-w-full items-start gap-2 px-4 py-3">
-          <span className="w-[68px] flex-none pt-[7px] text-right text-[12px] text-ink-3">关联席位：</span>
+          <span className="w-[68px] flex-none pt-[7px] text-right text-[14px] text-ink-3">关联席位：</span>
           <div className="min-w-0 flex-1">
             <DropdownMenu.Root open={seatSelectOpen} onOpenChange={setSeatSelectOpen}>
               <DropdownMenu.Trigger asChild>
@@ -2277,7 +2277,7 @@ export default function SoftwareListPage() {
                   role="button"
                   tabIndex={0}
                   className={cn(
-                    'field flex min-h-8 w-full cursor-pointer flex-wrap items-center gap-1 px-1.5 py-1 text-[12px]',
+                    'field flex min-h-8 w-full cursor-pointer flex-wrap items-center gap-1 px-1.5 py-1 text-[14px]',
                     seatSelectOpen && 'border-signal',
                   )}
                 >
@@ -2287,7 +2287,7 @@ export default function SoftwareListPage() {
                     return (
                       <span
                         key={key}
-                        className="inline-flex items-center gap-1 rounded-sm border border-[#2f6392] bg-[#123a5b] px-1.5 py-[1px] text-[11px] text-[#cfe6ff]"
+                        className="inline-flex items-center gap-1 rounded-sm border border-[#2f6392] bg-[#123a5b] px-1.5 py-[1px] text-[12px] text-[#cfe6ff]"
                       >
                         {role?.name || key}
                         <span
@@ -2315,7 +2315,7 @@ export default function SoftwareListPage() {
                   className="z-[80] max-h-[240px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-auto border border-line bg-paper-2 py-1 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
                 >
                   {roleOptions.length === 0 && (
-                    <div className="px-3 py-2 text-[12px] text-mute">
+                    <div className="px-3 py-2 text-[14px] text-mute">
                       {rolesQuery.isLoading ? '加载中…' : '暂无数据'}
                     </div>
                   )}
@@ -2327,7 +2327,7 @@ export default function SoftwareListPage() {
                         checked={checked}
                         onSelect={(event) => event.preventDefault()}
                         onCheckedChange={() => toggleSeat(role.key)}
-                        className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink data-[state=checked]:text-ink"
+                        className="flex cursor-pointer items-center justify-between gap-3 px-3 py-1.5 text-[14px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-ink data-[state=checked]:text-ink"
                       >
                         <span className="truncate">{role.name}</span>
                         <DropdownMenu.ItemIndicator>
@@ -2392,17 +2392,17 @@ export default function SoftwareListPage() {
                   {item.icon ? (
                     <img src={iconSrc(item.icon)} alt="" className="h-5 w-5 object-contain" />
                   ) : (
-                    <span className="num text-[12px] text-mute">{item.name.slice(0, 1).toUpperCase()}</span>
+                    <span className="num text-[14px] text-mute">{item.name.slice(0, 1).toUpperCase()}</span>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[12px] text-ink">{item.name}</div>
-                  <div className="mono mt-0.5 text-[8.5px] tracking-widest text-mute">KEY / {item.key}</div>
+                  <div className="truncate text-[14px] text-ink">{item.name}</div>
+                  <div className="mono mt-0.5 text-[12px] tracking-widest text-mute">KEY / {item.key}</div>
                 </div>
               </label>
             )
           })}
-          {list.length === 0 && <div className="py-6 text-center text-[11px] text-mute">暂无可导出的应用</div>}
+          {list.length === 0 && <div className="py-6 text-center text-[12px] text-mute">暂无可导出的应用</div>}
         </div>
       </Drawer>
 
@@ -2429,7 +2429,7 @@ export default function SoftwareListPage() {
           </>
         }
       >
-        <div className="mb-3 border-l-2 border-warn bg-warn/[0.06] px-3 py-2 text-[10.5px] leading-relaxed text-ink-3">
+        <div className="mb-3 border-l-2 border-warn bg-warn/[0.06] px-3 py-2 text-[12px] leading-relaxed text-ink-3">
           应用后，未勾选的服务将立即停止，可能导致依赖其的应用不可用。请确认影响范围后再执行。
         </div>
         <div className="max-h-[340px] space-y-1.5 overflow-y-auto">
@@ -2457,8 +2457,8 @@ export default function SoftwareListPage() {
                   }}
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="font-mono text-[11px] text-ink">{name}</div>
-                  <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">
+                  <div className="font-mono text-[12px] text-ink">{name}</div>
+                  <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">
                     {service.deployment?.status?.readyReplicas ?? 0}/{service.deployment?.spec?.replicas ?? 0} READY
                   </div>
                 </div>
@@ -2466,7 +2466,7 @@ export default function SoftwareListPage() {
               </label>
             )
           })}
-          {servicesQuery.isLoading && <div className="py-6 text-center text-[11px] text-mute">正在读取服务…</div>}
+          {servicesQuery.isLoading && <div className="py-6 text-center text-[12px] text-mute">正在读取服务…</div>}
         </div>
       </Drawer>
 
@@ -2493,13 +2493,13 @@ export default function SoftwareListPage() {
       >
         <div className="mb-4 flex items-center border border-line-strong">
           <button
-            className={cn('px-4 py-1.5 text-[11px]', govTab === 'auth' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
+            className={cn('px-4 py-1.5 text-[12px]', govTab === 'auth' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
             onClick={() => setGovTab('auth')}
           >
             <KeyRound size={11} className="mr-1.5 inline" /> 应用授权
           </button>
           <button
-            className={cn('px-4 py-1.5 text-[11px]', govTab === 'gateway' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
+            className={cn('px-4 py-1.5 text-[12px]', govTab === 'gateway' ? 'bg-signal text-white' : 'text-mute hover:text-ink')}
             onClick={() => setGovTab('gateway')}
           >
             <Network size={11} className="mr-1.5 inline" /> 网关放通
@@ -2511,7 +2511,7 @@ export default function SoftwareListPage() {
             <div className="flex items-end gap-2 border border-line bg-paper-2/40 px-3 py-3">
               <Field label="激活码" className="flex-1">
                 <input
-                  className="field h-8 font-mono text-[11px]"
+                  className="field h-8 font-mono text-[12px]"
                   placeholder="粘贴平台提供的应用激活码"
                   value={authCode}
                   onChange={(event) => setAuthCode(event.target.value)}
@@ -2542,7 +2542,7 @@ export default function SoftwareListPage() {
                     <Copy size={10} /> 复制
                   </Button>
                 </div>
-                <div className="mono break-all text-[10px] leading-relaxed text-ink-3">{generatedCode}</div>
+                <div className="mono break-all text-[12px] leading-relaxed text-ink-3">{generatedCode}</div>
               </div>
             )}
 
@@ -2560,17 +2560,17 @@ export default function SoftwareListPage() {
                   className="grid grid-cols-[1.4fr_0.8fr_0.7fr_1fr_1fr_170px] items-center gap-2 border-b border-line/60 px-3 py-2 last:border-b-0"
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-[11px] text-ink">{item.softWareName || '—'}</div>
-                    <div className="mono mt-0.5 truncate text-[8.5px] tracking-wider text-mute">{item.softWareKey}</div>
+                    <div className="truncate text-[12px] text-ink">{item.softWareName || '—'}</div>
+                    <div className="mono mt-0.5 truncate text-[12px] tracking-wider text-mute">{item.softWareKey}</div>
                   </div>
                   <Badge>{item.framework || '—'}</Badge>
                   <Badge tone={item.status === 1 ? 'ok' : item.status === 2 ? 'warn' : 'default'}>
                     {authStatusText(item.status)}
                   </Badge>
-                  <span className="mono text-[9px] text-ink-3">
+                  <span className="mono text-[12px] text-ink-3">
                     {item.authCreateTime ? formatDate(item.authCreateTime) : '—'}
                   </span>
-                  <span className="mono text-[9px] text-ink-3">
+                  <span className="mono text-[12px] text-ink-3">
                     {item.authExpireTime ? formatDate(item.authExpireTime) : '—'}
                   </span>
                   <div className="flex justify-end gap-1">
@@ -2602,7 +2602,7 @@ export default function SoftwareListPage() {
                 </div>
               ))}
               {(authQuery.data?.list ?? []).length === 0 && (
-                <div className="px-3 py-10 text-center text-[11px] text-mute">
+                <div className="px-3 py-10 text-center text-[12px] text-mute">
                   {authQuery.isLoading ? '正在读取授权信息…' : '暂无软件授权记录'}
                 </div>
               )}
@@ -2622,11 +2622,11 @@ export default function SoftwareListPage() {
                 key={`${item.softwareKey}-${item.servicePortId}`}
                 className="grid grid-cols-[1fr_1.1fr_0.6fr_1.4fr_0.8fr_90px] items-center gap-2 border-b border-line/60 px-3 py-2 last:border-b-0"
               >
-                <span className="truncate text-[11px] text-ink">{item.softwareName || '—'}</span>
-                <span className="mono truncate text-[10px] text-ink-3">{item.serviceLabel || item.serviceId || '—'}</span>
-                <span className="mono text-[10px] text-ink-3">{item.port ?? '—'}</span>
+                <span className="truncate text-[12px] text-ink">{item.softwareName || '—'}</span>
+                <span className="mono truncate text-[12px] text-ink-3">{item.serviceLabel || item.serviceId || '—'}</span>
+                <span className="mono text-[12px] text-ink-3">{item.port ?? '—'}</span>
                 <button
-                  className="mono flex items-center gap-1 truncate text-left text-[9px] text-info hover:underline"
+                  className="mono flex items-center gap-1 truncate text-left text-[12px] text-info hover:underline"
                   onClick={() => {
                     navigator.clipboard?.writeText(item.fullPath || item.path || '')
                     toast.success('访问路径已复制')
@@ -2651,7 +2651,7 @@ export default function SoftwareListPage() {
               </div>
             ))}
             {(gatewayQuery.data?.list ?? []).length === 0 && (
-              <div className="px-3 py-10 text-center text-[11px] text-mute">
+              <div className="px-3 py-10 text-center text-[12px] text-mute">
                 {gatewayQuery.isLoading ? '正在读取网关信息…' : '暂无网关端口配置'}
               </div>
             )}

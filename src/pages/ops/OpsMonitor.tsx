@@ -191,7 +191,7 @@ export default function OpsMonitorPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={metricsMissing ? 'warn' : unhealthyPods > 0 ? 'warn' : 'ok'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {metricsMissing
                   ? 'METRICS DEGRADED'
                   : unhealthyPods > 0
@@ -199,7 +199,7 @@ export default function OpsMonitorPage() {
                     : 'ALL SYSTEMS NOMINAL'}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">AUTO REFRESH 20S</span>
+            <span className="mono text-[12px] tracking-widest text-mute">AUTO REFRESH 20S</span>
           </>
         }
         actions={
@@ -221,7 +221,7 @@ export default function OpsMonitorPage() {
       {metricsMissing && (
         <div className="mb-4 flex items-center gap-3 border-l-2 border-warn bg-warn/[0.06] px-4 py-2.5">
           <AlertTriangle size={13} className="text-warn" />
-          <span className="text-[11.5px] text-ink">
+          <span className="text-[12px] text-ink">
             资源指标采集暂不可用，部分水位与 Pod 健康数据缺失；服务副本状态仍可正常查看。
           </span>
         </div>
@@ -230,12 +230,12 @@ export default function OpsMonitorPage() {
       {anomalies.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-3 border-l-2 border-warn bg-warn/[0.06] px-4 py-2.5">
           <AlertTriangle size={14} className="text-warn" />
-          <span className="text-[11.5px] text-ink">
+          <span className="text-[12px] text-ink">
             检测到 {anomalies.length} 个服务存在异常副本或重启记录，建议优先核查。
           </span>
           <button
             onClick={() => navigate('/ops/alert-record')}
-            className="mono ml-auto flex items-center gap-1 text-[9.5px] tracking-widest text-warn hover:underline"
+            className="mono ml-auto flex items-center gap-1 text-[12px] tracking-widest text-warn hover:underline"
           >
             查看告警记录 <ArrowUpRight size={10} />
           </button>
@@ -247,7 +247,7 @@ export default function OpsMonitorPage() {
           <div className="label">集群 CPU</div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{cpu === null ? '—' : formatNumber(cpu, 1)}</span>
-            <span className="text-[12px] text-mute">%</span>
+            <span className="text-[14px] text-mute">%</span>
           </div>
           <div className="mt-2.5">
             <Meter value={cpu ?? 0} />
@@ -257,7 +257,7 @@ export default function OpsMonitorPage() {
           <div className="label">集群内存</div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{mem === null ? '—' : formatNumber(mem, 1)}</span>
-            <span className="text-[12px] text-mute">%</span>
+            <span className="text-[14px] text-mute">%</span>
           </div>
           <div className="mt-2.5">
             <Meter value={mem ?? 0} />
@@ -267,7 +267,7 @@ export default function OpsMonitorPage() {
           <div className="label">运行 Pod</div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{pods?.running ?? '—'}</span>
-            <span className="text-[12px] text-mute">/ {pods?.total ?? '—'}</span>
+            <span className="text-[14px] text-mute">/ {pods?.total ?? '—'}</span>
           </div>
           <div className="mt-2.5">
             <Meter value={(pods?.normalRate ?? 0) * 100} tone="ok" />
@@ -279,9 +279,9 @@ export default function OpsMonitorPage() {
             <span className={cn('num text-[30px] leading-none', anomalies.length ? 'text-signal' : 'text-ink')}>
               {anomalies.length}
             </span>
-            <span className="text-[12px] text-mute">/ {services.length}</span>
+            <span className="text-[14px] text-mute">/ {services.length}</span>
           </div>
-          <div className="mono mt-2.5 text-[9px] tracking-widest text-mute">RESTART + REPLICA DRIFT</div>
+          <div className="mono mt-2.5 text-[12px] tracking-widest text-mute">RESTART + REPLICA DRIFT</div>
         </Panel>
       </section>
 
@@ -302,9 +302,9 @@ export default function OpsMonitorPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <StatusDot tone={ready ? 'ok' : 'bad'} />
-                        <span className="font-mono text-[12px] text-ink">{name}</span>
+                        <span className="font-mono text-[14px] text-ink">{name}</span>
                       </div>
-                      <div className="mono mt-1 text-[8.5px] tracking-widest text-mute">{ip}</div>
+                      <div className="mono mt-1 text-[12px] tracking-widest text-mute">{ip}</div>
                     </div>
                     <RingGauge
                       value={Math.max(ncpu ?? 0, nmem ?? 0) / 100}
@@ -318,20 +318,20 @@ export default function OpsMonitorPage() {
                     <div>
                       <div className="mb-1 flex justify-between">
                         <span className="label">CPU</span>
-                        <span className="mono text-[10px] text-ink">{ncpu === null ? '—' : formatPercent(ncpu)}</span>
+                        <span className="mono text-[12px] text-ink">{ncpu === null ? '—' : formatPercent(ncpu)}</span>
                       </div>
                       <Meter value={ncpu ?? 0} />
                     </div>
                     <div>
                       <div className="mb-1 flex justify-between">
                         <span className="label">MEMORY</span>
-                        <span className="mono text-[10px] text-ink">{nmem === null ? '—' : formatPercent(nmem)}</span>
+                        <span className="mono text-[12px] text-ink">{nmem === null ? '—' : formatPercent(nmem)}</span>
                       </div>
                       <Meter value={nmem ?? 0} />
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between border-t border-line pt-2">
-                    <span className="mono text-[8.5px] tracking-widest text-mute">
+                    <span className="mono text-[12px] tracking-widest text-mute">
                       PODS {podInfo ? `${podInfo.health}/${podInfo.total}` : podFallback ?? '—'}
                     </span>
                     <Badge tone={ready ? 'ok' : 'bad'}>{ready ? 'READY' : 'DOWN'}</Badge>
@@ -368,7 +368,7 @@ export default function OpsMonitorPage() {
             kicker="SYSTEM SERVICES"
             title="系统服务"
             actions={
-              <button onClick={() => navigate('/software/application/service')} className="mono text-[8.5px] tracking-widest text-mute hover:text-signal">
+              <button onClick={() => navigate('/software/application/service')} className="mono text-[12px] tracking-widest text-mute hover:text-signal">
                 ALL
               </button>
             }
@@ -378,8 +378,8 @@ export default function OpsMonitorPage() {
               {(cockpitQuery.data?.systemService?.serviceList ?? []).slice(0, 8).map((service) => (
                 <div key={`${service.namespace}-${service.name}`} className="flex items-center gap-2 px-4 py-2">
                   <StatusDot tone={service.normal === service.total ? 'ok' : 'warn'} />
-                  <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-ink-3">{service.name}</span>
-                  <span className="mono text-[9.5px] text-mute">
+                  <span className="min-w-0 flex-1 truncate font-mono text-[12px] text-ink-3">{service.name}</span>
+                  <span className="mono text-[12px] text-mute">
                     {service.normal}/{service.total}
                   </span>
                 </div>
@@ -407,20 +407,20 @@ export default function OpsMonitorPage() {
                     <td>
                       <div className="flex items-center gap-2">
                         <StatusDot tone={ready === 0 ? 'bad' : 'warn'} />
-                        <span className="font-mono text-[11px] text-ink">{service.nameUs || service.nameFr}</span>
+                        <span className="font-mono text-[12px] text-ink">{service.nameUs || service.nameFr}</span>
                       </div>
                     </td>
                     <td>
-                      <span className="num text-[12px] text-warn">
+                      <span className="num text-[14px] text-warn">
                         {ready}
-                        <span className="text-[9.5px] text-mute"> / {desired}</span>
+                        <span className="text-[12px] text-mute"> / {desired}</span>
                       </span>
                     </td>
                     <td>
-                      <span className={cn('mono text-[11px]', restarts > 0 ? 'text-signal' : 'text-mute')}>{restarts}</span>
+                      <span className={cn('mono text-[12px]', restarts > 0 ? 'text-signal' : 'text-mute')}>{restarts}</span>
                     </td>
                     <td>
-                      <span className="mono max-w-[260px] truncate text-[9.5px] text-mute">
+                      <span className="mono max-w-[260px] truncate text-[12px] text-mute">
                         {typeof service.imageInfo === 'string' ? service.imageInfo : '—'}
                       </span>
                     </td>
@@ -438,7 +438,7 @@ export default function OpsMonitorPage() {
                 ))}
                 {anomalies.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-[11px] text-mute">
+                    <td colSpan={6} className="py-10 text-center text-[12px] text-mute">
                       当前没有异常服务，全部副本处于就绪状态。
                     </td>
                   </tr>
@@ -453,15 +453,15 @@ export default function OpsMonitorPage() {
         <Panel kicker="PLATFORM MODE" title="运行模式">
           <div className="flex items-center gap-2">
             <Badge tone="info">{modeQuery.data?.current?.mode || '—'}</Badge>
-            <span className="text-[12px] font-medium text-ink">{modeQuery.data?.current?.modeName || '未获取模式'}</span>
+            <span className="text-[14px] font-medium text-ink">{modeQuery.data?.current?.modeName || '未获取模式'}</span>
           </div>
           <div className="mt-3 space-y-2">
             {(modeQuery.data?.modes ?? []).map((mode) => (
               <div key={mode.id} className="flex items-center justify-between border-b border-line pb-2 last:border-0">
                 <div className="flex items-center gap-2">
                   <StatusDot tone={mode.used ? 'ok' : 'idle'} />
-                  <span className="text-[11px] text-ink-3">{mode.modeName}</span>
-                  <span className="mono text-[8.5px] text-mute">{mode.mode}</span>
+                  <span className="text-[12px] text-ink-3">{mode.modeName}</span>
+                  <span className="mono text-[12px] text-mute">{mode.mode}</span>
                 </div>
                 {mode.used ? (
                   <Badge tone="ok">ACTIVE</Badge>
@@ -484,9 +484,9 @@ export default function OpsMonitorPage() {
                 )}
               </div>
             ))}
-            {(modeQuery.data?.modes ?? []).length === 0 && <div className="text-[10.5px] text-mute">暂未配置运行模式</div>}
+            {(modeQuery.data?.modes ?? []).length === 0 && <div className="text-[12px] text-mute">暂未配置运行模式</div>}
           </div>
-          <div className="mono mt-3 text-[8px] leading-relaxed tracking-wider text-mute">
+          <div className="mono mt-3 text-[12px] leading-relaxed tracking-wider text-mute">
             模式切换依赖 TenX 组件，若组件缺失将切换失败。
           </div>
         </Panel>
@@ -494,20 +494,20 @@ export default function OpsMonitorPage() {
         <Panel kicker="PROMETHEUS" title="指标采集">
           <div className="flex items-center gap-2">
             <Badge tone={promQuery.data?.healthy ? 'ok' : 'bad'}>{promQuery.data?.status || 'UNKNOWN'}</Badge>
-            <span className="text-[11px] text-ink-3">{promQuery.data?.message || '—'}</span>
+            <span className="text-[12px] text-ink-3">{promQuery.data?.message || '—'}</span>
           </div>
           <div className="mt-3 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="label">最近采样</span>
-              <span className="mono text-[9.5px] text-ink-3">{formatDate(promQuery.data?.latestSampleTime)}</span>
+              <span className="mono text-[12px] text-ink-3">{formatDate(promQuery.data?.latestSampleTime)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="label">时钟偏差</span>
-              <span className="mono text-[9.5px] text-ink-3">{promQuery.data?.prometheusClockSkewSeconds ?? '—'} s</span>
+              <span className="mono text-[12px] text-ink-3">{promQuery.data?.prometheusClockSkewSeconds ?? '—'} s</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="label">探测时间</span>
-              <span className="mono text-[9.5px] text-ink-3">{formatDate(promQuery.data?.checkedAt)}</span>
+              <span className="mono text-[12px] text-ink-3">{formatDate(promQuery.data?.checkedAt)}</span>
             </div>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -537,14 +537,14 @@ export default function OpsMonitorPage() {
             <Badge tone={lokiQuery.data?.lokiPodStatus ? 'ok' : 'warn'}>
               {lokiQuery.data?.lokiPodStatus ? 'LOKI RUNNING' : 'LOKI UNAVAILABLE'}
             </Badge>
-            <span className="mono text-[9px] text-mute">
+            <span className="mono text-[12px] text-mute">
               RETAIN {lokiQuery.data?.logRetainDay ?? '—'} / {lokiQuery.data?.logRetainMaxDay ?? '—'} DAYS
             </span>
           </div>
           <div className="mt-3 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="label">日志内存</span>
-              <span className="mono text-[9.5px] text-ink-3">
+              <span className="mono text-[12px] text-ink-3">
                 {formatNumber(lokiQuery.data?.totalMemory ?? 0, 2)} GiB / {lokiQuery.data?.logMaxMemory ?? '—'} MB
               </span>
             </div>
@@ -562,7 +562,7 @@ export default function OpsMonitorPage() {
             </div>
             <div className="flex items-center justify-between">
               <span className="label">上次清理</span>
-              <span className="mono text-[9.5px] text-ink-3">
+              <span className="mono text-[12px] text-ink-3">
                 {lokiQuery.data?.logDeleteLastTime
                   ? formatDate(lokiQuery.data.logDeleteLastTime * 1000)
                   : '—'}
@@ -574,7 +574,7 @@ export default function OpsMonitorPage() {
               <label className="block">
                 <span className="label">内存上限 / MB</span>
                 <input
-                  className="field mt-1 h-8 font-mono text-[11px]"
+                  className="field mt-1 h-8 font-mono text-[12px]"
                   type="number"
                   min={1}
                   value={lokiMemory}
@@ -584,7 +584,7 @@ export default function OpsMonitorPage() {
               <label className="block">
                 <span className="label">保留天数</span>
                 <input
-                  className="field mt-1 h-8 font-mono text-[11px]"
+                  className="field mt-1 h-8 font-mono text-[12px]"
                   type="number"
                   min={1}
                   value={lokiDays}
@@ -615,7 +615,7 @@ export default function OpsMonitorPage() {
               </Button>
             </div>
           </div>
-          <div className="mono mt-3 text-[8px] leading-relaxed tracking-wider text-mute">
+          <div className="mono mt-3 text-[12px] leading-relaxed tracking-wider text-mute">
             日志保留策略由平台治理任务执行，超过保留天数的日志将自动清理。
           </div>
         </Panel>
@@ -649,7 +649,7 @@ export default function OpsMonitorPage() {
             <span className="label">清理截止时间</span>
             <input
               type="datetime-local"
-              className="field mt-1 h-9 font-mono text-[12px]"
+              className="field mt-1 h-9 font-mono text-[14px]"
               value={deleteTime}
               max={toLocalInput(new Date())}
               min={
@@ -660,7 +660,7 @@ export default function OpsMonitorPage() {
               onChange={(event) => setDeleteTime(event.target.value)}
             />
           </label>
-          <div className="mono text-[9px] leading-relaxed tracking-wider text-mute">
+          <div className="mono text-[12px] leading-relaxed tracking-wider text-mute">
             仅能选择上次清理时间
             {lokiQuery.data?.logDeleteLastTime
               ? `（${formatDate(lokiQuery.data.logDeleteLastTime * 1000)}）`

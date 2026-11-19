@@ -206,8 +206,8 @@ export default function ContinuousIntegrationPage() {
         <div className="flex items-center gap-2.5">
           <Boxes size={13} className="text-mute" />
           <div className="min-w-0">
-            <div className="truncate font-mono text-[11px] text-ink">{task.imageName || '—'}</div>
-            <div className="mono mt-0.5 truncate text-[8.5px] tracking-wider text-mute">
+            <div className="truncate font-mono text-[12px] text-ink">{task.imageName || '—'}</div>
+            <div className="mono mt-0.5 truncate text-[12px] tracking-wider text-mute">
               {task.imageStorage || '—'}
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function ContinuousIntegrationPage() {
         return (
           <span className="flex items-center gap-1.5">
             <StatusDot tone={status.tone === 'bad' ? 'bad' : status.tone === 'warn' ? 'warn' : 'ok'} pulse={status.tone === 'warn'} />
-            <span className="mono text-[9px] tracking-widest text-ink-3">{status.label}</span>
+            <span className="mono text-[12px] tracking-widest text-ink-3">{status.label}</span>
           </span>
         )
       },
@@ -236,19 +236,19 @@ export default function ContinuousIntegrationPage() {
       key: 'created',
       header: '创建时间',
       sortValue: (task) => Number(task.createAt ?? 0),
-      cell: (task) => <span className="mono text-[9.5px] text-ink-3">{formatDate(task.createAt, false)}</span>,
+      cell: (task) => <span className="mono text-[12px] text-ink-3">{formatDate(task.createAt, false)}</span>,
     },
     {
       key: 'updated',
       header: '最近执行',
       sortValue: (task) => Number(task.updateAt ?? 0),
-      cell: (task) => <span className="mono text-[9.5px] text-mute">{formatDate(task.updateAt ?? task.createAt, false)}</span>,
+      cell: (task) => <span className="mono text-[12px] text-mute">{formatDate(task.updateAt ?? task.createAt, false)}</span>,
     },
     {
       key: 'desc',
       header: '描述',
       cell: (task) => (
-        <span className="line-clamp-2 block max-w-[220px] text-[10.5px] leading-relaxed text-ink-3">
+        <span className="line-clamp-2 block max-w-[220px] text-[12px] leading-relaxed text-ink-3">
           {task.description || task.desc || '—'}
         </span>
       ),
@@ -289,11 +289,11 @@ export default function ContinuousIntegrationPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={running ? 'warn' : 'ok'} pulse={running > 0} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {tasks.length} TASKS · {running} RUNNING
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">
+            <span className="mono text-[12px] tracking-widest text-mute">
               STORAGE {formatBytes(storage?.free)} FREE
             </span>
           </>
@@ -315,22 +315,22 @@ export default function ContinuousIntegrationPage() {
         <Panel bodyClassName="px-4 py-3.5">
           <div className="label">构建任务</div>
           <div className="num mt-1.5 text-[28px] leading-none text-ink">{tasks.length}</div>
-          <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">TOTAL TASKS</div>
+          <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">TOTAL TASKS</div>
         </Panel>
         <Panel bodyClassName="px-4 py-3.5">
           <div className="label">运行中</div>
           <div className="num mt-1.5 text-[28px] leading-none text-ink">{running}</div>
-          <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">IN PROGRESS</div>
+          <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">IN PROGRESS</div>
         </Panel>
         <Panel bodyClassName="px-4 py-3.5">
           <div className="flex items-center justify-between">
             <div className="label">镜像仓库容量</div>
-            <span className="mono text-[9px] text-ink-3">{usedPercent}% USED</span>
+            <span className="mono text-[12px] text-ink-3">{usedPercent}% USED</span>
           </div>
           <div className="mt-2 h-[6px] w-full bg-paper-2">
             <div className="h-full bg-signal" style={{ width: `${Math.min(usedPercent, 100)}%` }} />
           </div>
-          <div className="mono mt-2 flex justify-between text-[8.5px] tracking-wider text-mute">
+          <div className="mono mt-2 flex justify-between text-[12px] tracking-wider text-mute">
             <span>{formatBytes(used)} USED</span>
             <span>{formatBytes(storage?.total)} TOTAL</span>
           </div>
@@ -384,7 +384,7 @@ export default function ContinuousIntegrationPage() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="镜像仓库" required>
             <input
-              className="field font-mono text-[11px]"
+              className="field font-mono text-[12px]"
               value={form.imageStorage}
               onChange={(event) => setForm({ ...form, imageStorage: event.target.value })}
               placeholder="172.16.209.25:1080/gaop"
@@ -392,7 +392,7 @@ export default function ContinuousIntegrationPage() {
           </Field>
           <Field label="镜像名称" required>
             <input
-              className="field font-mono text-[11px]"
+              className="field font-mono text-[12px]"
               value={form.imageName}
               onChange={(event) => setForm({ ...form, imageName: event.target.value })}
               placeholder="situation-map"
@@ -400,7 +400,7 @@ export default function ContinuousIntegrationPage() {
           </Field>
           <Field label="标签" required>
             <input
-              className="field font-mono text-[11px]"
+              className="field font-mono text-[12px]"
               value={form.tag}
               onChange={(event) => setForm({ ...form, tag: event.target.value })}
               placeholder="latest"
@@ -416,7 +416,7 @@ export default function ContinuousIntegrationPage() {
           </Field>
           <Field label="Dockerfile" required className="sm:col-span-2" hint="构建上下文由平台提供，可直接 COPY dist/">
             <textarea
-              className="field min-h-[220px] resize-y font-mono text-[11px] leading-relaxed"
+              className="field min-h-[220px] resize-y font-mono text-[12px] leading-relaxed"
               value={form.dockerfile}
               onChange={(event) => setForm({ ...form, dockerfile: event.target.value })}
               spellCheck={false}
@@ -425,7 +425,7 @@ export default function ContinuousIntegrationPage() {
         </div>
         <div className="mt-3 flex items-start gap-2 border border-line bg-paper-2/40 px-3 py-2">
           <Hammer size={12} className="mt-0.5 text-mute" />
-          <p className="mono text-[9px] leading-relaxed tracking-wider text-mute">
+          <p className="mono text-[12px] leading-relaxed tracking-wider text-mute">
             TARGET / {form.imageStorage}/{form.imageName}:{form.tag}
           </p>
         </div>
@@ -450,11 +450,11 @@ export default function ContinuousIntegrationPage() {
           <Badge tone={logState === 'open' ? 'ok' : logState === 'connecting' ? 'warn' : 'default'}>
             {logState === 'open' ? 'STREAMING' : logState === 'connecting' ? 'CONNECTING' : 'CLOSED'}
           </Badge>
-          <span className="mono text-[8.5px] tracking-widest text-mute">
+          <span className="mono text-[12px] tracking-widest text-mute">
             {logTarget?.pod?.podName || 'NO POD'} / {logTarget?.pod?.namespace || '—'}
           </span>
           <button
-            className={cn('mono ml-auto text-[8.5px] tracking-widest text-ink-3 hover:text-signal')}
+            className={cn('mono ml-auto text-[12px] tracking-widest text-ink-3 hover:text-signal')}
             onClick={() => setLogText('')}
           >
             清空
@@ -462,7 +462,7 @@ export default function ContinuousIntegrationPage() {
         </div>
         <pre
           ref={logRef}
-          className="h-[420px] overflow-auto border border-line bg-[#14171a] p-3 font-mono text-[10.5px] leading-relaxed text-[#d9dcdd]"
+          className="h-[420px] overflow-auto border border-line bg-[#14171a] p-3 font-mono text-[12px] leading-relaxed text-[#d9dcdd]"
         >
           {logText || '等待日志输出…'}
         </pre>

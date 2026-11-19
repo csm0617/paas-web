@@ -237,7 +237,7 @@ export function DataTable<T>({
                 <ChevronLeft size={14} />
               </button>
             </div>
-            <span className="text-[12px] text-ink-3">
+            <span className="text-[14px] text-ink-3">
               当前第 {current} / {totalPages} 页
               {selectedKeys.length > 0 && ` · 已选 ${selectedKeys.length}`}
             </span>

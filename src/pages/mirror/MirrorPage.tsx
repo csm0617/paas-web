@@ -210,8 +210,8 @@ export default function MirrorPage() {
       header: '镜像 / IMAGE',
       cell: (row) => (
         <div>
-          <div className="font-mono text-[11.5px] text-ink">{row.name}</div>
-          <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.fileName}</div>
+          <div className="font-mono text-[12px] text-ink">{row.name}</div>
+          <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.fileName}</div>
         </div>
       ),
     },
@@ -232,13 +232,13 @@ export default function MirrorPage() {
     {
       key: 'user',
       header: '操作人',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.username || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.username || '—'}</span>,
     },
     {
       key: 'time',
       header: '完成时间',
       sortValue: (row) => row.updatedAt ?? 0,
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{relativeTime(row.updatedAt ?? row.createdAt)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{relativeTime(row.updatedAt ?? row.createdAt)}</span>,
     },
     {
       key: 'actions',
@@ -273,9 +273,9 @@ export default function MirrorPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">REGISTRY ONLINE · {registryHost}</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">REGISTRY ONLINE · {registryHost}</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">
+            <span className="mono text-[12px] tracking-widest text-mute">
               {projects.length} PROJECTS · {images.length} IMAGES
             </span>
           </>
@@ -323,7 +323,7 @@ export default function MirrorPage() {
           <div key={label} className="px-4 py-3.5">
             <div className="label">{label}</div>
             <div className="num mt-1.5 truncate text-[28px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 truncate text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 truncate text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </div>
         ))}
       </section>
@@ -348,8 +348,8 @@ export default function MirrorPage() {
                 projectFilter === 'ALL' ? 'bg-signal text-white' : 'hover:bg-paper-2'
               }`}
             >
-              <span className="text-[11.5px]">全部镜像</span>
-              <span className="mono text-[9px] opacity-70">{images.length}</span>
+              <span className="text-[12px]">全部镜像</span>
+              <span className="mono text-[12px] opacity-70">{images.length}</span>
             </button>
             {projects.map((project) => (
               <div
@@ -362,8 +362,8 @@ export default function MirrorPage() {
                   onClick={() => setProjectFilter(project.name)}
                   className="flex flex-1 items-center justify-between px-3.5 py-2.5 text-left"
                 >
-                  <span className="truncate text-[11.5px]">{project.name}</span>
-                  <span className="mono text-[9px] opacity-70">
+                  <span className="truncate text-[12px]">{project.name}</span>
+                  <span className="mono text-[12px] opacity-70">
                     {images.filter((image) => image.name.startsWith(`${project.name}/`)).length}
                   </span>
                 </button>
@@ -379,7 +379,7 @@ export default function MirrorPage() {
             <div className="px-3 py-2">
               <button
                 onClick={() => setProjectModal(true)}
-                className="mono flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-line-strong py-2 text-[9px] tracking-widest text-mute transition-colors hover:border-signal hover:text-signal"
+                className="mono flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-line-strong py-2 text-[12px] tracking-widest text-mute transition-colors hover:border-signal hover:text-signal"
               >
                 <FolderPlus size={10} /> NEW PROJECT
               </button>
@@ -395,8 +395,8 @@ export default function MirrorPage() {
                       <Tag size={13} className="text-ink-3" />
                     </div>
                     <div className="min-w-0">
-                      <div className="truncate font-mono text-[11.5px] text-ink">{image.name}</div>
-                      <div className="mono mt-0.5 flex flex-wrap items-center gap-2 text-[8.5px] tracking-wider text-mute">
+                      <div className="truncate font-mono text-[12px] text-ink">{image.name}</div>
+                      <div className="mono mt-0.5 flex flex-wrap items-center gap-2 text-[12px] tracking-wider text-mute">
                         <span>UPDATED {formatDate(image.update_time)}</span>
                         {image.relateSoftwareList && image.relateSoftwareList.length > 0 && (
                           <span className="text-info">
@@ -440,7 +440,7 @@ export default function MirrorPage() {
                 </div>
               ))}
               {filteredImages.length === 0 && (
-                <div className="px-4 py-12 text-center text-[11px] text-mute">该仓库组下暂无镜像</div>
+                <div className="px-4 py-12 text-center text-[12px] text-mute">该仓库组下暂无镜像</div>
               )}
             </div>
           </Panel>
@@ -512,11 +512,11 @@ export default function MirrorPage() {
           <Badge tone={logItem?.status === 1 ? 'ok' : 'bad'}>
             {logItem?.status === 1 ? 'BUILD SUCCESS' : 'BUILD FAILED'}
           </Badge>
-          <span className="mono text-[9px] tracking-widest text-mute">
+          <span className="mono text-[12px] tracking-widest text-mute">
             {formatDate(logItem?.updatedAt ?? logItem?.createdAt)}
           </span>
         </div>
-        <pre className="max-h-[52vh] overflow-auto border border-line bg-deck p-4 font-mono text-[10px] leading-relaxed text-[#b9c0c2]">
+        <pre className="max-h-[52vh] overflow-auto border border-line bg-deck p-4 font-mono text-[12px] leading-relaxed text-[#b9c0c2]">
           {logItem?.log || '无日志输出'}
         </pre>
       </Modal>
@@ -554,7 +554,7 @@ export default function MirrorPage() {
                 <Copy size={10} /> 复制
               </Button>
             </div>
-            <div className="mono break-all text-[10px] text-ink-3">
+            <div className="mono break-all text-[12px] text-ink-3">
               {registryHost}/{detailImage?.name}:{detailTag || 'latest'}
             </div>
           </div>
@@ -569,7 +569,7 @@ export default function MirrorPage() {
                 <button
                   key={tag.name}
                   onClick={() => setDetailTag(tag.name)}
-                  className={`mono border px-2 py-1 text-[9px] tracking-wider transition-colors ${
+                  className={`mono border px-2 py-1 text-[12px] tracking-wider transition-colors ${
                     detailTag === tag.name
                       ? 'border-signal bg-signal text-white'
                       : 'border-line-strong text-ink-3 hover:border-signal hover:text-signal'
@@ -579,7 +579,7 @@ export default function MirrorPage() {
                 </button>
               ))}
               {(detailTagsQuery.data ?? []).length === 0 && !detailTagsQuery.isLoading && (
-                <span className="text-[10.5px] text-mute">暂无标签信息</span>
+                <span className="text-[12px] text-mute">暂无标签信息</span>
               )}
             </div>
           </div>
@@ -592,12 +592,12 @@ export default function MirrorPage() {
               <div className="max-h-[180px] overflow-y-auto">
                 {(detailEnvQuery.data ?? []).map((env) => (
                   <div key={env.name} className="grid grid-cols-[1fr_1fr] gap-2 border-b border-line/50 px-3 py-1.5 last:border-b-0">
-                    <span className="mono truncate text-[9.5px] text-ink">{env.name}</span>
-                    <span className="mono truncate text-[9.5px] text-mute">{env.value || '—'}</span>
+                    <span className="mono truncate text-[12px] text-ink">{env.name}</span>
+                    <span className="mono truncate text-[12px] text-mute">{env.value || '—'}</span>
                   </div>
                 ))}
                 {(detailEnvQuery.data ?? []).length === 0 && (
-                  <div className="px-3 py-6 text-center text-[10.5px] text-mute">
+                  <div className="px-3 py-6 text-center text-[12px] text-mute">
                     {detailEnvQuery.isLoading ? '正在读取…' : '未声明环境变量'}
                   </div>
                 )}
@@ -611,12 +611,12 @@ export default function MirrorPage() {
               <div className="max-h-[180px] overflow-y-auto">
                 {(detailPortsQuery.data?.list ?? []).map((port) => (
                   <div key={`${port.port}-${port.protocol}`} className="flex items-center justify-between border-b border-line/50 px-3 py-1.5 last:border-b-0">
-                    <span className="mono text-[10px] text-ink">{port.port}</span>
+                    <span className="mono text-[12px] text-ink">{port.port}</span>
                     <Badge>{port.protocol || 'TCP'}</Badge>
                   </div>
                 ))}
                 {(detailPortsQuery.data?.list ?? []).length === 0 && (
-                  <div className="px-3 py-6 text-center text-[10.5px] text-mute">
+                  <div className="px-3 py-6 text-center text-[12px] text-mute">
                     {detailPortsQuery.isLoading ? '正在读取…' : '未声明端口'}
                   </div>
                 )}
@@ -633,7 +633,7 @@ export default function MirrorPage() {
                 </Badge>
               ))}
               {(detailImage?.relateSoftwareList ?? []).length === 0 && (
-                <span className="text-[10.5px] text-mute">暂无服务引用该镜像</span>
+                <span className="text-[12px] text-mute">暂无服务引用该镜像</span>
               )}
             </div>
           </div>

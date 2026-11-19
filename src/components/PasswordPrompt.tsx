@@ -79,7 +79,7 @@ export function PasswordPrompt({
         <Field label="管理员密码" required>
           <input
             type="password"
-            className="field h-9 font-mono text-[11px]"
+            className="field h-9 font-mono text-[12px]"
             value={value}
             onChange={(event) => {
               setValue(event.target.value)
@@ -91,8 +91,8 @@ export function PasswordPrompt({
             autoFocus
           />
         </Field>
-        {error && <div className="text-[10.5px] text-signal">{error}</div>}
-        <div className="mono text-[8.5px] leading-relaxed tracking-wider text-mute">
+        {error && <div className="text-[12px] text-signal">{error}</div>}
+        <div className="mono text-[12px] leading-relaxed tracking-wider text-mute">
           密码经 MD5 加盐摘要后发送，不会以明文传输。
         </div>
       </div>

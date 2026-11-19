@@ -281,14 +281,14 @@ export function AreaTrend({
             top: 18,
           }}
         >
-          <div className="mono text-[9px] tracking-wider text-mute">
+          <div className="mono text-[12px] tracking-wider text-mute">
             {series[0]?.points[hover]?.tip ?? labels[hover]}
           </div>
           {series.map((s, si) => (
             <div key={s.name} className="mt-0.5 flex items-center gap-1.5 whitespace-nowrap">
               <span className="h-1.5 w-1.5" style={{ background: s.color || colors[si % colors.length] }} />
-              <span className="text-[10px] text-ink-3">{s.name}</span>
-              <span className="num ml-auto text-[12px] text-ink">
+              <span className="text-[12px] text-ink-3">{s.name}</span>
+              <span className="num ml-auto text-[14px] text-ink">
                 {formatNumber(s.points[hover]?.value ?? 0, 1)}
                 {unit}
               </span>
@@ -337,10 +337,10 @@ export function BarList({
         return (
           <div key={`${item.label}-${index}`} className="group py-2.5">
             <div className="mb-1.5 flex items-baseline justify-between gap-3">
-              <span className="truncate font-mono text-[10.5px] text-ink-3 group-hover:text-ink">{item.label}</span>
-              <span className="num flex-none text-[13px] text-ink">
+              <span className="truncate font-mono text-[12px] text-ink-3 group-hover:text-ink">{item.label}</span>
+              <span className="num flex-none text-[14px] text-ink">
                 {formatter ? formatter(item.value) : formatNumber(item.value, 1)}
-                <span className="ml-0.5 text-[9px] text-mute">{unit}</span>
+                <span className="ml-0.5 text-[12px] text-mute">{unit}</span>
               </span>
             </div>
             <div className="h-[3px] w-full bg-line">
@@ -349,7 +349,7 @@ export function BarList({
                 style={{ width: `${ratio * 100}%`, background: color }}
               />
             </div>
-            {item.hint && <div className="mt-1 text-[9.5px] text-mute">{item.hint}</div>}
+            {item.hint && <div className="mt-1 text-[12px] text-mute">{item.hint}</div>}
           </div>
         )
       })}
@@ -399,7 +399,7 @@ export function RingGauge({
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="num text-[30px] leading-none text-ink">{display ?? `${Math.round(value * 100)}`}</span>
         {label && <span className="label mt-1">{label}</span>}
-        {sublabel && <span className="mt-0.5 text-[9px] text-mute">{sublabel}</span>}
+        {sublabel && <span className="mt-0.5 text-[12px] text-mute">{sublabel}</span>}
       </div>
     </div>
   )

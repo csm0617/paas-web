@@ -90,11 +90,11 @@ export default function GlobalSettingsPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={dirtyCount ? 'warn' : 'ok'} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {settings.length} PARAMETERS · {dirtyCount} UNSAVED
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">SETTINGS / GLOBAL</span>
+            <span className="mono text-[12px] tracking-widest text-mute">SETTINGS / GLOBAL</span>
           </>
         }
         toolbar={
@@ -104,7 +104,7 @@ export default function GlobalSettingsPage() {
                 key={group}
                 onClick={() => setActiveGroup(group)}
                 className={cn(
-                  'mono border px-3 py-1.5 text-[9px] tracking-[0.14em] transition-colors',
+                  'mono border px-3 py-1.5 text-[12px] tracking-[0.14em] transition-colors',
                   activeGroup === group
                     ? 'border-signal bg-signal text-white'
                     : 'border-line-strong text-ink-3 hover:border-signal hover:text-signal',
@@ -152,20 +152,20 @@ export default function GlobalSettingsPage() {
                 <div className="md:col-span-4">
                   <div className="flex items-center gap-2">
                     <SlidersHorizontal size={11} className="text-mute" />
-                    <span className="text-[11.5px] text-ink">{item.desc || item.key}</span>
+                    <span className="text-[12px] text-ink">{item.desc || item.key}</span>
                     {dirty && <Badge tone="warn">UNSAVED</Badge>}
                   </div>
-                  <div className="mono mt-1 text-[8.5px] tracking-widest text-mute">{item.key}</div>
+                  <div className="mono mt-1 text-[12px] tracking-widest text-mute">{item.key}</div>
                 </div>
                 <div className="md:col-span-5">
                   <input
-                    className="field h-9 font-mono text-[11px]"
+                    className="field h-9 font-mono text-[12px]"
                     value={draft[item.key] ?? ''}
                     onChange={(event) => setDraft((current) => ({ ...current, [item.key]: event.target.value }))}
                   />
                 </div>
                 <div className="flex items-center justify-end gap-2 md:col-span-3">
-                  <span className="mono text-[8.5px] text-mute">
+                  <span className="mono text-[12px] text-mute">
                     {item.updatedAt ? new Date(item.updatedAt).toLocaleString('zh-CN') : 'DEFAULT'}
                   </span>
                   <Button
@@ -182,7 +182,7 @@ export default function GlobalSettingsPage() {
             )
           })}
           {filtered.length === 0 && (
-            <div className="px-4 py-10 text-center text-[11px] text-mute">
+            <div className="px-4 py-10 text-center text-[12px] text-mute">
               {query.isLoading ? '正在读取平台参数…' : '当前分组下没有参数'}
             </div>
           )}
@@ -190,7 +190,7 @@ export default function GlobalSettingsPage() {
       </Panel>
 
       <div className="mt-3 border border-line bg-paper-2/40 px-4 py-2.5">
-        <p className="text-[10.5px] leading-relaxed text-ink-3">
+        <p className="text-[12px] leading-relaxed text-ink-3">
           参数以键值对形式持久化，修改将即时生效。调整告警阈值前请确认当前集群负载，避免产生大量告警。
         </p>
       </div>

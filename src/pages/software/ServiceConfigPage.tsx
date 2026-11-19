@@ -205,9 +205,9 @@ function memValue(value?: string | null) {
 }
 
 const inputCls =
-  'h-[30px] w-full border border-[#2f4f6d] bg-[#16293c] px-2 text-[12px] text-[#c6dbef] outline-none transition-colors disabled:cursor-default disabled:opacity-95 focus:border-[#1890ff]'
+  'h-[30px] w-full border border-[#2f4f6d] bg-[#16293c] px-2 text-[14px] text-[#c6dbef] outline-none transition-colors disabled:cursor-default disabled:opacity-95 focus:border-[#1890ff]'
 
-const linkCls = 'text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]'
+const linkCls = 'text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]'
 
 interface SelectOption {
   value: string
@@ -272,7 +272,7 @@ function SelectBox({
             <div className="px-2 pb-1">
               <input
                 autoFocus
-                className="h-[26px] w-full border border-[#2f4f6d] bg-[#16293c] px-2 text-[12px] text-[#c6dbef] outline-none placeholder:text-[#6f8aa5] focus:border-[#1890ff]"
+                className="h-[26px] w-full border border-[#2f4f6d] bg-[#16293c] px-2 text-[14px] text-[#c6dbef] outline-none placeholder:text-[#6f8aa5] focus:border-[#1890ff]"
                 placeholder="搜索"
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
@@ -290,7 +290,7 @@ function SelectBox({
                 setKeyword('')
               }}
               className={cn(
-                'flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-[12px] transition-colors',
+                'flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-[14px] transition-colors',
                 option.value === value
                   ? 'bg-[#1670c2] text-white'
                   : 'text-[#c6dbef] hover:bg-[#15395c]',
@@ -302,7 +302,7 @@ function SelectBox({
               <span className="truncate">{option.label}</span>
             </button>
           ))}
-          {list.length === 0 && <div className="px-2 py-1.5 text-[12px] text-[#6f8aa5]">无匹配项</div>}
+          {list.length === 0 && <div className="px-2 py-1.5 text-[14px] text-[#6f8aa5]">无匹配项</div>}
         </div>
       )}
     </div>
@@ -322,9 +322,9 @@ function FieldRow({
 }) {
   return (
     <div className="flex min-h-[36px] items-center gap-3">
-      <span className="w-[110px] flex-none text-[12px] text-[#9db4ca]">{label}</span>
+      <span className="w-[110px] flex-none text-[14px] text-[#9db4ca]">{label}</span>
       <div className={wide ? 'w-[420px] flex-none' : 'w-[240px] flex-none'}>{children}</div>
-      <div className="flex w-[92px] flex-none items-center gap-3 text-[12px]">{action}</div>
+      <div className="flex w-[92px] flex-none items-center gap-3 text-[14px]">{action}</div>
     </div>
   )
 }
@@ -345,7 +345,7 @@ function Radio({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="flex items-center gap-1.5 text-[12px] disabled:cursor-default"
+      className="flex items-center gap-1.5 text-[14px] disabled:cursor-default"
     >
       <span
         className={cn(
@@ -385,7 +385,7 @@ function Section({
         <h3 className="flex h-8 items-center border-l-[5px] border-[#2db7f5] pl-2.5 text-[16px] leading-8 text-white">
           {title}
         </h3>
-        <div className="ml-4 flex items-center gap-3 text-[12px]">
+        <div className="ml-4 flex items-center gap-3 text-[14px]">
           {onEdit ? (
             editing ? (
               <>
@@ -403,7 +403,7 @@ function Section({
             )
           ) : null}
         </div>
-        {extra && <div className="ml-auto flex items-center gap-3 text-[12px]">{extra}</div>}
+        {extra && <div className="ml-auto flex items-center gap-3 text-[14px]">{extra}</div>}
       </div>
       <div className="px-6 py-2.5">{children}</div>
     </section>
@@ -1067,7 +1067,7 @@ export default function ServiceConfigPage() {
         <div className="border border-line">
           <table className="w-full">
             <thead>
-              <tr className="bg-paper-2/50 text-[12px] text-ink-3">
+              <tr className="bg-paper-2/50 text-[14px] text-ink-3">
                 <th className="h-9 w-16 text-center font-normal">序号</th>
                 <th className="h-9 text-left font-normal">服务名称</th>
                 <th className="h-9 text-left font-normal">服务标识</th>
@@ -1080,7 +1080,7 @@ export default function ServiceConfigPage() {
                 return (
                   <tr
                     key={name}
-                    className="cursor-pointer border-t border-line text-[12px] hover:bg-paper-2/40"
+                    className="cursor-pointer border-t border-line text-[14px] hover:bg-paper-2/40"
                     onClick={() => setSearchParams({ service: name }, { replace: true })}
                   >
                     <td className="h-10 text-center text-ink-3">{index + 1}</td>
@@ -1092,7 +1092,7 @@ export default function ServiceConfigPage() {
               })}
               {visibleServices.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-10 text-center text-[12px] text-mute">
+                  <td colSpan={4} className="py-10 text-center text-[14px] text-mute">
                     {servicesQuery.isLoading ? '正在加载…' : '暂无服务'}
                   </td>
                 </tr>
@@ -1113,7 +1113,7 @@ export default function ServiceConfigPage() {
   ) => (
     <div className="mb-5">
       <div className="mb-2 flex items-center gap-3">
-        <span className="text-[12.5px] text-ink">{label}</span>
+        <span className="text-[14px] text-ink">{label}</span>
         <div className="flex items-center gap-5">
           {[
             { value: 0, label: '无' },
@@ -1132,12 +1132,12 @@ export default function ServiceConfigPage() {
       </div>
       {form.type !== 0 && (
         <>
-          <div className="mb-1 text-[11.5px] text-[#ff6b6b]">
+          <div className="mb-1 text-[12px] text-[#ff6b6b]">
             {form.type === 1
               ? '通过 HTTP GET 请求进行健康检查。如果响应状态码小于 400，则认为容器健康'
               : '检测端口是否为打开状态，若端口为关闭或进程停止关闭状态，则健康检查不通过'}
           </div>
-          <div className="grid grid-cols-4 gap-2 text-[11.5px] text-ink-3">
+          <div className="grid grid-cols-4 gap-2 text-[12px] text-ink-3">
             <span>端口</span>
             <span>首次检测延时（秒）</span>
             <span>检测超时（秒）</span>
@@ -1169,7 +1169,7 @@ export default function ServiceConfigPage() {
               onChange={(event) => setForm({ ...form, periodSeconds: event.target.value })}
             />
           </div>
-          <div className={cn('grid gap-2 text-[11.5px] text-ink-3', form.type === 1 ? 'grid-cols-3' : 'grid-cols-4')}>
+          <div className={cn('grid gap-2 text-[12px] text-ink-3', form.type === 1 ? 'grid-cols-3' : 'grid-cols-4')}>
             {form.type === 1 && <span>路径</span>}
             <span>健康阈值（成功次数）</span>
             <span>异常阈值（失败次数）</span>
@@ -1233,7 +1233,7 @@ export default function ServiceConfigPage() {
                 setActiveNav(item.id)
               }}
               className={cn(
-                'flex h-[46px] w-full items-center px-4 text-left text-[13px] transition-colors',
+                'flex h-[46px] w-full items-center px-4 text-left text-[14px] transition-colors',
                 activeNav === item.id ? 'text-[#2db7f5]' : 'text-ink-3 hover:text-white',
               )}
             >
@@ -1248,7 +1248,7 @@ export default function ServiceConfigPage() {
 
         <div ref={scrollRef} className="min-w-0 flex-1 overflow-auto px-2 py-4">
           {detailQuery.isLoading ? (
-            <div className="py-20 text-center text-[12px] text-mute">正在读取服务配置…</div>
+            <div className="py-20 text-center text-[14px] text-mute">正在读取服务配置…</div>
           ) : (
             <>
               {/* 基本信息 */}
@@ -1288,7 +1288,7 @@ export default function ServiceConfigPage() {
                   />
                 </FieldRow>
                 <FieldRow label="服务地址" wide>
-                  <div className="min-h-[30px] w-[420px] border border-[#2f4f6d] bg-[#16293c] px-2 py-1.5 text-[11.5px] leading-[18px] text-[#c6dbef]">
+                  <div className="min-h-[30px] w-[420px] border border-[#2f4f6d] bg-[#16293c] px-2 py-1.5 text-[12px] leading-[18px] text-[#c6dbef]">
                     {addressText}
                   </div>
                 </FieldRow>
@@ -1335,7 +1335,7 @@ export default function ServiceConfigPage() {
                           type="button"
                           onClick={() => toggleServerKey(key)}
                           className={cn(
-                            'border px-2 py-0.5 text-[11px]',
+                            'border px-2 py-0.5 text-[12px]',
                             basic.serverKeys.includes(key)
                               ? 'border-signal bg-signal text-white'
                               : 'border-[#3d5f80] text-ink-3',
@@ -1344,7 +1344,7 @@ export default function ServiceConfigPage() {
                           {key}
                         </button>
                       ))}
-                      {serviceKeyOptions.length === 0 && <span className="text-[11px] text-mute">暂无可选服务</span>}
+                      {serviceKeyOptions.length === 0 && <span className="text-[12px] text-mute">暂无可选服务</span>}
                     </div>
                   ) : (
                     <input className={inputCls} disabled value={basic.serverKeys.join(', ')} />
@@ -1371,7 +1371,7 @@ export default function ServiceConfigPage() {
                   )
                 }}
               >
-                <div className="mb-1 flex items-center gap-3 text-[12px] text-ink-3">
+                <div className="mb-1 flex items-center gap-3 text-[14px] text-ink-3">
                   <span className="w-[30%]">变量名</span>
                   <span className="w-[14%]">类型</span>
                   <span className="w-[40%]">变量值</span>
@@ -1407,7 +1407,7 @@ export default function ServiceConfigPage() {
                           }
                         />
                       ) : (
-                        <div className="flex h-[30px] w-[14%] items-center border border-[#2f4f6d] bg-[#16293c] px-2 text-[12px] text-[#c6dbef]">
+                        <div className="flex h-[30px] w-[14%] items-center border border-[#2f4f6d] bg-[#16293c] px-2 text-[14px] text-[#c6dbef]">
                           {row.type === 'podType' ? 'Pod类型' : '普通变量'}
                         </div>
                       )}
@@ -1438,7 +1438,7 @@ export default function ServiceConfigPage() {
                       <span className="w-[16%]">
                         <button
                           type="button"
-                          className="text-[12px] text-[#ff6b6b] hover:text-[#ff9a9a]"
+                          className="text-[14px] text-[#ff6b6b] hover:text-[#ff9a9a]"
                           onClick={() => {
                             setEnvEditing(true)
                             setEnvRows((rows) => rows.filter((_, i) => i !== index))
@@ -1449,7 +1449,7 @@ export default function ServiceConfigPage() {
                       </span>
                     </div>
                   ))}
-                  {envRows.length === 0 && <div className="py-2 text-[12px] text-mute">暂无环境变量</div>}
+                  {envRows.length === 0 && <div className="py-2 text-[14px] text-mute">暂无环境变量</div>}
                   <button
                     type="button"
                     className={linkCls}
@@ -1481,7 +1481,7 @@ export default function ServiceConfigPage() {
                 }}
               >
                 <div className="mb-4 flex items-center gap-4">
-                  <span className="w-[60px] flex-none text-[12px] text-[#c6dbef]">选择配置：</span>
+                  <span className="w-[90px] flex-none text-[14px] text-[#c6dbef]">选择配置：</span>
                   <div className="flex items-center gap-5">
                     <Radio
                       checked={resourceMode === '1'}
@@ -1497,8 +1497,8 @@ export default function ServiceConfigPage() {
                     />
                   </div>
                   <div className="group relative">
-                    <span className="cursor-default text-[12px] text-[#ff6b6b]">ⓘ 剩余资源</span>
-                    <div className="pointer-events-none absolute left-0 top-6 z-20 hidden min-w-[260px] border border-[#33506e] bg-[#0e2233] px-3 py-2 text-[11.5px] leading-[20px] text-[#c6dbef] shadow-lg group-hover:block">
+                    <span className="cursor-default text-[14px] text-[#ff6b6b]">ⓘ 剩余资源</span>
+                    <div className="pointer-events-none absolute left-0 top-6 z-20 hidden min-w-[260px] border border-[#33506e] bg-[#0e2233] px-3 py-2 text-[12px] leading-[20px] text-[#c6dbef] shadow-lg group-hover:block">
                       {nodeList.length === 0 && <div>暂无节点资源信息</div>}
                       {nodeList.map((node) => (
                         <div key={node.name}>
@@ -1530,22 +1530,22 @@ export default function ServiceConfigPage() {
                           setRamMax(preset.ramMax)
                         }}
                         className={cn(
-                          'h-[92px] w-[88px] flex-none border px-2 py-[10px] text-left text-[12px] leading-[22px] transition-colors',
+                          'h-[92px] w-[88px] flex-none border px-2 py-[10px] text-left text-[14px] leading-[22px] transition-colors',
                           resourcePreset === preset.key
                             ? 'border-[#1890ff] text-[#c6dbef]'
                             : 'border-[#33506e] text-[#c6dbef]',
                         )}
                       >
-                        <div className="text-[13px] text-white">{preset.title}</div>
+                        <div className="text-[14px] text-white">{preset.title}</div>
                         <div>{preset.ram}</div>
                         <div>{preset.cpu}</div>
                       </button>
                     ))}
                   <div className="w-[270px] flex-none border border-[#33506e] px-3 py-2">
-                    <div className="mb-1 text-[12px] text-white">自定义</div>
+                    <div className="mb-1 text-[14px] text-white">自定义</div>
                     <div className="flex items-center gap-1.5">
                       <input
-                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[14px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={ramMin}
                         onChange={(event) => {
@@ -1555,7 +1555,7 @@ export default function ServiceConfigPage() {
                       />
                       <span className="text-[#c6dbef]">~</span>
                       <input
-                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[14px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={ramMax}
                         onChange={(event) => {
@@ -1563,11 +1563,11 @@ export default function ServiceConfigPage() {
                           setResourcePreset('5')
                         }}
                       />
-                      <span className="text-[12px] text-[#c6dbef]">MB内存</span>
+                      <span className="text-[14px] text-[#c6dbef]">MB内存</span>
                     </div>
                     <div className="mt-1.5 flex items-center gap-1.5">
                       <input
-                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[14px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={cpuMin}
                         onChange={(event) => {
@@ -1577,7 +1577,7 @@ export default function ServiceConfigPage() {
                       />
                       <span className="text-[#c6dbef]">~</span>
                       <input
-                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
+                        className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[14px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                         disabled={!resourceEditing}
                         value={cpuMax}
                         onChange={(event) => {
@@ -1585,17 +1585,17 @@ export default function ServiceConfigPage() {
                           setResourcePreset('5')
                         }}
                       />
-                      <span className="text-[12px] text-[#c6dbef]">核CPU</span>
+                      <span className="text-[14px] text-[#c6dbef]">核CPU</span>
                     </div>
                     {resourceMode === '2' && (
                       <div className="mt-1.5 flex items-center gap-1.5">
                         <input
-                          className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[12px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
+                          className="h-[28px] w-[64px] border border-[#2f4f6d] bg-[#16293c] px-1.5 text-[14px] text-[#c6dbef] outline-none focus:border-[#1890ff]"
                           disabled={!resourceEditing}
                           value={gpuMax}
                           onChange={(event) => setGpuMax(event.target.value)}
                         />
-                        <span className="text-[12px] text-[#c6dbef]">颗GPU</span>
+                        <span className="text-[14px] text-[#c6dbef]">颗GPU</span>
                       </div>
                     )}
                   </div>
@@ -1629,7 +1629,7 @@ export default function ServiceConfigPage() {
                   )
                 }}
               >
-                <div className="mb-1 flex items-center gap-3 text-[12px] text-ink-3">
+                <div className="mb-1 flex items-center gap-3 text-[14px] text-ink-3">
                   <span className="w-[40%]">映射端口</span>
                   <span className="w-[40%]">协议</span>
                   <span className="w-[20%]">操作</span>
@@ -1664,7 +1664,7 @@ export default function ServiceConfigPage() {
                       <span className="w-[20%]">
                         <button
                           type="button"
-                          className="text-[12px] text-[#ff6b6b]"
+                          className="text-[14px] text-[#ff6b6b]"
                           onClick={() => {
                             setAccessEditing(true)
                             setPortRows((rows) => rows.filter((_, i) => i !== index))
@@ -1715,7 +1715,7 @@ export default function ServiceConfigPage() {
                 }}
               >
                 <div className="mb-3 flex items-center gap-3">
-                  <span className="w-[110px] flex-none text-[12px] text-ink-3">NodePort</span>
+                  <span className="w-[110px] flex-none text-[14px] text-ink-3">NodePort</span>
                   <div className="flex items-center gap-5">
                     <Radio
                       checked={nodePortEnabled}
@@ -1733,7 +1733,7 @@ export default function ServiceConfigPage() {
                 </div>
                 {nodePortEnabled && (
                   <>
-                    <div className="mb-1 flex items-center gap-3 text-[12px] text-ink-3">
+                    <div className="mb-1 flex items-center gap-3 text-[14px] text-ink-3">
                       <span className="w-[40%]">端口</span>
                       <span className="w-[40%]">协议</span>
                       <span className="w-[20%]">操作</span>
@@ -1761,7 +1761,7 @@ export default function ServiceConfigPage() {
                           <span className="w-[20%]">
                             <button
                               type="button"
-                              className="text-[12px] text-[#ff6b6b]"
+                              className="text-[14px] text-[#ff6b6b]"
                               onClick={() => {
                                 setDiscoveryEditing(true)
                                 setNodeRows((rows) => rows.filter((_, i) => i !== index))
@@ -1804,7 +1804,7 @@ export default function ServiceConfigPage() {
                 }}
               >
                 <div className="mb-3 flex items-center gap-3">
-                  <span className="w-[110px] flex-none text-[12px] text-ink-3">进入点</span>
+                  <span className="w-[110px] flex-none text-[14px] text-ink-3">进入点</span>
                   <div className="flex items-center gap-5">
                     <Radio
                       checked={entryMode === '1'}
@@ -1825,7 +1825,7 @@ export default function ServiceConfigPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-[12px] text-ink-3">启动命令</div>
+                  <div className="text-[14px] text-ink-3">启动命令</div>
                   {commands.map((value, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <input
@@ -1840,7 +1840,7 @@ export default function ServiceConfigPage() {
                       {assistEditing && commands.length > 1 && (
                         <button
                           type="button"
-                          className="text-[12px] text-[#ff6b6b]"
+                          className="text-[14px] text-[#ff6b6b]"
                           onClick={() => setCommands((rows) => rows.filter((_, i) => i !== index))}
                         >
                           删除
@@ -1856,7 +1856,7 @@ export default function ServiceConfigPage() {
                       添加一个命令
                     </button>
                   )}
-                  <div className="pt-2 text-[12px] text-ink-3">启动参数</div>
+                  <div className="pt-2 text-[14px] text-ink-3">启动参数</div>
                   {args.map((value, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <input
@@ -1870,7 +1870,7 @@ export default function ServiceConfigPage() {
                       {assistEditing && args.length > 1 && (
                         <button
                           type="button"
-                          className="text-[12px] text-[#ff6b6b]"
+                          className="text-[14px] text-[#ff6b6b]"
                           onClick={() => setArgs((rows) => rows.filter((_, i) => i !== index))}
                         >
                           删除
@@ -1909,7 +1909,7 @@ export default function ServiceConfigPage() {
                   )
                 }}
               >
-                <div className="mb-1.5 flex items-center gap-3 text-[13px] text-[#c6dbef]">
+                <div className="mb-1.5 flex items-center gap-3 text-[14px] text-[#c6dbef]">
                   <span className="w-[26%]">文件映射：挂载目录</span>
                   <span className="w-[26%]">配置组</span>
                   <span className="w-[36%]">配置文件</span>
@@ -1959,7 +1959,7 @@ export default function ServiceConfigPage() {
                             {row.keys.map((key) => (
                               <span
                                 key={key}
-                                className="flex items-center gap-1 bg-[#23405c] px-1.5 py-[1px] text-[11px] text-[#c6dbef]"
+                                className="flex items-center gap-1 bg-[#23405c] px-1.5 py-[1px] text-[12px] text-[#c6dbef]"
                               >
                                 {key}
                                 {configEditing && (
@@ -1983,7 +1983,7 @@ export default function ServiceConfigPage() {
                             ))}
                             {configEditing && (
                               <input
-                                className="min-w-[60px] flex-1 bg-transparent px-1 text-[12px] text-[#c6dbef] outline-none placeholder:text-[#6f8aa5]"
+                                className="min-w-[60px] flex-1 bg-transparent px-1 text-[14px] text-[#c6dbef] outline-none placeholder:text-[#6f8aa5]"
                                 value={fileSearch?.row === index ? fileSearch.value : ''}
                                 placeholder={row.keys.length ? '' : '请选择配置文件'}
                                 onFocus={() => setFileSearch({ row: index, value: '' })}
@@ -2003,7 +2003,7 @@ export default function ServiceConfigPage() {
                                 <button
                                   key={key}
                                   type="button"
-                                  className="block w-full px-2 py-1.5 text-left text-[12px] text-[#c6dbef] hover:bg-[#15395c]"
+                                  className="block w-full px-2 py-1.5 text-left text-[14px] text-[#c6dbef] hover:bg-[#15395c]"
                                   onMouseDown={(event) => {
                                     event.preventDefault()
                                     setConfigRows((rows) =>
@@ -2023,7 +2023,7 @@ export default function ServiceConfigPage() {
                         <span className="w-[12%]">
                           <button
                             type="button"
-                            className="text-[12px] text-[#ff6b6b]"
+                            className="text-[14px] text-[#ff6b6b]"
                             onClick={() => {
                               setConfigEditing(true)
                               setConfigRows((rows) => rows.filter((_, i) => i !== index))
@@ -2035,7 +2035,7 @@ export default function ServiceConfigPage() {
                       </div>
                     )
                   })}
-                  {configRows.length === 0 && <div className="py-1 text-[12px] text-mute">暂无配置组挂载</div>}
+                  {configRows.length === 0 && <div className="py-1 text-[14px] text-mute">暂无配置组挂载</div>}
                   {configMaps.length > 0 && (
                     <button
                       type="button"
@@ -2056,7 +2056,7 @@ export default function ServiceConfigPage() {
                     </button>
                   )}
                 </div>
-                <div className="mb-1.5 flex items-center gap-3 text-[13px] text-[#c6dbef]">
+                <div className="mb-1.5 flex items-center gap-3 text-[14px] text-[#c6dbef]">
                   <span className="w-[26%]">主机路径：宿主目录</span>
                   <span className="w-[26%]">容器目录</span>
                   <span className="w-[36%]">读写权限</span>
@@ -2102,7 +2102,7 @@ export default function ServiceConfigPage() {
                       <span className="w-[12%]">
                         <button
                           type="button"
-                          className="text-[12px] text-[#ff6b6b]"
+                          className="text-[14px] text-[#ff6b6b]"
                           onClick={() => {
                             setConfigEditing(true)
                             setVolumeRows((rows) => rows.filter((_, i) => i !== index))
@@ -2206,8 +2206,8 @@ export default function ServiceConfigPage() {
                 )}
                 {nodeMode === '3' && (
                   <>
-                    <div className="mb-1 text-[12px] text-[#c6dbef]">服务与节点亲和性</div>
-                    <div className="mb-1 grid grid-cols-[110px_1fr_160px_1fr_80px] gap-3 text-[11.5px] text-ink-3">
+                    <div className="mb-1 text-[14px] text-[#c6dbef]">服务与节点亲和性</div>
+                    <div className="mb-1 grid grid-cols-[110px_1fr_160px_1fr_80px] gap-3 text-[12px] text-ink-3">
                       <span>方式</span>
                       <span>主机</span>
                       <span>操作符</span>
@@ -2275,7 +2275,7 @@ export default function ServiceConfigPage() {
                           <span className="text-right">
                             <button
                               type="button"
-                              className="text-[12px] text-[#ff6b6b]"
+                              className="text-[14px] text-[#ff6b6b]"
                               onClick={() => {
                                 setNodeEditing(true)
                                 setNodeAffinityRows((rows) => rows.filter((_, i) => i !== index))
@@ -2289,7 +2289,7 @@ export default function ServiceConfigPage() {
                     </div>
                     <button
                       type="button"
-                      className="mt-2 h-[30px] bg-[#1670c2] px-4 text-[12px] text-white"
+                      className="mt-2 h-[30px] bg-[#1670c2] px-4 text-[14px] text-white"
                       onClick={() => {
                         setNodeEditing(true)
                         setNodeAffinityRows((rows) => [
@@ -2301,8 +2301,8 @@ export default function ServiceConfigPage() {
                       添加
                     </button>
 
-                    <div className="mb-1 mt-6 text-[12px] text-[#c6dbef]">服务与服务亲和性</div>
-                    <div className="mb-1 grid grid-cols-[110px_1fr_160px_1fr_80px] gap-3 text-[11.5px] text-ink-3">
+                    <div className="mb-1 mt-6 text-[14px] text-[#c6dbef]">服务与服务亲和性</div>
+                    <div className="mb-1 grid grid-cols-[110px_1fr_160px_1fr_80px] gap-3 text-[12px] text-ink-3">
                       <span>方式</span>
                       <span>服务</span>
                       <span>操作符</span>
@@ -2370,7 +2370,7 @@ export default function ServiceConfigPage() {
                           <span className="text-right">
                             <button
                               type="button"
-                              className="text-[12px] text-[#ff6b6b]"
+                              className="text-[14px] text-[#ff6b6b]"
                               onClick={() => {
                                 setNodeEditing(true)
                                 setServiceAffinityRows((rows) => rows.filter((_, i) => i !== index))
@@ -2384,7 +2384,7 @@ export default function ServiceConfigPage() {
                     </div>
                     <button
                       type="button"
-                      className="mt-2 h-[30px] bg-[#1670c2] px-4 text-[12px] text-white"
+                      className="mt-2 h-[30px] bg-[#1670c2] px-4 text-[14px] text-white"
                       onClick={() => {
                         setNodeEditing(true)
                         setServiceAffinityRows((rows) => [

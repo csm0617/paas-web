@@ -77,31 +77,31 @@ export default function ServiceStartupPage() {
       header: '序号',
       width: 80,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
     },
     {
       key: 'name',
       header: '服务名称',
       align: 'center',
-      cell: (row) => <span className="text-[12px] text-ink">{serviceName(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{serviceName(row)}</span>,
     },
     {
       key: 'key',
       header: '服务标识',
       align: 'center',
-      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{serviceKey(row)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{serviceKey(row)}</span>,
     },
     {
       key: 'type',
       header: '服务类型',
       align: 'center',
-      cell: (row) => <span className="text-[12px] text-ink-3">{serviceType(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink-3">{serviceType(row)}</span>,
     },
     {
       key: 'delay',
       header: '延迟时间',
       align: 'center',
-      cell: (row) => <span className="text-[12px] text-ink-3">{delayTime(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink-3">{delayTime(row)}</span>,
     },
   ]
 
@@ -169,18 +169,18 @@ export default function ServiceStartupPage() {
         }
       >
         <div className="flex items-start gap-2 px-2 py-2">
-          <span className="w-[90px] flex-none pt-[7px] text-right text-[12px] text-ink-3">
+          <span className="w-[90px] flex-none pt-[7px] text-right text-[14px] text-ink-3">
             <span className="text-danger">* </span>延迟时间：
           </span>
           <div className="flex min-w-0 flex-1">
             <input
-              className="field h-8 flex-1 text-[12px]"
+              className="field h-8 flex-1 text-[14px]"
               inputMode="numeric"
               placeholder="5秒~600秒之间"
               value={delay}
               onChange={(event) => setDelay(event.target.value.replace(/[^\d]/g, ''))}
             />
-            <span className="flex h-8 flex-none items-center border border-l-0 border-line-strong px-2 text-[12px] text-ink-3">
+            <span className="flex h-8 flex-none items-center border border-l-0 border-line-strong px-2 text-[14px] text-ink-3">
               秒
             </span>
           </div>

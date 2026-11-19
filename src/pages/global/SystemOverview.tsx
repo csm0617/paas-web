@@ -179,12 +179,12 @@ export default function SystemOverviewPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={metricsDegraded ? 'warn' : 'ok'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {metricsDegraded ? 'TELEMETRY DEGRADED' : 'TELEMETRY ONLINE'}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">最后刷新 {lastUpdated}</span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">CLUSTER / {platformName()}</span>
+            <span className="mono text-[12px] tracking-widest text-mute">最后刷新 {lastUpdated}</span>
+            <span className="mono text-[12px] tracking-widest text-mute">CLUSTER / {platformName()}</span>
           </>
         }
         actions={
@@ -220,7 +220,7 @@ export default function SystemOverviewPage() {
       {metricsDegraded && (
         <div className="mb-4 flex flex-wrap items-center gap-3 border-l-2 border-warn bg-warn/[0.06] px-4 py-2.5">
           <span className="h-1.5 w-1.5 flex-none bg-warn" />
-          <span className="text-[11.5px] text-ink">
+          <span className="text-[12px] text-ink">
             监控指标暂不可用（metrics-server 未返回数据），已切换为降级视图；节点就绪状态与 Pod 数量仍基于 Kubernetes 实时数据。
           </span>
           <button
@@ -229,7 +229,7 @@ export default function SystemOverviewPage() {
               summaryQuery.refetch()
               cockpitQuery.refetch()
             }}
-            className="mono ml-auto text-[9px] uppercase tracking-widest text-warn hover:underline"
+            className="mono ml-auto text-[12px] uppercase tracking-widest text-warn hover:underline"
           >
             重试指标采集
           </button>
@@ -251,7 +251,7 @@ export default function SystemOverviewPage() {
           </div>
           <div className="mt-3 flex items-center gap-2">
             <Meter value={(readyNodes / Math.max(1, nodes.length)) * 100} />
-            <span className="mono text-[9px] text-ok">{readyNodes > 0 ? 'READY' : 'NO READY'}</span>
+            <span className="mono text-[12px] text-ok">{readyNodes > 0 ? 'READY' : 'NO READY'}</span>
           </div>
         </div>
 
@@ -276,7 +276,7 @@ export default function SystemOverviewPage() {
               />
             ))}
             {!summary && (
-              <span className="mono text-[9px] tracking-widest text-mute">
+              <span className="mono text-[12px] tracking-widest text-mute">
                 {podCountFallback ? `${podCountFallback} PODS SCHEDULED` : 'POD METRICS UNAVAILABLE'}
               </span>
             )}
@@ -291,16 +291,16 @@ export default function SystemOverviewPage() {
           <div className="mt-2 flex items-end justify-between gap-2">
             <div className="num text-[38px] leading-none text-ink">
               {cpuValue === null ? '—' : formatNumber(cpuValue, 1)}
-              <span className="ml-0.5 text-[15px] text-mute">%</span>
+              <span className="ml-0.5 text-[16px] text-mute">%</span>
             </div>
             {trend.length > 1 ? (
               <Sparkline data={trend.map((point) => point.value)} width={96} height={30} color="var(--color-signal)" />
             ) : (
-              <span className="mono text-[8px] tracking-widest text-mute">NO SAMPLE</span>
+              <span className="mono text-[12px] tracking-widest text-mute">NO SAMPLE</span>
             )}
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <span className="mono text-[9px] text-mute">
+            <span className="mono text-[12px] text-mute">
               {summary?.static?.resource
                 ? `ALLOC ${formatNumber(cpuAlloc ?? 0, 1)}% · ${formatNumber(summary.static.resource.cupSum, 1)} CORE`
                 : 'ALLOCATION DATA UNAVAILABLE'}
@@ -316,7 +316,7 @@ export default function SystemOverviewPage() {
           <div className="mt-2 flex items-end justify-between gap-2">
             <div className="num text-[38px] leading-none text-ink">
               {memValue === null ? '—' : formatNumber(memValue, 1)}
-              <span className="ml-0.5 text-[15px] text-mute">%</span>
+              <span className="ml-0.5 text-[16px] text-mute">%</span>
             </div>
             {(memSeries.length ? memSeries : trend).length > 1 ? (
               <Sparkline
@@ -326,11 +326,11 @@ export default function SystemOverviewPage() {
                 color="var(--color-ink)"
               />
             ) : (
-              <span className="mono text-[8px] tracking-widest text-mute">NO SAMPLE</span>
+              <span className="mono text-[12px] tracking-widest text-mute">NO SAMPLE</span>
             )}
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <span className="mono text-[9px] text-mute">
+            <span className="mono text-[12px] text-mute">
               {summary?.static?.resource
                 ? `ALLOC ${formatNumber(memAlloc ?? 0, 1)}% · ${formatNumber(summary.static.resource.memSumByKB / 1024 / 1024, 1)} GB`
                 : 'ALLOCATION DATA UNAVAILABLE'}
@@ -346,7 +346,7 @@ export default function SystemOverviewPage() {
           kicker="NODE INVENTORY"
           title="节点清单"
           actions={
-            <span className="mono text-[9px] tracking-widest text-mute">
+            <span className="mono text-[12px] tracking-widest text-mute">
               {nodes.length} NODES · {summary?.static?.node?.schedulable ?? '—'} SCHEDULABLE
             </span>
           }
@@ -394,33 +394,33 @@ export default function SystemOverviewPage() {
                         <div className="flex items-center gap-2">
                           <StatusDot tone={unknown ? 'idle' : ready ? 'ok' : 'bad'} />
                           <div>
-                            <div className="font-mono text-[11.5px] text-ink">{name}</div>
-                            <div className="mono mt-0.5 text-[8px] tracking-widest text-mute">{role}</div>
+                            <div className="font-mono text-[12px] text-ink">{name}</div>
+                            <div className="mono mt-0.5 text-[12px] tracking-widest text-mute">{role}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="font-mono text-[10.5px] text-ink-3">{nodeIp(node)}</td>
+                      <td className="font-mono text-[12px] text-ink-3">{nodeIp(node)}</td>
                       <td className="w-[130px]">
                         {cpu === null ? (
-                          <span className="mono text-[10px] text-mute">指标不可用</span>
+                          <span className="mono text-[12px] text-mute">指标不可用</span>
                         ) : (
                           <div className="flex items-center gap-2">
                             <Meter value={cpu} />
-                            <span className="num w-9 text-right text-[12px] text-ink">{formatNumber(cpu, 1)}</span>
+                            <span className="num w-9 text-right text-[14px] text-ink">{formatNumber(cpu, 1)}</span>
                           </div>
                         )}
                       </td>
                       <td className="w-[130px]">
                         {mem === null ? (
-                          <span className="mono text-[10px] text-mute">指标不可用</span>
+                          <span className="mono text-[12px] text-mute">指标不可用</span>
                         ) : (
                           <div className="flex items-center gap-2">
                             <Meter value={mem} />
-                            <span className="num w-9 text-right text-[12px] text-ink">{formatNumber(mem, 1)}</span>
+                            <span className="num w-9 text-right text-[14px] text-ink">{formatNumber(mem, 1)}</span>
                           </div>
                         )}
                       </td>
-                      <td className="mono text-[10.5px] text-ink-3">
+                      <td className="mono text-[12px] text-ink-3">
                         {pods ? `${pods.health}/${pods.total}` : podFallback !== undefined ? `${podFallback} SCHEDULED` : '—'}
                       </td>
                       <td>
@@ -438,7 +438,7 @@ export default function SystemOverviewPage() {
             </table>
           </div>
           {!nodesQuery.isLoading && nodes.length === 0 && (
-            <div className="px-4 py-8 text-center text-[11px] text-mute">未获取到节点数据</div>
+            <div className="px-4 py-8 text-center text-[12px] text-mute">未获取到节点数据</div>
           )}
           {nodes.length > 0 && (
             <div className="grid grid-cols-2 divide-x divide-line border-t border-line sm:grid-cols-4">
@@ -450,7 +450,7 @@ export default function SystemOverviewPage() {
               ].map(([label, value], index) => (
                 <div key={label} className={index >= 2 ? 'px-4 py-3 sm:border-t-0' : 'px-4 py-3'}>
                   <div className="label">{label}</div>
-                  <div className="mono mt-1 text-[12px] text-ink">{value}</div>
+                  <div className="mono mt-1 text-[14px] text-ink">{value}</div>
                 </div>
               ))}
             </div>
@@ -493,14 +493,14 @@ export default function SystemOverviewPage() {
                     {podSegments.map((segment) => (
                       <div key={segment.label} className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5" style={{ background: segment.color }} />
-                        <span className="mono flex-1 text-[9.5px] uppercase text-mute">{segment.label}</span>
-                        <span className="num text-[12px] text-ink">{segment.value}</span>
+                        <span className="mono flex-1 text-[12px] uppercase text-mute">{segment.label}</span>
+                        <span className="num text-[14px] text-ink">{segment.value}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="flex h-[104px] items-center justify-center border border-dashed border-line-strong text-[10.5px] text-mute">
+                <div className="flex h-[104px] items-center justify-center border border-dashed border-line-strong text-[12px] text-mute">
                   Pod 相位指标不可用
                 </div>
               )}
@@ -512,26 +512,26 @@ export default function SystemOverviewPage() {
               <div>
                 <div className="mb-1.5 flex justify-between">
                   <span className="label">CPU 配额占用</span>
-                  <span className="mono text-[10px] text-ink">{cpuAlloc === null ? '—' : formatPercent(cpuAlloc)}</span>
+                  <span className="mono text-[12px] text-ink">{cpuAlloc === null ? '—' : formatPercent(cpuAlloc)}</span>
                 </div>
                 <Meter value={cpuAlloc ?? 0} />
               </div>
               <div>
                 <div className="mb-1.5 flex justify-between">
                   <span className="label">内存配额占用</span>
-                  <span className="mono text-[10px] text-ink">{memAlloc === null ? '—' : formatPercent(memAlloc)}</span>
+                  <span className="mono text-[12px] text-ink">{memAlloc === null ? '—' : formatPercent(memAlloc)}</span>
                 </div>
                 <Meter value={memAlloc ?? 0} />
               </div>
               <div className="border-t border-line pt-3">
                 <div className="mb-1.5 flex justify-between">
                   <span className="label">镜像仓库容量</span>
-                  <span className="mono text-[10px] text-ink">
+                  <span className="mono text-[12px] text-ink">
                     {harbor ? `${formatPercent(harbor.useRate * 100)} · ${harbor.imageNum} IMAGES` : '—'}
                   </span>
                 </div>
                 <Meter value={(harbor?.useRate ?? 0) * 100} />
-                <div className="mono mt-1.5 flex justify-between text-[8.5px] tracking-wider text-mute">
+                <div className="mono mt-1.5 flex justify-between text-[12px] tracking-wider text-mute">
                   <span>{harbor?.projectNum ?? '—'} PROJECTS</span>
                   <span>{harbor ? `${(harbor.free / 1024 / 1024 / 1024).toFixed(1)} GB FREE` : 'NO DATA'}</span>
                 </div>
@@ -546,7 +546,7 @@ export default function SystemOverviewPage() {
           className="xl:col-span-7"
           kicker="CORE SERVICES"
           title="核心系统服务"
-          actions={<span className="mono text-[9px] tracking-widest text-mute">NAMESPACE / SYSTEM</span>}
+          actions={<span className="mono text-[12px] tracking-widest text-mute">NAMESPACE / SYSTEM</span>}
           bodyClassName="p-0"
         >
           <div className="grid grid-cols-1 divide-y divide-line/70 sm:grid-cols-2 sm:divide-y-0">
@@ -559,18 +559,18 @@ export default function SystemOverviewPage() {
                 >
                   <StatusDot tone={healthy ? 'ok' : 'warn'} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-mono text-[11px] text-ink">{service.name}</div>
-                    <div className="mono mt-0.5 text-[8px] tracking-widest text-mute">{service.namespace} / {service.type}</div>
+                    <div className="truncate font-mono text-[12px] text-ink">{service.name}</div>
+                    <div className="mono mt-0.5 text-[12px] tracking-widest text-mute">{service.namespace} / {service.type}</div>
                   </div>
-                  <span className={cn('num text-[13px]', healthy ? 'text-ink' : 'text-warn')}>
+                  <span className={cn('num text-[14px]', healthy ? 'text-ink' : 'text-warn')}>
                     {service.normal}
-                    <span className="text-[10px] text-mute">/{service.total}</span>
+                    <span className="text-[12px] text-mute">/{service.total}</span>
                   </span>
                 </div>
               )
             })}
             {!cockpit && (
-              <div className="px-4 py-8 text-[11px] text-mute">
+              <div className="px-4 py-8 text-[12px] text-mute">
                 {cockpitQuery.isError ? '系统服务指标不可用，请在运维监控中查看服务状态。' : '正在获取系统服务…'}
               </div>
             )}
@@ -581,7 +581,7 @@ export default function SystemOverviewPage() {
           className="xl:col-span-5"
           kicker="UTILISATION TREND"
           title="资源水位 · 近 30 采样"
-          actions={<span className="mono text-[9px] tracking-widest text-mute">CPU / MEMORY</span>}
+          actions={<span className="mono text-[12px] tracking-widest text-mute">CPU / MEMORY</span>}
         >
           {trend.length > 1 ? (
             <AreaTrend
@@ -596,8 +596,8 @@ export default function SystemOverviewPage() {
             />
           ) : (
             <div className="empty-chart flex h-[196px] flex-col items-center justify-center gap-2 text-mute">
-              <span className="mono text-[9px] tracking-[0.2em]">NO TELEMETRY SAMPLES</span>
-              <span className="text-[11px]">等待资源采样恢复</span>
+              <span className="mono text-[12px] tracking-[0.2em]">NO TELEMETRY SAMPLES</span>
+              <span className="text-[12px]">等待资源采样恢复</span>
             </div>
           )}
         </Panel>
@@ -750,7 +750,7 @@ export default function SystemOverviewPage() {
           </div>
           {balanceNodes.length === 0 ? (
             <div className="border border-line px-4 py-10 text-center">
-              <div className="text-[11px] text-ink-3">
+              <div className="text-[12px] text-ink-3">
                 {balanceQuery.isLoading ? '正在评估节点资源…' : '当前无需均衡：各节点资源分配处于合理区间。'}
               </div>
             </div>
@@ -803,30 +803,30 @@ export default function SystemOverviewPage() {
                           />
                         </td>
                         <td>
-                          <span className="font-mono text-[10.5px] text-ink">
+                          <span className="font-mono text-[12px] text-ink">
                             {pod.callServiceName || pod.serviceName || '—'}
                           </span>
                         </td>
                         <td>
-                          <span className="mono block max-w-[220px] truncate text-[9.5px] text-mute">
+                          <span className="mono block max-w-[220px] truncate text-[12px] text-mute">
                             {podName || '—'}
                           </span>
                         </td>
                         <td>
-                          <span className="mono text-[9.5px] text-ink-3">{pod.nodeName || '—'}</span>
+                          <span className="mono text-[12px] text-ink-3">{pod.nodeName || '—'}</span>
                         </td>
                         <td>
-                          <span className="mono text-[9.5px] text-ink-3">
+                          <span className="mono text-[12px] text-ink-3">
                             {formatNumber((pod.requestCpuSize ?? 0) / 1000, 2)} CORE
                           </span>
                         </td>
                         <td>
-                          <span className="mono text-[9.5px] text-ink-3">
+                          <span className="mono text-[12px] text-ink-3">
                             {formatNumber((pod.requestMemorySize ?? 0) / 1024 / 1024, 2)} GiB
                           </span>
                         </td>
                         <td>
-                          <span className={cn('mono text-[10px]', (pod.restartCount ?? 0) > 0 ? 'text-signal' : 'text-mute')}>
+                          <span className={cn('mono text-[12px]', (pod.restartCount ?? 0) > 0 ? 'text-signal' : 'text-mute')}>
                             {pod.restartCount ?? 0}
                           </span>
                         </td>
@@ -851,7 +851,7 @@ export default function SystemOverviewPage() {
               </table>
             </div>
           )}
-          <div className="mono text-[8.5px] leading-relaxed tracking-wider text-mute">
+          <div className="mono text-[12px] leading-relaxed tracking-wider text-mute">
             数据每 10 秒重新评估；重启操作会删除所选 Pod，由控制器在可用节点重建。
           </div>
         </div>

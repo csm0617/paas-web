@@ -177,8 +177,8 @@ export default function AlertsPage() {
         <div className="flex items-center gap-2.5">
           <StatusDot tone={Number(row.enable) === 1 ? 'ok' : 'idle'} />
           <div>
-            <div className="text-[12px] font-medium text-ink">{row.strategyName}</div>
-            <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.id || '—'}</div>
+            <div className="text-[14px] font-medium text-ink">{row.strategyName}</div>
+            <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.id || '—'}</div>
           </div>
         </div>
       ),
@@ -188,8 +188,8 @@ export default function AlertsPage() {
       header: '监控对象',
       cell: (row) => (
         <div>
-          <div className="mono text-[10.5px] text-ink-3">{row.targetName || '全集群'}</div>
-          <div className="mono mt-0.5 text-[8.5px] text-mute">{row.namespace || '—'}</div>
+          <div className="mono text-[12px] text-ink-3">{row.targetName || '全集群'}</div>
+          <div className="mono mt-0.5 text-[12px] text-mute">{row.namespace || '—'}</div>
         </div>
       ),
     },
@@ -210,7 +210,7 @@ export default function AlertsPage() {
     {
       key: 'interval',
       header: '周期',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.interval || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.interval || '—'}</span>,
     },
     {
       key: 'enable',
@@ -259,12 +259,12 @@ export default function AlertsPage() {
     {
       key: 'strategy',
       header: '告警策略',
-      cell: (row) => <span className="text-[11.5px] text-ink">{row.strategyName || '—'}</span>,
+      cell: (row) => <span className="text-[12px] text-ink">{row.strategyName || '—'}</span>,
     },
     {
       key: 'target',
       header: '对象',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.targetName || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.targetName || '—'}</span>,
     },
     {
       key: 'metric',
@@ -290,8 +290,8 @@ export default function AlertsPage() {
       sortValue: (row) => row.startTime ?? row.createdAt ?? 0,
       cell: (row) => (
         <div>
-          <div className="mono text-[10px] text-ink-3">{formatDate(row.startTime ?? row.createdAt)}</div>
-          <div className="mono mt-0.5 text-[8px] text-mute">{relativeTime(row.startTime ?? row.createdAt)}</div>
+          <div className="mono text-[12px] text-ink-3">{formatDate(row.startTime ?? row.createdAt)}</div>
+          <div className="mono mt-0.5 text-[12px] text-mute">{relativeTime(row.startTime ?? row.createdAt)}</div>
         </div>
       ),
     },
@@ -314,11 +314,11 @@ export default function AlertsPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={mode === 'rules' ? 'ok' : records.length ? 'warn' : 'ok'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {mode === 'rules' ? `${rules.length} STRATEGIES` : `${records.length} RECORDS`}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">{typeLabel}</span>
+            <span className="mono text-[12px] tracking-widest text-mute">{typeLabel}</span>
           </>
         }
         toolbar={
@@ -328,7 +328,7 @@ export default function AlertsPage() {
                 key={type.value}
                 onClick={() => setAlertType(type.value)}
                 className={cn(
-                  'mono h-[30px] px-3 text-[9px] tracking-[0.14em] transition-colors',
+                  'mono h-[30px] px-3 text-[12px] tracking-[0.14em] transition-colors',
                   alertType === type.value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2',
                 )}
               >
@@ -516,7 +516,7 @@ export default function AlertsPage() {
         </div>
         <div className="mt-3 flex items-start gap-2 border border-line bg-paper-2/40 px-3 py-2">
           <BellRing size={12} className="mt-0.5 flex-2 text-mute" />
-          <p className="text-[10.5px] leading-relaxed text-ink-3">
+          <p className="text-[12px] leading-relaxed text-ink-3">
             表达式预览：<span className="mono text-ink">{form.metric} {form.operator} {form.value}</span>，每 {form.interval} 评估一次。
           </p>
         </div>

@@ -271,21 +271,21 @@ export default function BackupSyncPage() {
       header: '数据对象',
       cell: (row) => (
         <div>
-          <div className="text-[11.5px] text-ink">{row.databaseName}</div>
-          <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.databaseKey}</div>
+          <div className="text-[12px] text-ink">{row.databaseName}</div>
+          <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.databaseKey}</div>
         </div>
       ),
     },
     {
       key: 'file',
       header: '归档文件',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.databaseFilename || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.databaseFilename || '—'}</span>,
     },
     {
       key: 'size',
       header: '大小',
       align: 'right',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{formatBytes(row.size)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{formatBytes(row.size)}</span>,
     },
     {
       key: 'time',
@@ -293,8 +293,8 @@ export default function BackupSyncPage() {
       sortValue: (row) => row.createdAt ?? 0,
       cell: (row) => (
         <div>
-          <div className="mono text-[10px] text-ink-3">{formatDate(row.createdAt)}</div>
-          <div className="mono mt-0.5 text-[8px] text-mute">{relativeTime(row.createdAt)}</div>
+          <div className="mono text-[12px] text-ink-3">{formatDate(row.createdAt)}</div>
+          <div className="mono mt-0.5 text-[12px] text-mute">{relativeTime(row.createdAt)}</div>
         </div>
       ),
     },
@@ -374,12 +374,12 @@ export default function BackupSyncPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={syncStatus?.syncing ? 'warn' : 'ok'} pulse={!!syncStatus?.syncing} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {mode === 'backup' ? `${backups.length} DATA OBJECTS` : syncStatus?.syncing ? 'SYNC IN PROGRESS' : 'SYNC IDLE'}
               </span>
             </span>
             {mode === 'sync' && (
-              <span className="mono text-[9.5px] tracking-widest text-mute">
+              <span className="mono text-[12px] tracking-widest text-mute">
                 LAST {syncStatus?.success ? 'SUCCESS' : syncStatus?.errorStatus ? 'FAILED' : 'N/A'}
               </span>
             )}
@@ -470,15 +470,15 @@ export default function BackupSyncPage() {
               <div className="mt-3 space-y-2">
                 {files.slice(0, 5).map((file, index) => (
                   <div key={index} className="flex items-center justify-between border-t border-line pt-2">
-                    <span className="mono truncate text-[9.5px] text-ink-3">{file.fileName || file.name || file.path}</span>
-                    <span className="mono text-[9px] text-mute">{formatBytes(file.size)}</span>
+                    <span className="mono truncate text-[12px] text-ink-3">{file.fileName || file.name || file.path}</span>
+                    <span className="mono text-[12px] text-mute">{formatBytes(file.size)}</span>
                   </div>
                 ))}
-                {files.length === 0 && <div className="py-3 text-[10.5px] text-mute">服务器暂无归档文件</div>}
+                {files.length === 0 && <div className="py-3 text-[12px] text-mute">服务器暂无归档文件</div>}
               </div>
             </Panel>
             <Panel kicker="NOTICE" title="操作须知">
-              <ul className="space-y-2 text-[10.5px] leading-relaxed text-ink-3">
+              <ul className="space-y-2 text-[12px] leading-relaxed text-ink-3">
                 <li className="flex gap-2">
                   <span className="mt-1 h-1 w-1 flex-none bg-signal" />
                   一键备份会覆盖同名归档文件，请确认磁盘余量。
@@ -530,8 +530,8 @@ export default function BackupSyncPage() {
                           : 'border-line-strong hover:border-signal',
                       )}
                     >
-                      <div className="text-[11.5px] font-medium">{option.label}</div>
-                      <div className={cn('mt-1 text-[9.5px]', syncMode === option.value ? 'text-white/70' : 'text-mute')}>
+                      <div className="text-[12px] font-medium">{option.label}</div>
+                      <div className={cn('mt-1 text-[12px]', syncMode === option.value ? 'text-white/70' : 'text-mute')}>
                         {option.desc}
                       </div>
                     </button>
@@ -560,8 +560,8 @@ export default function BackupSyncPage() {
                           }
                         />
                         <div className="flex-1">
-                          <div className="text-[11.5px] text-ink">{option.label}</div>
-                          <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{option.desc}</div>
+                          <div className="text-[12px] text-ink">{option.label}</div>
+                          <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{option.desc}</div>
                         </div>
                         <Badge>{option.key}</Badge>
                       </label>
@@ -587,10 +587,10 @@ export default function BackupSyncPage() {
             <Panel kicker="SYNC STATUS" title="任务状态">
               <div className="flex items-center gap-3">
                 <StatusDot tone={syncStatus?.syncing ? 'warn' : syncStatus?.success ? 'ok' : 'idle'} pulse={!!syncStatus?.syncing} />
-                <span className="text-[12px] text-ink">
+                <span className="text-[14px] text-ink">
                   {syncStatus?.syncing ? '正在同步' : syncStatus?.success ? '上次同步成功' : '空闲'}
                 </span>
-                <span className="mono ml-auto text-[9px] text-mute">
+                <span className="mono ml-auto text-[12px] text-mute">
                   {syncStatus?.current ?? 0} / {syncStatus?.total ?? 0}
                 </span>
               </div>
@@ -611,14 +611,14 @@ export default function BackupSyncPage() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 border border-line px-3 py-3">
                   <div className="label">本端 PRIMARY</div>
-                  <div className="mono mt-1 text-[10px] text-ink">
+                  <div className="mono mt-1 text-[12px] text-ink">
                     {(import.meta.env.VITE_PLATFORM_HOST as string) || '172.16.209.170'}
                   </div>
                 </div>
                 <ArrowLeftRight size={14} className="flex-none text-signal" />
                 <div className="flex-1 border border-line px-3 py-3">
                   <div className="label">对端 STANDBY</div>
-                  <div className="mono mt-1 truncate text-[10px] text-ink">{effectiveUrl || '未配置'}</div>
+                  <div className="mono mt-1 truncate text-[12px] text-ink">{effectiveUrl || '未配置'}</div>
                 </div>
               </div>
             </Panel>
@@ -642,12 +642,12 @@ export default function BackupSyncPage() {
         <div className="max-h-[420px] overflow-y-auto border border-line">
           {(logsQuery.data?.list ?? []).map((item, index) => (
             <div key={index} className="grid grid-cols-[140px_1fr] gap-2 border-b border-line/60 px-3 py-2 last:border-b-0">
-              <span className="mono text-[9px] text-mute">{formatDate(item.time || item.createTime)}</span>
-              <span className="text-[10.5px] leading-relaxed text-ink-3">{item.content || item.message || '—'}</span>
+              <span className="mono text-[12px] text-mute">{formatDate(item.time || item.createTime)}</span>
+              <span className="text-[12px] leading-relaxed text-ink-3">{item.content || item.message || '—'}</span>
             </div>
           ))}
           {(logsQuery.data?.list ?? []).length === 0 && (
-            <div className="px-3 py-10 text-center text-[11px] text-mute">
+            <div className="px-3 py-10 text-center text-[12px] text-mute">
               {logsQuery.isLoading ? '正在读取日志…' : '暂无日志记录'}
             </div>
           )}
@@ -675,7 +675,7 @@ export default function BackupSyncPage() {
         <div className="space-y-2">
           {(settingsQuery.data?.list ?? []).map((item) => (
             <div key={item.databaseName} className="flex items-center justify-between gap-3 border border-line px-3 py-2">
-              <span className="mono truncate text-[11px] text-ink">{item.databaseName}</span>
+              <span className="mono truncate text-[12px] text-ink">{item.databaseName}</span>
               <Select
                 className="h-8 w-[190px] flex-none"
                 value={String(item.type ?? 1)}
@@ -691,7 +691,7 @@ export default function BackupSyncPage() {
             </div>
           ))}
           {(settingsQuery.data?.list ?? []).length === 0 && (
-            <div className="border border-dashed border-line-strong px-3 py-10 text-center text-[11px] text-mute">
+            <div className="border border-dashed border-line-strong px-3 py-10 text-center text-[12px] text-mute">
               {settingsQuery.isLoading ? '正在读取备份设置…' : '暂无业务数据库备份设置'}
             </div>
           )}
@@ -732,7 +732,7 @@ export default function BackupSyncPage() {
         }
       >
         {restoreRow?.databaseKey === 'database' ? (
-          <div className="border-l-2 border-signal bg-signal/[0.05] px-3 py-2 text-[10.5px] leading-relaxed text-ink-3">
+          <div className="border-l-2 border-signal bg-signal/[0.05] px-3 py-2 text-[12px] leading-relaxed text-ink-3">
             还原会覆盖当前业务数据库内容。请确认已完成必要的数据导出，并在维护窗口内执行。
           </div>
         ) : (
@@ -752,10 +752,10 @@ export default function BackupSyncPage() {
               className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 py-8 text-mute hover:border-signal hover:text-signal"
             >
               <Upload size={18} strokeWidth={1.4} />
-              <span className="text-[11px]">{restoreFile ? restoreFile.name : '点击选择备份文件'}</span>
-              <span className="mono text-[8.5px] tracking-widest">EXCEL / JSON / ARCHIVE</span>
+              <span className="text-[12px]">{restoreFile ? restoreFile.name : '点击选择备份文件'}</span>
+              <span className="mono text-[12px] tracking-widest">EXCEL / JSON / ARCHIVE</span>
             </button>
-            <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[8.5px] leading-relaxed tracking-wider text-mute">
+            <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] leading-relaxed tracking-wider text-mute">
               用户、席位、子角色使用 Excel 备份文件；应用与配置组使用 JSON；镜像使用 tar 包。还原将覆盖同名数据。
             </div>
           </div>

@@ -110,14 +110,14 @@ function YamlView({ text }: { text: string }) {
   return (
     <div className="h-[540px] overflow-auto border border-line bg-[#0e2233]">
       <div className="flex min-w-max">
-        <div className="select-none bg-[#19476f] py-2 text-right font-mono text-[11px] leading-[18px] text-[#d7e6f5]">
+        <div className="select-none bg-[#19476f] py-2 text-right font-mono text-[12px] leading-[18px] text-[#d7e6f5]">
           {lines.map((_, index) => (
             <div key={index} className="px-2">
               {index + 1}
             </div>
           ))}
         </div>
-        <pre className="px-2 py-2 font-mono text-[11px] leading-[18px]">
+        <pre className="px-2 py-2 font-mono text-[12px] leading-[18px]">
           {lines.map((line, index) => {
             const match = line.match(/^(\s*(?:- )?)([\w.\-/]+)(:)(.*)$/)
             if (match) {
@@ -365,7 +365,7 @@ export default function PodsPage() {
       header: '序号',
       width: 80,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
     },
     {
       key: 'name',
@@ -375,7 +375,7 @@ export default function PodsPage() {
       cell: (row) => (
         <button
           onClick={() => setDetail(row)}
-          className="max-w-[260px] truncate text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+          className="max-w-[260px] truncate text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
         >
           {row.metadata?.name || '—'}
         </button>
@@ -391,14 +391,14 @@ export default function PodsPage() {
         const { running, total, partial } = runningOf(row)
         return (
           <div className="leading-[1.5]">
-            <div className={cn('text-[12px]', phase.tone)}>{phase.text}</div>
+            <div className={cn('text-[14px]', phase.tone)}>{phase.text}</div>
             {total > 0 && row.status?.phase === 'Running' && (
-              <div className="text-[11.5px] text-ink-3">
+              <div className="text-[12px] text-ink-3">
                 {running}/{total}
                 {partial ? '部分运行' : '全部运行'}
               </div>
             )}
-            <div className="text-[11.5px] text-ink-3">已重启 {restartsOf(row)} 次</div>
+            <div className="text-[12px] text-ink-3">已重启 {restartsOf(row)} 次</div>
           </div>
         )
       },
@@ -408,21 +408,21 @@ export default function PodsPage() {
       header: '所属服务',
       width: 160,
       align: 'center',
-      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{serviceOf(row) || '--'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{serviceOf(row) || '--'}</span>,
     },
     {
       key: 'image',
       header: '镜像',
       width: 200,
       align: 'center',
-      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{imageOf(row)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{imageOf(row)}</span>,
     },
     {
       key: 'ip',
       header: '访问地址',
       width: 180,
       align: 'center',
-      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{row.status?.podIP || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.status?.podIP || '—'}</span>,
     },
     {
       key: 'created',
@@ -430,7 +430,7 @@ export default function PodsPage() {
       width: 180,
       align: 'center',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[11.5px] text-ink-3">
+        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
           {row.metadata?.creationTimestamp ? formatDate(row.metadata.creationTimestamp, true) : '—'}
         </span>
       ),
@@ -445,7 +445,7 @@ export default function PodsPage() {
       cell: (row) => {
         const service = serviceOf(row)
         return (
-          <div className="flex items-center justify-center gap-2.5 text-[12px]">
+          <div className="flex items-center justify-center gap-2.5 text-[14px]">
             <button
               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
               onClick={() => {
@@ -535,7 +535,7 @@ export default function PodsPage() {
                 key={tab.key}
                 onClick={() => setDetailTab(tab.key)}
                 className={cn(
-                  'border-l-2 px-3 py-2 text-left text-[12px] transition-colors',
+                  'border-l-2 px-3 py-2 text-left text-[14px] transition-colors',
                   detailTab === tab.key
                     ? 'border-signal text-signal'
                     : 'border-transparent text-ink-3 hover:text-ink',
@@ -548,7 +548,7 @@ export default function PodsPage() {
           <div className="min-w-0 flex-1 pl-3">
             {detailTab === 'yaml' &&
               (detailQuery.isLoading ? (
-                <div className="py-16 text-center text-[12px] text-mute">正在读取 Pod 定义…</div>
+                <div className="py-16 text-center text-[14px] text-mute">正在读取 Pod 定义…</div>
               ) : (
                 <YamlView text={yamlText} />
               ))}
@@ -558,7 +558,7 @@ export default function PodsPage() {
                   <button
                     onClick={() => setCustomRange(true)}
                     className={cn(
-                      'inline-flex h-7 items-center border px-3 text-[12px] transition-colors',
+                      'inline-flex h-7 items-center border px-3 text-[14px] transition-colors',
                       customRange
                         ? 'border-signal bg-[#1670c2] text-white'
                         : 'border-[#2f6fa8] text-ink-3 hover:text-ink',
@@ -574,7 +574,7 @@ export default function PodsPage() {
                         setPodRange(range.key)
                       }}
                       className={cn(
-                        '-ml-px inline-flex h-7 items-center border px-3 text-[12px] transition-colors',
+                        '-ml-px inline-flex h-7 items-center border px-3 text-[14px] transition-colors',
                         !customRange && podRange === range.key
                           ? 'border-signal bg-[#1670c2] text-white'
                           : 'border-[#2f6fa8] text-ink-3 hover:text-ink',
@@ -585,7 +585,7 @@ export default function PodsPage() {
                   ))}
                 </div>
                 {customRange && (
-                  <div className="mb-4 flex items-center gap-2 text-[12px] text-ink-3">
+                  <div className="mb-4 flex items-center gap-2 text-[14px] text-ink-3">
                     <input
                       type="datetime-local"
                       step={1}
@@ -603,17 +603,17 @@ export default function PodsPage() {
                     />
                   </div>
                 )}
-                <div className="mb-3 text-[12px] text-ink-3">时间间隔：1minute</div>
+                <div className="mb-3 text-[14px] text-ink-3">时间间隔：1minute</div>
                 {podMonitorQuery.isLoading ? (
-                  <div className="py-16 text-center text-[12px] text-mute">正在采集指标…</div>
+                  <div className="py-16 text-center text-[14px] text-mute">正在采集指标…</div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     <div>
-                      <div className="mb-2 text-[12px] text-ink-3">CPU 使用量（m）</div>
+                      <div className="mb-2 text-[14px] text-ink-3">CPU 使用量（m）</div>
                       <AreaTrend series={monitorTrend(podMonitorQuery.data?.cpu, 1000)} height={200} unit=" m" />
                     </div>
                     <div>
-                      <div className="mb-2 text-[12px] text-ink-3">内存使用量（MB）</div>
+                      <div className="mb-2 text-[14px] text-ink-3">内存使用量（MB）</div>
                       <AreaTrend
                         series={monitorTrend(podMonitorQuery.data?.memory, 1 / 1024 / 1024)}
                         height={200}
@@ -621,7 +621,7 @@ export default function PodsPage() {
                       />
                     </div>
                     <div>
-                      <div className="mb-2 text-[12px] text-ink-3">网络吞吐（KB/s）</div>
+                      <div className="mb-2 text-[14px] text-ink-3">网络吞吐（KB/s）</div>
                       <AreaTrend
                         series={[
                           ...monitorTrend(podMonitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
@@ -638,7 +638,7 @@ export default function PodsPage() {
                       />
                     </div>
                     <div>
-                      <div className="mb-2 text-[12px] text-ink-3">磁盘 IO（KB/s）</div>
+                      <div className="mb-2 text-[14px] text-ink-3">磁盘 IO（KB/s）</div>
                       <AreaTrend
                         series={[
                           ...monitorTrend(podMonitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
@@ -661,12 +661,12 @@ export default function PodsPage() {
             {detailTab === 'log' && (
               <div
                 ref={logBoxRef}
-                className="h-[540px] overflow-auto border border-line bg-[#0e2233] px-3 py-2 font-mono text-[11px] leading-[18px] text-[#cfe3f5]"
+                className="h-[540px] overflow-auto border border-line bg-[#0e2233] px-3 py-2 font-mono text-[12px] leading-[18px] text-[#cfe3f5]"
               >
                 {logState === 'connecting' && !logText ? (
-                  <div className="py-16 text-center font-sans text-[12px] text-mute">正在连接日志…</div>
+                  <div className="py-16 text-center font-sans text-[14px] text-mute">正在连接日志…</div>
                 ) : logState === 'error' ? (
-                  <div className="py-16 text-center font-sans text-[12px] text-danger">日志连接失败，请确认 Pod 处于运行状态</div>
+                  <div className="py-16 text-center font-sans text-[14px] text-danger">日志连接失败，请确认 Pod 处于运行状态</div>
                 ) : (
                   <pre className="whitespace-pre-wrap break-all">{logText || '暂无日志'}</pre>
                 )}
@@ -676,7 +676,7 @@ export default function PodsPage() {
               <div className="h-[540px] space-y-2 overflow-auto">
                 {(podEventsQuery.data?.items ?? []).map((event, index) => (
                   <div key={index} className="border border-line px-3 py-2">
-                    <div className="flex items-center gap-3 text-[12px]">
+                    <div className="flex items-center gap-3 text-[14px]">
                       <span
                         className={cn(
                           'w-[120px] flex-none',
@@ -687,14 +687,14 @@ export default function PodsPage() {
                       </span>
                       <span className="flex-none text-ink-3">消息</span>
                       <span className="min-w-0 flex-1 text-ink">{event.message || '—'}</span>
-                      <span className="mono flex-none text-[11px] text-mute">
+                      <span className="mono flex-none text-[12px] text-mute">
                         {event.lastTimestamp ? formatDate(event.lastTimestamp, true) : ''}
                       </span>
                     </div>
                   </div>
                 ))}
                 {!podEventsQuery.isLoading && (podEventsQuery.data?.items ?? []).length === 0 && (
-                  <div className="py-16 text-center text-[12px] text-mute">暂无事件</div>
+                  <div className="py-16 text-center text-[14px] text-mute">暂无事件</div>
                 )}
               </div>
             )}

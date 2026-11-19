@@ -136,11 +136,11 @@ export default function ResourcesOverviewPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={summaryQuery.isError ? 'warn' : 'ok'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {summaryQuery.isError ? 'METRICS DEGRADED' : 'CLUSTER ONLINE'}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">STEP 1 MIN</span>
+            <span className="mono text-[12px] tracking-widest text-mute">STEP 1 MIN</span>
           </>
         }
         toolbar={
@@ -150,7 +150,7 @@ export default function ResourcesOverviewPage() {
                 key={item.key}
                 onClick={() => setRange(item.key)}
                 className={cn(
-                  'mono h-[30px] px-2.5 text-[9px] tracking-widest transition-colors',
+                  'mono h-[30px] px-2.5 text-[12px] tracking-widest transition-colors',
                   range === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
                 )}
               >
@@ -185,9 +185,9 @@ export default function ResourcesOverviewPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{staticInfo?.node?.nodeRunning ?? '—'}</span>
-            <span className="text-[12px] text-mute">/ {staticInfo?.node?.nodeSum ?? '—'}</span>
+            <span className="text-[14px] text-mute">/ {staticInfo?.node?.nodeSum ?? '—'}</span>
           </div>
-          <div className="mono mt-2.5 text-[9px] tracking-widest text-mute">
+          <div className="mono mt-2.5 text-[12px] tracking-widest text-mute">
             SCHEDULABLE {staticInfo?.node?.schedulable ?? '—'}
           </div>
         </Panel>
@@ -198,7 +198,7 @@ export default function ResourcesOverviewPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{formatNumber(cpuAlloc, 1)}</span>
-            <span className="text-[12px] text-mute">/ {formatNumber(cpuSum, 0)} 核</span>
+            <span className="text-[14px] text-mute">/ {formatNumber(cpuSum, 0)} 核</span>
           </div>
           <div className="mt-2.5 h-[3px] w-full bg-line">
             <div
@@ -214,7 +214,7 @@ export default function ResourcesOverviewPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{formatNumber(memAlloc, 1)}</span>
-            <span className="text-[12px] text-mute">/ {formatNumber(memSum, 1)} G</span>
+            <span className="text-[14px] text-mute">/ {formatNumber(memSum, 1)} G</span>
           </div>
           <div className="mt-2.5 h-[3px] w-full bg-line">
             <div
@@ -230,9 +230,9 @@ export default function ResourcesOverviewPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{containers}</span>
-            <span className="text-[12px] text-mute">/ {podTotal}</span>
+            <span className="text-[14px] text-mute">/ {podTotal}</span>
           </div>
-          <div className="mono mt-2.5 text-[9px] tracking-widest text-mute">
+          <div className="mono mt-2.5 text-[12px] tracking-widest text-mute">
             RUNNING · PENDING {pods.Pending ?? 0} · FAILED {pods.Failed ?? 0}
           </div>
         </Panel>
@@ -250,19 +250,19 @@ export default function ResourcesOverviewPage() {
               color="var(--color-ink)"
             />
           </div>
-          <div className="mono mt-2 border-t border-line pt-2 text-[8px] leading-relaxed tracking-wider text-mute">
+          <div className="mono mt-2 border-t border-line pt-2 text-[12px] leading-relaxed tracking-wider text-mute">
             使用率由 Prometheus 采集节点实际水位，与上方“分配”口径不同。
           </div>
         </Panel>
         <Panel className="xl:col-span-3" kicker="LOG CAPACITY" title="日志存储容量">
           <div className="mt-1 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{formatNumber(lokiQuery.data?.totalMemory ?? 0, 2)}</span>
-            <span className="text-[12px] text-mute">GiB</span>
+            <span className="text-[14px] text-mute">GiB</span>
           </div>
           <div className="mt-3">
             <div className="mb-1 flex justify-between">
               <span className="label">告警值</span>
-              <span className="mono text-[10px] text-ink">{lokiQuery.data?.logMaxMemory ?? '—'} MB</span>
+              <span className="mono text-[12px] text-ink">{lokiQuery.data?.logMaxMemory ?? '—'} MB</span>
             </div>
             <div className="h-[3px] w-full bg-line">
               <div
@@ -283,7 +283,7 @@ export default function ResourcesOverviewPage() {
         <Panel className="xl:col-span-4" kicker="LOG RETENTION" title="日志存储时长">
           <div className="mt-1 flex items-baseline gap-1">
             <span className="num text-[30px] leading-none text-ink">{lokiQuery.data?.logRetainDay ?? '—'}</span>
-            <span className="text-[12px] text-mute">
+            <span className="text-[14px] text-mute">
               / {lokiQuery.data?.logRetainMaxDay ?? '—'} 天
             </span>
           </div>
@@ -303,7 +303,7 @@ export default function ResourcesOverviewPage() {
               />
             </div>
           </div>
-          <div className="mono mt-3 border-t border-line pt-2 text-[8px] leading-relaxed tracking-wider text-mute">
+          <div className="mono mt-3 border-t border-line pt-2 text-[12px] leading-relaxed tracking-wider text-mute">
             超期日志由平台治理任务自动清理。
           </div>
         </Panel>
@@ -314,7 +314,7 @@ export default function ResourcesOverviewPage() {
           className="xl:col-span-12"
           kicker="ETCD MONITORING"
           title="ETCD 监控"
-          actions={<span className="mono text-[8.5px] tracking-widest text-mute">RAFT · DB · NETWORK</span>}
+          actions={<span className="mono text-[12px] tracking-widest text-mute">RAFT · DB · NETWORK</span>}
         >
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div>
@@ -336,7 +336,7 @@ export default function ResourcesOverviewPage() {
           className="xl:col-span-12"
           kicker="APISERVER MONITORING"
           title="APIServer 监控"
-          actions={<span className="mono text-[8.5px] tracking-widest text-mute">RATE · LATENCY</span>}
+          actions={<span className="mono text-[12px] tracking-widest text-mute">RATE · LATENCY</span>}
         >
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <div>
@@ -351,7 +351,7 @@ export default function ResourcesOverviewPage() {
         </Panel>
       </div>
 
-      <div className="mono mt-4 flex items-center gap-2 text-[8px] tracking-wider text-mute">
+      <div className="mono mt-4 flex items-center gap-2 text-[12px] tracking-wider text-mute">
         <Database size={10} /> 指标来源 PROMETHEUS · 采样步长 1 分钟 · 区间 {RANGES.find((item) => item.key === range)?.label}
       </div>
     </div>

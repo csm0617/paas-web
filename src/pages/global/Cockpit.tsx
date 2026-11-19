@@ -103,11 +103,11 @@ export default function CockpitPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={cockpitQuery.isError ? 'warn' : cockpit ? 'ok' : 'idle'} pulse />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {cockpitQuery.isError ? 'TELEMETRY DEGRADED' : cockpit ? '60 SAMPLES / NODE' : 'SYNCING TELEMETRY'}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">
+            <span className="mono text-[12px] tracking-widest text-mute">
               {primary
                 ? `PRIMARY ${primary.name} · ${primary.ip}`
                 : primaryNode
@@ -131,7 +131,7 @@ export default function CockpitPage() {
       {cockpitQuery.isError && (
         <div className="mb-4 flex items-center gap-3 border-l-2 border-warn bg-warn/[0.06] px-4 py-2.5">
           <span className="h-1.5 w-1.5 bg-warn" />
-          <span className="text-[11.5px] text-ink">
+          <span className="text-[12px] text-ink">
             驾驶舱遥测暂不可用（metrics-server / Prometheus 未返回数据），图表将在采集恢复后自动填充。
           </span>
         </div>
@@ -150,7 +150,7 @@ export default function CockpitPage() {
             </span>
             <Sparkline data={(primary?.cpu ?? []).map((p) => p.value)} width={90} height={30} color="var(--color-signal)" />
           </div>
-          <div className="mono mt-2 text-[9px] tracking-widest text-mute">
+          <div className="mono mt-2 text-[12px] tracking-widest text-mute">
             {formatNumber(primary?.capacityCpu ?? primaryNode?.capacityCpu ?? 0, 1)} CORE CAPACITY
           </div>
         </div>
@@ -166,19 +166,19 @@ export default function CockpitPage() {
             </span>
             <Sparkline data={(primary?.memory ?? []).map((p) => p.value)} width={90} height={30} color="var(--color-ink)" />
           </div>
-          <div className="mono mt-2 text-[9px] tracking-widest text-mute">
+          <div className="mono mt-2 text-[12px] tracking-widest text-mute">
             {formatNumber((primary?.capacityMem ?? primaryNode?.capacityMem ?? 0) / 1024, 1)} GiB CAPACITY
           </div>
         </div>
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <span className="label">运行 Pod</span>
-            <span className="mono text-[9px] text-mute">{podHealth?.total ?? '—'} TOTAL</span>
+            <span className="mono text-[12px] text-mute">{podHealth?.total ?? '—'} TOTAL</span>
           </div>
           <div className="mt-2 num text-[36px] leading-none text-ink">{cockpit ? (podHealth?.running ?? '—') : '—'}</div>
           <div className="mt-3 flex items-center gap-2">
             <Meter value={(podHealth?.normalRate ?? 0) * 100} tone="ok" />
-            <span className="mono text-[9px] text-ok">{cockpit ? `${Math.round((podHealth?.normalRate ?? 0) * 100)}%` : '—'}</span>
+            <span className="mono text-[12px] text-ok">{cockpit ? `${Math.round((podHealth?.normalRate ?? 0) * 100)}%` : '—'}</span>
           </div>
         </div>
         <div className="px-4 py-4">
@@ -193,7 +193,7 @@ export default function CockpitPage() {
             </span>
             <Sparkline data={(primary?.networkIn ?? []).map((p) => p.value)} width={90} height={30} color="var(--color-info)" />
           </div>
-          <div className="mono mt-2 text-[9px] tracking-widest text-mute">
+          <div className="mono mt-2 text-[12px] tracking-widest text-mute">
             OUT {cockpit ? `${formatNumber(primary?.networkOut?.at(-1)?.value ?? 0, 1)} MB/s` : '—'}
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function CockpitPage() {
           className="xl:col-span-8"
           kicker="CPU / MEMORY"
           title="节点资源趋势"
-          actions={<span className="mono text-[9px] tracking-widest text-mute">1 MINUTE INTERVAL</span>}
+          actions={<span className="mono text-[12px] tracking-widest text-mute">1 MINUTE INTERVAL</span>}
         >
           {primary ? (
             <AreaTrend
@@ -219,8 +219,8 @@ export default function CockpitPage() {
             />
           ) : (
             <div className="empty-chart flex h-[252px] flex-col items-center justify-center gap-2 text-mute">
-              <span className="mono text-[9px] tracking-[0.2em]">NO TELEMETRY SAMPLES</span>
-              <span className="text-[11px]">等待 metrics-server 恢复采集</span>
+              <span className="mono text-[12px] tracking-[0.2em]">NO TELEMETRY SAMPLES</span>
+              <span className="text-[12px]">等待 metrics-server 恢复采集</span>
             </div>
           )}
         </Panel>
@@ -239,7 +239,7 @@ export default function CockpitPage() {
                 {cockpit ? (
                   <Donut segments={podPhases} size={104} thickness={12} centerValue={String(podHealth?.total ?? 0)} centerLabel="TOTAL" />
                 ) : (
-                  <div className="flex h-[104px] items-center justify-center border border-dashed border-line-strong text-[9.5px] tracking-widest text-mute">
+                  <div className="flex h-[104px] items-center justify-center border border-dashed border-line-strong text-[12px] tracking-widest text-mute">
                     NO POD DATA
                   </div>
                 )}
@@ -248,8 +248,8 @@ export default function CockpitPage() {
             <div className="mt-3 space-y-2">
               {(podHealth?.podHealthRateList ?? []).map((item) => (
                 <div key={item.nodeName} className="flex items-center justify-between border-t border-line pt-2">
-                  <span className="font-mono text-[10px] text-ink-3">{item.nodeName}</span>
-                  <span className="mono text-[10px] text-ink">
+                  <span className="font-mono text-[12px] text-ink-3">{item.nodeName}</span>
+                  <span className="mono text-[12px] text-ink">
                     {item.health} 正常 / {item.unHealth} 异常
                   </span>
                 </div>
@@ -261,9 +261,9 @@ export default function CockpitPage() {
             <div className="flex items-end justify-between">
               <span className="num text-[34px] leading-none text-ink">
                 {harbor ? formatNumber(harbor.useRate * 100, 1) : '—'}
-                <span className="text-[15px] text-mute">%</span>
+                <span className="text-[16px] text-mute">%</span>
               </span>
-              <span className="mono text-[9px] text-mute">{formatBytes(harbor?.total)} TOTAL</span>
+              <span className="mono text-[12px] text-mute">{formatBytes(harbor?.total)} TOTAL</span>
             </div>
             <div className="mt-3">
               <Meter value={(harbor?.useRate ?? 0) * 100} />
@@ -289,7 +289,7 @@ export default function CockpitPage() {
           className="xl:col-span-6"
           kicker="POD CPU TOP"
           title="Pod CPU 占用"
-          actions={<span className="mono text-[9px] tracking-widest text-mute">CORE</span>}
+          actions={<span className="mono text-[12px] tracking-widest text-mute">CORE</span>}
         >
           {(cockpit?.podCpuUsageList?.length ?? 0) > 0 ? (
             <BarList
@@ -300,7 +300,7 @@ export default function CockpitPage() {
               tone="signal"
             />
           ) : (
-            <div className="flex h-[132px] items-center justify-center border border-dashed border-line-strong text-[10px] tracking-widest text-mute">
+            <div className="flex h-[132px] items-center justify-center border border-dashed border-line-strong text-[12px] tracking-widest text-mute">
               POD CPU METRICS UNAVAILABLE
             </div>
           )}
@@ -310,7 +310,7 @@ export default function CockpitPage() {
           className="xl:col-span-6"
           kicker="POD MEMORY TOP"
           title="Pod 内存占用"
-          actions={<span className="mono text-[9px] tracking-widest text-mute">MiB</span>}
+          actions={<span className="mono text-[12px] tracking-widest text-mute">MiB</span>}
         >
           {(cockpit?.podMemoryUsageList?.length ?? 0) > 0 ? (
             <BarList
@@ -320,7 +320,7 @@ export default function CockpitPage() {
               maxRows={10}
             />
           ) : (
-            <div className="flex h-[132px] items-center justify-center border border-dashed border-line-strong text-[10px] tracking-widest text-mute">
+            <div className="flex h-[132px] items-center justify-center border border-dashed border-line-strong text-[12px] tracking-widest text-mute">
               POD MEMORY METRICS UNAVAILABLE
             </div>
           )}
@@ -331,12 +331,12 @@ export default function CockpitPage() {
             <div>
               <div className="mb-2 flex items-center justify-between border-b border-line pb-2">
                 <span className="label">CPU LIMIT</span>
-                <span className="mono text-[9px] text-mute">CORE</span>
+                <span className="mono text-[12px] text-mute">CORE</span>
               </div>
               {serviceLimit.length > 0 ? (
                 <BarList items={serviceLimit.slice(0, 8)} maxRows={8} formatter={(v) => formatNumber(v, 2)} tone="ink" />
               ) : (
-                <div className="flex h-[120px] items-center justify-center border border-dashed border-line-strong text-[10px] tracking-widest text-mute">
+                <div className="flex h-[120px] items-center justify-center border border-dashed border-line-strong text-[12px] tracking-widest text-mute">
                   NO QUOTA DATA
                 </div>
               )}
@@ -344,12 +344,12 @@ export default function CockpitPage() {
             <div>
               <div className="mb-2 flex items-center justify-between border-b border-line pb-2">
                 <span className="label">MEMORY LIMIT</span>
-                <span className="mono text-[9px] text-mute">MiB</span>
+                <span className="mono text-[12px] text-mute">MiB</span>
               </div>
               {memLimit.length > 0 ? (
                 <BarList items={memLimit.slice(0, 8)} maxRows={8} formatter={(v) => formatNumber(v, 0)} tone="signal" />
               ) : (
-                <div className="flex h-[120px] items-center justify-center border border-dashed border-line-strong text-[10px] tracking-widest text-mute">
+                <div className="flex h-[120px] items-center justify-center border border-dashed border-line-strong text-[12px] tracking-widest text-mute">
                   NO QUOTA DATA
                 </div>
               )}
@@ -363,8 +363,8 @@ export default function CockpitPage() {
               <div key={`${service.namespace}-${service.name}`} className="flex items-center gap-3 px-4 py-2.5">
                 <StatusDot tone={service.normal === service.total ? 'ok' : 'warn'} />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-mono text-[10.5px] text-ink">{service.name}</div>
-                  <div className="mono mt-0.5 text-[8px] tracking-widest text-mute">
+                  <div className="truncate font-mono text-[12px] text-ink">{service.name}</div>
+                  <div className="mono mt-0.5 text-[12px] tracking-widest text-mute">
                     {service.namespace} / {service.type}
                   </div>
                 </div>
@@ -374,14 +374,14 @@ export default function CockpitPage() {
               </div>
             ))}
             {(cockpit?.systemService?.serviceList ?? []).length === 0 && (
-              <div className="flex h-[132px] items-center justify-center text-[10px] tracking-widest text-mute">
+              <div className="flex h-[132px] items-center justify-center text-[12px] tracking-widest text-mute">
                 SYSTEM SERVICE DATA UNAVAILABLE
               </div>
             )}
           </div>
         </Panel>
 
-        <Panel className="xl:col-span-12" kicker="NETWORK THROUGHPUT" title="节点网络吞吐" actions={<span className="mono text-[9px] tracking-widest text-mute">MB / S</span>}>
+        <Panel className="xl:col-span-12" kicker="NETWORK THROUGHPUT" title="节点网络吞吐" actions={<span className="mono text-[12px] tracking-widest text-mute">MB / S</span>}>
           {primary ? (
             <AreaTrend
               height={196}
@@ -393,8 +393,8 @@ export default function CockpitPage() {
             />
           ) : (
             <div className="empty-chart flex h-[196px] flex-col items-center justify-center gap-2 text-mute">
-              <span className="mono text-[9px] tracking-[0.2em]">NETWORK SAMPLES UNAVAILABLE</span>
-              <span className="text-[11px]">等待节点网络遥测</span>
+              <span className="mono text-[12px] tracking-[0.2em]">NETWORK SAMPLES UNAVAILABLE</span>
+              <span className="text-[12px]">等待节点网络遥测</span>
             </div>
           )}
         </Panel>
@@ -406,17 +406,17 @@ export default function CockpitPage() {
             {nodeCards.map((node) => (
               <div key={node.name} className="border-b border-line pb-2 last:border-0">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] text-ink">{node.name}</span>
+                  <span className="font-mono text-[12px] text-ink">{node.name}</span>
                   <Badge tone={node.ready ? 'ok' : 'bad'}>{node.ready ? 'READY' : 'NOT READY'}</Badge>
                 </div>
-                <div className="mono mt-1 text-[9px] text-mute">{node.ip}</div>
-                <div className="mono mt-1 flex gap-3 text-[8.5px] text-mute">
+                <div className="mono mt-1 text-[12px] text-mute">{node.ip}</div>
+                <div className="mono mt-1 flex gap-3 text-[12px] text-mute">
                   <span>CPU {node.cpu === null ? '—' : `${formatNumber(node.cpu, 1)}%`}</span>
                   <span>MEM {node.mem === null ? '—' : `${formatNumber(node.mem, 1)}%`}</span>
                 </div>
               </div>
             ))}
-            {nodeCards.length === 0 && <div className="py-3 text-[11px] text-mute">暂无节点</div>}
+            {nodeCards.length === 0 && <div className="py-3 text-[12px] text-mute">暂无节点</div>}
           </div>
         </Panel>
         <Panel kicker="CAPACITY" title="集群容量">

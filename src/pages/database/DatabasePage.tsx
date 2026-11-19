@@ -311,8 +311,8 @@ export default function DatabasePage() {
         <div className="flex items-center gap-2.5">
           <Database size={13} className="text-mute" />
           <div>
-            <div className="font-mono text-[11.5px] text-ink">{row.name || row.dataBaseName || '—'}</div>
-            <div className="mono mt-0.5 max-w-[240px] truncate text-[8.5px] tracking-wider text-mute">
+            <div className="font-mono text-[12px] text-ink">{row.name || row.dataBaseName || '—'}</div>
+            <div className="mono mt-0.5 max-w-[240px] truncate text-[12px] tracking-wider text-mute">
               SERVICE / {row.service || '—'}
             </div>
           </div>
@@ -322,14 +322,14 @@ export default function DatabasePage() {
     {
       key: 'desc',
       header: '描述',
-      cell: (row) => <span className="text-[11px] text-ink-3">{row.desc || '—'}</span>,
+      cell: (row) => <span className="text-[12px] text-ink-3">{row.desc || '—'}</span>,
     },
     {
       key: 'tables',
       header: '表总数',
       align: 'right',
       cell: (row) => (
-        <span className="mono text-[10px] text-ink-3">
+        <span className="mono text-[12px] text-ink-3">
           {row.tableCount ?? row.tableSize ?? '—'}
         </span>
       ),
@@ -338,13 +338,13 @@ export default function DatabasePage() {
       key: 'sql',
       header: '初始化 SQL',
       cell: (row) => (
-        <span className="mono block max-w-[180px] truncate text-[9.5px] text-ink-3">{row.sqlName || '—'}</span>
+        <span className="mono block max-w-[180px] truncate text-[12px] text-ink-3">{row.sqlName || '—'}</span>
       ),
     },
     {
       key: 'user',
       header: '最后操作人',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.userName || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.userName || '—'}</span>,
     },
     {
       key: 'actions',
@@ -395,20 +395,20 @@ export default function DatabasePage() {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <KeyRound size={12} className="text-mute" />
-          <span className="font-mono text-[11px] text-ink">{row.username}</span>
+          <span className="font-mono text-[12px] text-ink">{row.username}</span>
         </div>
       ),
     },
     {
       key: 'desc',
       header: '描述',
-      cell: (row) => <span className="text-[11px] text-ink-3">{row.desc || '—'}</span>,
+      cell: (row) => <span className="text-[12px] text-ink-3">{row.desc || '—'}</span>,
     },
     {
       key: 'time',
       header: '更新时间',
       sortValue: (row) => row.updatedAt ?? 0,
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{formatDate(row.updatedAt ?? row.createdAt)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{formatDate(row.updatedAt ?? row.createdAt)}</span>,
     },
     {
       key: 'actions',
@@ -439,12 +439,12 @@ export default function DatabasePage() {
       key: 'time',
       header: '执行时间',
       sortValue: (row) => row.createdAt ?? row.time ?? 0,
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{formatDate(row.createdAt ?? row.time)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{formatDate(row.createdAt ?? row.time)}</span>,
     },
     {
       key: 'user',
       header: '用户',
-      cell: (row) => <span className="mono text-[10px] text-ink">{row.userName || row.username || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink">{row.userName || row.username || '—'}</span>,
     },
     {
       key: 'db',
@@ -455,14 +455,14 @@ export default function DatabasePage() {
       key: 'sql',
       header: '语句',
       cell: (row) => (
-        <span className="mono block max-w-[560px] truncate text-[10px] text-ink-3">{row.sql || row.statement || '—'}</span>
+        <span className="mono block max-w-[560px] truncate text-[12px] text-ink-3">{row.sql || row.statement || '—'}</span>
       ),
     },
     {
       key: 'cost',
       header: '耗时',
       align: 'right',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.executeTime ? `${row.executeTime} ms` : '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.executeTime ? `${row.executeTime} ms` : '—'}</span>,
     },
   ]
 
@@ -503,7 +503,7 @@ export default function DatabasePage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {tab === 'databases'
                   ? `${databases.length} DATABASES`
                   : tab === 'users'
@@ -513,7 +513,7 @@ export default function DatabasePage() {
                       : `${tableSizes.length} DATABASES · ${totalTableSize.toFixed(2)} MB`}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">MYSQL / PLATFORM</span>
+            <span className="mono text-[12px] tracking-widest text-mute">MYSQL / PLATFORM</span>
           </>
         }
         actions={
@@ -650,33 +650,33 @@ export default function DatabasePage() {
                   <div className="flex items-center justify-between gap-3 bg-paper-2/40 px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <Database size={12} className="text-mute" />
-                      <span className="font-mono text-[11px] text-ink">{database.name}</span>
+                      <span className="font-mono text-[12px] text-ink">{database.name}</span>
                       <Badge>{children.length} TABLES</Badge>
                     </div>
-                    <span className="mono text-[10px] text-ink-3">{(database.size ?? 0).toFixed(2)} MB</span>
+                    <span className="mono text-[12px] text-ink-3">{(database.size ?? 0).toFixed(2)} MB</span>
                   </div>
                   <div className="divide-y divide-line/50">
                     {children.map((table) => (
                       <div key={`${database.name}.${table.name}`} className="grid grid-cols-[1fr_120px_90px] items-center gap-3 px-4 py-1.5">
-                        <span className="truncate font-mono text-[10px] text-ink-3">{table.name}</span>
+                        <span className="truncate font-mono text-[12px] text-ink-3">{table.name}</span>
                         <div className="h-[4px] bg-paper-2">
                           <div
                             className="h-full bg-signal"
                             style={{ width: `${Math.min(((table.size ?? 0) / max) * 100, 100)}%` }}
                           />
                         </div>
-                        <span className="mono text-right text-[9.5px] text-mute">{(table.size ?? 0).toFixed(2)} MB</span>
+                        <span className="mono text-right text-[12px] text-mute">{(table.size ?? 0).toFixed(2)} MB</span>
                       </div>
                     ))}
                     {children.length === 0 && (
-                      <div className="px-4 py-2 text-[10px] text-mute">该数据库暂无数据表</div>
+                      <div className="px-4 py-2 text-[12px] text-mute">该数据库暂无数据表</div>
                     )}
                   </div>
                 </div>
               )
             })}
             {tableSizes.length === 0 && (
-              <div className="px-4 py-12 text-center text-[11px] text-mute">
+              <div className="px-4 py-12 text-center text-[12px] text-mute">
                 {tableSizeQuery.isLoading ? '正在统计表容量…' : '暂无表容量数据'}
               </div>
             )}
@@ -739,7 +739,7 @@ export default function DatabasePage() {
               <Button size="sm" onClick={() => fileRef.current?.click()}>
                 <FileUp size={11} /> 选择文件
               </Button>
-              <span className="mono text-[9.5px] text-mute">上传后自动执行初始化脚本</span>
+              <span className="mono text-[12px] text-mute">上传后自动执行初始化脚本</span>
             </div>
           </Field>
         </div>
@@ -823,7 +823,7 @@ export default function DatabasePage() {
               {authorizedUsers.map((user) => (
                 <span
                   key={user}
-                  className="mono inline-flex items-center gap-1.5 border border-line-strong bg-paper px-2 py-1 text-[9.5px] text-ink"
+                  className="mono inline-flex items-center gap-1.5 border border-line-strong bg-paper px-2 py-1 text-[12px] text-ink"
                 >
                   {user}
                   <button
@@ -836,7 +836,7 @@ export default function DatabasePage() {
                 </span>
               ))}
               {authorizedUsers.length === 0 && (
-                <span className="text-[10.5px] text-mute">
+                <span className="text-[12px] text-mute">
                   {dbAuthQuery.isLoading ? '正在读取授权…' : '该数据库尚未授权任何用户'}
                 </span>
               )}
@@ -870,7 +870,7 @@ export default function DatabasePage() {
           </Field>
 
           <div className="border border-line bg-paper-2/30 px-3 py-2">
-            <div className="mono text-[8.5px] tracking-widest text-mute">
+            <div className="mono text-[12px] tracking-widest text-mute">
               DATABASE / {grantDb || '—'} · USERS / {authorizedUsers.length}
             </div>
           </div>
@@ -932,7 +932,7 @@ export default function DatabasePage() {
               onChange={(event) => setMaintFile(event.target.files?.[0] ?? null)}
             />
             <button
-              className="flex h-9 w-full items-center gap-2 rounded-md border border-line-strong px-3 text-left text-[12px] text-ink-3 transition-colors hover:border-signal"
+              className="flex h-9 w-full items-center gap-2 rounded-md border border-line-strong px-3 text-left text-[14px] text-ink-3 transition-colors hover:border-signal"
               onClick={() => maintFileRef.current?.click()}
             >
               <FileUp size={12} className="text-mute" />
@@ -957,7 +957,7 @@ export default function DatabasePage() {
                 更新初始化文件
               </Button>
             </div>
-            <div className="mono mt-2 text-[8px] leading-relaxed tracking-wider text-mute">
+            <div className="mono mt-2 text-[12px] leading-relaxed tracking-wider text-mute">
               IMPORT 直接在当前库执行；UPDATE 仅替换数据库初始化 SQL，不执行导入。
             </div>
           </div>
@@ -1008,8 +1008,8 @@ export default function DatabasePage() {
                   }
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="font-mono text-[11px] text-ink">{item.name}</div>
-                  <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">
+                  <div className="font-mono text-[12px] text-ink">{item.name}</div>
+                  <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">
                     {item.children?.length ?? 0} TABLES · {item.size ?? 0} MB
                   </div>
                 </div>
@@ -1017,10 +1017,10 @@ export default function DatabasePage() {
             )
           })}
           {backupTableQuery.isLoading && (
-            <div className="py-6 text-center text-[11px] text-mute">正在读取业务数据库…</div>
+            <div className="py-6 text-center text-[12px] text-mute">正在读取业务数据库…</div>
           )}
           {(backupTableQuery.data ?? []).length === 0 && !backupTableQuery.isLoading && (
-            <div className="py-6 text-center text-[11px] text-mute">暂无可备份的业务数据库</div>
+            <div className="py-6 text-center text-[12px] text-mute">暂无可备份的业务数据库</div>
           )}
         </div>
       </Drawer>

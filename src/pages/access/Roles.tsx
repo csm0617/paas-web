@@ -211,9 +211,9 @@ export default function RolesPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{roles.length} SEATS DEFINED</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{roles.length} SEATS DEFINED</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">CURRENT / {currentRole?.name || '—'}</span>
+            <span className="mono text-[12px] tracking-widest text-mute">CURRENT / {currentRole?.name || '—'}</span>
           </>
         }
         actions={
@@ -247,7 +247,7 @@ export default function RolesPage() {
           <Panel key={label} bodyClassName="px-4 py-3.5">
             <div className="label">{label}</div>
             <div className="num mt-1.5 text-[28px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </Panel>
         ))}
       </div>
@@ -269,11 +269,11 @@ export default function RolesPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="truncate text-[13px] font-semibold text-ink">{role.name}</h3>
+                    <h3 className="truncate text-[14px] font-semibold text-ink">{role.name}</h3>
                     {isCurrent && <Badge tone="info">CURRENT</Badge>}
                     {role.admin && <Badge tone="bad">ADMIN</Badge>}
                   </div>
-                  <div className="mono mt-1 text-[8.5px] tracking-[0.14em] text-mute">KEY / {role.key}</div>
+                  <div className="mono mt-1 text-[12px] tracking-[0.14em] text-mute">KEY / {role.key}</div>
                 </div>
                 <ActionMenu
                   items={[
@@ -283,7 +283,7 @@ export default function RolesPage() {
                   ]}
                 />
               </div>
-              <p className="mt-3 line-clamp-2 min-h-[32px] px-4 text-[11px] leading-relaxed text-ink-3">
+              <p className="mt-3 line-clamp-2 min-h-[32px] px-4 text-[12px] leading-relaxed text-ink-3">
                 {role.desc || '该席位未填写描述。席位权限由关联应用与子角色共同决定。'}
               </p>
               <div className="mt-2 grid grid-cols-3 divide-x divide-line border-t border-line">
@@ -301,12 +301,12 @@ export default function RolesPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between border-t border-line px-4 py-2">
-                <span className="mono text-[8px] tracking-[0.14em] text-mute">
+                <span className="mono text-[12px] tracking-[0.14em] text-mute">
                   {role.type === 2 ? 'OPERATION SEAT' : role.type === 1 ? 'SYSTEM' : 'CUSTOM'}
                 </span>
                 <button
                   onClick={() => setDetail(role)}
-                  className="mono flex items-center gap-1 text-[8.5px] tracking-widest text-ink-3 transition-colors hover:text-signal"
+                  className="mono flex items-center gap-1 text-[12px] tracking-widest text-ink-3 transition-colors hover:text-signal"
                 >
                   权限明细 <KeyRound size={10} />
                 </button>
@@ -318,7 +318,7 @@ export default function RolesPage() {
           <Panel className="md:col-span-2 xl:col-span-3">
             <div className="flex flex-col items-center gap-2 py-12 text-mute">
               <Users2 size={26} strokeWidth={1.2} />
-              <span className="text-[11.5px]">尚未创建席位</span>
+              <span className="text-[12px]">尚未创建席位</span>
             </div>
           </Panel>
         )}
@@ -410,7 +410,7 @@ export default function RolesPage() {
             <div className="border-t border-line pt-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="label">关联应用</span>
-                <span className="mono text-[8.5px] text-mute">{editForm.softwareIds.length} SELECTED</span>
+                <span className="mono text-[12px] text-mute">{editForm.softwareIds.length} SELECTED</span>
               </div>
               <div className="grid max-h-[150px] grid-cols-1 gap-1 overflow-y-auto border border-line p-2 sm:grid-cols-2">
                 {(softwareQuery.data?.softwareList ?? []).map((software) => {
@@ -430,19 +430,19 @@ export default function RolesPage() {
                           }))
                         }
                       />
-                      <span className="flex-1 truncate text-[11px] text-ink">{software.name}</span>
-                      <span className="mono text-[8px] text-mute">{software.key}</span>
+                      <span className="flex-1 truncate text-[12px] text-ink">{software.name}</span>
+                      <span className="mono text-[12px] text-mute">{software.key}</span>
                     </label>
                   )
                 })}
-                {softwareQuery.isLoading && <div className="col-span-2 py-2 text-center text-[10px] text-mute">读取应用…</div>}
+                {softwareQuery.isLoading && <div className="col-span-2 py-2 text-center text-[12px] text-mute">读取应用…</div>}
               </div>
             </div>
 
             <div className="border-t border-line pt-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="label">席位用户</span>
-                <span className="mono text-[8.5px] text-mute">{editForm.userIds.length} SELECTED</span>
+                <span className="mono text-[12px] text-mute">{editForm.userIds.length} SELECTED</span>
               </div>
               <div className="grid max-h-[150px] grid-cols-1 gap-1 overflow-y-auto border border-line p-2 sm:grid-cols-2">
                 {(usersQuery.data?.list ?? []).map((user) => {
@@ -462,18 +462,18 @@ export default function RolesPage() {
                           }))
                         }
                       />
-                      <span className="flex-1 truncate text-[11px] text-ink">{user.nickname || user.username}</span>
-                      <span className="mono text-[8px] text-mute">{user.username}</span>
+                      <span className="flex-1 truncate text-[12px] text-ink">{user.nickname || user.username}</span>
+                      <span className="mono text-[12px] text-mute">{user.username}</span>
                     </label>
                   )
                 })}
-                {usersQuery.isLoading && <div className="col-span-2 py-2 text-center text-[10px] text-mute">读取用户…</div>}
+                {usersQuery.isLoading && <div className="col-span-2 py-2 text-center text-[12px] text-mute">读取用户…</div>}
               </div>
             </div>
 
             <div className="border border-line bg-paper-2/40 px-3 py-2">
               <div className="label mb-1">权限提示</div>
-              <p className="text-[10.5px] leading-relaxed text-ink-3">
+              <p className="text-[12px] leading-relaxed text-ink-3">
                 移除应用后，该席位下的用户将立即失去对应入口。子角色关联保持不变。
               </p>
             </div>
@@ -513,7 +513,7 @@ export default function RolesPage() {
                       {software.appName || software.name || '—'}
                     </Badge>
                   ))}
-                  {(detail.softwareList ?? []).length === 0 && <span className="text-[10.5px] text-mute">未关联应用</span>}
+                  {(detail.softwareList ?? []).length === 0 && <span className="text-[12px] text-mute">未关联应用</span>}
                 </div>
               </div>
               <div>
@@ -522,7 +522,7 @@ export default function RolesPage() {
                   {(detail.userList ?? []).map((user) => (
                     <Badge key={user.id}>{user.nickname || user.username}</Badge>
                   ))}
-                  {(detail.userList ?? []).length === 0 && <span className="text-[10.5px] text-mute">暂无绑定用户</span>}
+                  {(detail.userList ?? []).length === 0 && <span className="text-[12px] text-mute">暂无绑定用户</span>}
                 </div>
               </div>
             </div>
@@ -570,14 +570,14 @@ export default function RolesPage() {
             className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 py-8 text-mute hover:border-signal hover:text-signal"
           >
             <Upload size={18} strokeWidth={1.4} />
-            <span className="text-[11px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>
-            <span className="mono text-[8.5px] tracking-widest">XLS / XLSX</span>
+            <span className="text-[12px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>
+            <span className="mono text-[12px] tracking-widest">XLS / XLSX</span>
           </button>
           <label className="flex items-center gap-2 border border-line px-3 py-2">
             <input type="checkbox" className="check" checked={importCover} onChange={(event) => setImportCover(event.target.checked)} />
-            <span className="text-[11px] text-ink-3">覆盖同名席位</span>
+            <span className="text-[12px] text-ink-3">覆盖同名席位</span>
           </label>
-          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[8.5px] leading-relaxed tracking-wider text-mute">
+          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] leading-relaxed tracking-wider text-mute">
             模板包含席位名称、唯一标识、描述等列。请先下载模板填写后再上传。
           </div>
         </div>

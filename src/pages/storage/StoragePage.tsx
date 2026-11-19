@@ -327,8 +327,8 @@ export default function StoragePage() {
         <div className="flex items-center gap-2.5">
           <HardDrive size={13} className="text-mute" />
           <div>
-            <div className="font-mono text-[11px] text-ink">{row.name}</div>
-            <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.createTime?.slice(0, 10) || '—'}</div>
+            <div className="font-mono text-[12px] text-ink">{row.name}</div>
+            <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.createTime?.slice(0, 10) || '—'}</div>
           </div>
         </div>
       ),
@@ -341,22 +341,22 @@ export default function StoragePage() {
     {
       key: 'path',
       header: '宿主路径',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.hostPath || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.hostPath || '—'}</span>,
     },
     {
       key: 'mount',
       header: '挂载点',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.mountPath || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.mountPath || '—'}</span>,
     },
     {
       key: 'service',
       header: '使用服务',
-      cell: (row) => <span className="mono text-[10.5px] text-ink">{row.serviceName || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink">{row.serviceName || '—'}</span>,
     },
     {
       key: 'ip',
       header: '节点',
-      cell: (row) => <span className="mono text-[9.5px] text-mute">{row.storageIP?.join(', ') || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{row.storageIP?.join(', ') || '—'}</span>,
     },
   ]
 
@@ -366,8 +366,8 @@ export default function StoragePage() {
       header: '卷名称 / VOLUME',
       cell: (row) => (
         <div>
-          <div className="font-mono text-[10.5px] text-ink">{row.metadata?.name || '—'}</div>
-          <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.spec?.storageClassName || 'NO CLASS'}</div>
+          <div className="font-mono text-[12px] text-ink">{row.metadata?.name || '—'}</div>
+          <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.spec?.storageClassName || 'NO CLASS'}</div>
         </div>
       ),
     },
@@ -377,29 +377,29 @@ export default function StoragePage() {
       cell: (row) => {
         const claim = pvClaim(row)
         return claim?.name ? (
-          <span className="mono text-[10px] text-ink-3">
+          <span className="mono text-[12px] text-ink-3">
             {claim.namespace ? `${claim.namespace}/` : ''}
             {claim.name}
           </span>
         ) : (
-          <span className="text-[10.5px] text-mute">未绑定</span>
+          <span className="text-[12px] text-mute">未绑定</span>
         )
       },
     },
     {
       key: 'source',
       header: '存储路径 / 驱动',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{pvSource(row)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{pvSource(row)}</span>,
     },
     {
       key: 'capacity',
       header: '容量',
-      cell: (row) => <span className="num text-[13px] text-ink">{row.spec?.capacity?.storage || '—'}</span>,
+      cell: (row) => <span className="num text-[14px] text-ink">{row.spec?.capacity?.storage || '—'}</span>,
     },
     {
       key: 'access',
       header: '访问模式',
-      cell: (row) => <span className="mono text-[9.5px] text-mute">{(row.spec?.accessModes ?? []).join(' / ') || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{(row.spec?.accessModes ?? []).join(' / ') || '—'}</span>,
     },
     {
       key: 'phase',
@@ -410,7 +410,7 @@ export default function StoragePage() {
       key: 'created',
       header: '创建时间',
       cell: (row) => (
-        <span className="mono text-[9.5px] text-mute">
+        <span className="mono text-[12px] text-mute">
           {row.metadata?.creationTimestamp ? formatDate(row.metadata.creationTimestamp, false) : '—'}
         </span>
       ),
@@ -423,8 +423,8 @@ export default function StoragePage() {
       header: '申领名称 / CLAIM',
       cell: (row) => (
         <div>
-          <div className="font-mono text-[10.5px] text-ink">{row.metadata?.name || '—'}</div>
-          <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.metadata?.namespace || '—'}</div>
+          <div className="font-mono text-[12px] text-ink">{row.metadata?.name || '—'}</div>
+          <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.metadata?.namespace || '—'}</div>
         </div>
       ),
     },
@@ -437,7 +437,7 @@ export default function StoragePage() {
       key: 'capacity',
       header: '容量',
       cell: (row) => (
-        <span className="num text-[13px] text-ink">
+        <span className="num text-[14px] text-ink">
           {row.status?.capacity?.storage || row.spec?.resources?.requests?.storage || '—'}
         </span>
       ),
@@ -445,23 +445,23 @@ export default function StoragePage() {
     {
       key: 'access',
       header: '访问模式',
-      cell: (row) => <span className="mono text-[9.5px] text-mute">{(row.spec?.accessModes ?? []).join(' / ') || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{(row.spec?.accessModes ?? []).join(' / ') || '—'}</span>,
     },
     {
       key: 'class',
       header: '存储类',
-      cell: (row) => <span className="mono text-[10px] text-ink-3">{row.spec?.storageClassName || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.spec?.storageClassName || '—'}</span>,
     },
     {
       key: 'volume',
       header: '绑定卷',
-      cell: (row) => <span className="mono text-[9.5px] text-mute">{row.spec?.volumeName || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{row.spec?.volumeName || '—'}</span>,
     },
     {
       key: 'created',
       header: '创建时间',
       cell: (row) => (
-        <span className="mono text-[9.5px] text-mute">
+        <span className="mono text-[12px] text-mute">
           {row.metadata?.creationTimestamp ? formatDate(row.metadata.creationTimestamp, false) : '—'}
         </span>
       ),
@@ -495,9 +495,9 @@ export default function StoragePage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{meta.count}</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{meta.count}</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">OPENERS / CSI / NFS</span>
+            <span className="mono text-[12px] tracking-widest text-mute">OPENERS / CSI / NFS</span>
           </>
         }
         actions={
@@ -572,7 +572,7 @@ export default function StoragePage() {
               </div>
             </Panel>
             <Panel kicker="NOTICE" title="容量提示">
-              <p className="text-[10.5px] leading-relaxed text-ink-3">
+              <p className="text-[12px] leading-relaxed text-ink-3">
                 存储卷容量由节点磁盘决定。写入前请确认宿主目录剩余空间，避免影响系统服务。
               </p>
             </Panel>
@@ -615,7 +615,7 @@ export default function StoragePage() {
               </div>
             </Panel>
             <Panel kicker="NOTICE" title="生命周期">
-              <p className="text-[10.5px] leading-relaxed text-ink-3">
+              <p className="text-[12px] leading-relaxed text-ink-3">
                 回收策略 Delete 的持久卷在申领删除后会被自动清理；Retain 则保留数据，需人工回收。
               </p>
             </Panel>
@@ -649,12 +649,12 @@ export default function StoragePage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="label">命名空间</span>
-                  <span className="mono text-[10px] text-ink">gaop-namespace</span>
+                  <span className="mono text-[12px] text-ink">gaop-namespace</span>
                 </div>
               </div>
             </Panel>
             <Panel kicker="NOTICE" title="容量扩展">
-              <p className="text-[10.5px] leading-relaxed text-ink-3">
+              <p className="text-[12px] leading-relaxed text-ink-3">
                 仅当存储类允许卷扩展时可在线扩容；缩容不被 Kubernetes 支持。
               </p>
             </Panel>
@@ -676,7 +676,7 @@ export default function StoragePage() {
                 <div className="mt-1.5 truncate text-[18px] font-medium text-ink">
                   {label === '文件项目' ? <span className="num text-[28px]">{value}</span> : value}
                 </div>
-                <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+                <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
               </Panel>
             ))}
           </div>
@@ -688,13 +688,13 @@ export default function StoragePage() {
                     <Layers size={16} className="text-ink-3" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] font-medium text-ink">{project.name}</div>
-                    <div className="mono mt-1 text-[8.5px] tracking-wider text-mute">CREATED {formatDate(project.createdAt, false)}</div>
+                    <div className="truncate text-[14px] font-medium text-ink">{project.name}</div>
+                    <div className="mono mt-1 text-[12px] tracking-wider text-mute">CREATED {formatDate(project.createdAt, false)}</div>
                   </div>
                   <Badge tone={project.deleted ? 'bad' : 'ok'}>{project.deleted ? 'DELETED' : 'ACTIVE'}</Badge>
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-4 py-2">
-                  <div className="mono flex items-center gap-2 text-[8.5px] tracking-widest text-mute">
+                  <div className="mono flex items-center gap-2 text-[12px] tracking-widest text-mute">
                     <span>PROJECT ID</span>
                     <span>{project.id.slice(0, 8).toUpperCase()}</span>
                   </div>
@@ -706,7 +706,7 @@ export default function StoragePage() {
                         setSelectedFiles([])
                         setFileProject(project)
                       }}
-                      className="mono text-[8.5px] tracking-widest text-ink-3 hover:text-signal"
+                      className="mono text-[12px] tracking-widest text-ink-3 hover:text-signal"
                     >
                       浏览文件
                     </button>
@@ -756,7 +756,7 @@ export default function StoragePage() {
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <input
-              className="field h-8 flex-1 font-mono text-[11px]"
+              className="field h-8 flex-1 font-mono text-[12px]"
               placeholder="搜索文件或文件夹"
               value={fileKeyword}
               onChange={(event) => {
@@ -785,7 +785,7 @@ export default function StoragePage() {
             )}
           </div>
           {fileStorageQuery.data && (
-            <div className="mono flex items-center justify-between border border-line bg-paper-2/40 px-3 py-1.5 text-[8.5px] tracking-wider text-mute">
+            <div className="mono flex items-center justify-between border border-line bg-paper-2/40 px-3 py-1.5 text-[12px] tracking-wider text-mute">
               <span>STORAGE</span>
               <span>
                 FREE {formatBytes(fileStorageQuery.data.free ?? 0)} / TOTAL {formatBytes(fileStorageQuery.data.total ?? 0)}
@@ -823,10 +823,10 @@ export default function StoragePage() {
                   )}
                   <div className="flex min-w-0 items-center gap-2">
                     <span className={cn('h-1.5 w-1.5 flex-none', isFolder ? 'bg-signal' : 'bg-ink-3')} />
-                    <span className="truncate font-mono text-[10.5px] text-ink">{name}</span>
+                    <span className="truncate font-mono text-[12px] text-ink">{name}</span>
                   </div>
-                  <span className="mono text-[9.5px] text-mute">{isFolder ? 'FOLDER' : formatBytes(item.size ?? 0)}</span>
-                  <span className="mono text-[9px] text-mute">
+                  <span className="mono text-[12px] text-mute">{isFolder ? 'FOLDER' : formatBytes(item.size ?? 0)}</span>
+                  <span className="mono text-[12px] text-mute">
                     {item.updateTime || item.modifiedTime || (item.createdAt ? formatDate(item.createdAt) : '—')}
                   </span>
                   <div className="flex items-center justify-end gap-1">
@@ -851,13 +851,13 @@ export default function StoragePage() {
               )
             })}
             {(fileListQuery.data?.fileItems ?? []).length === 0 && (
-              <div className="px-3 py-10 text-center text-[11px] text-mute">
+              <div className="px-3 py-10 text-center text-[12px] text-mute">
                 {fileListQuery.isLoading ? '正在读取文件…' : '当前目录为空'}
               </div>
             )}
           </div>
           <div className="flex items-center justify-between border border-t-0 border-line px-3 py-1.5">
-            <span className="mono text-[8.5px] tracking-wider text-mute">
+            <span className="mono text-[12px] tracking-wider text-mute">
               PAGE {filePage} / {Math.max(1, Math.ceil((fileListQuery.data?.total ?? 0) / 50))} ·{' '}
               {fileListQuery.data?.total ?? 0} FILES
             </span>

@@ -189,7 +189,7 @@ export default function DeploymentDetailPage() {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <StatusDot tone={(row.status || '').toUpperCase() === 'RUNNING' ? 'ok' : 'warn'} />
-          <span className="font-mono text-[11px] text-ink">{row.podName}</span>
+          <span className="font-mono text-[12px] text-ink">{row.podName}</span>
         </div>
       ),
     },
@@ -202,20 +202,20 @@ export default function DeploymentDetailPage() {
       key: 'cpu',
       header: 'CPU',
       align: 'right',
-      cell: (row) => <span className="mono text-[10.5px] text-ink-3">{formatNumber(row.cpuUsage ?? 0, 3)} CORE</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{formatNumber(row.cpuUsage ?? 0, 3)} CORE</span>,
     },
     {
       key: 'memory',
       header: '内存',
       align: 'right',
-      cell: (row) => <span className="mono text-[10.5px] text-ink-3">{formatBytes((row.memory ?? 0) * 1024)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{formatBytes((row.memory ?? 0) * 1024)}</span>,
     },
     {
       key: 'restart',
       header: '重启',
       align: 'center',
       cell: (row) => (
-        <span className={cn('mono text-[10.5px]', (row.restartCount ?? 0) > 0 ? 'text-signal' : 'text-mute')}>
+        <span className={cn('mono text-[12px]', (row.restartCount ?? 0) > 0 ? 'text-signal' : 'text-mute')}>
           {row.restartCount ?? 0}
         </span>
       ),
@@ -238,7 +238,7 @@ export default function DeploymentDetailPage() {
       header: '时间',
       sortValue: (row) => row.lastTimestamp || row.eventTime || row.metadata?.creationTimestamp || '',
       cell: (row) => (
-        <span className="mono text-[10px] text-ink-3">
+        <span className="mono text-[12px] text-ink-3">
           {formatDate(row.lastTimestamp || row.eventTime || row.metadata?.creationTimestamp)}
         </span>
       ),
@@ -253,18 +253,18 @@ export default function DeploymentDetailPage() {
     {
       key: 'reason',
       header: '原因',
-      cell: (row) => <span className="mono text-[10.5px] text-ink">{row.reason || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink">{row.reason || '—'}</span>,
     },
     {
       key: 'message',
       header: '消息',
-      cell: (row) => <span className="text-[11px] text-ink-3">{row.message || '—'}</span>,
+      cell: (row) => <span className="text-[12px] text-ink-3">{row.message || '—'}</span>,
     },
     {
       key: 'count',
       header: '次数',
       align: 'center',
-      cell: (row) => <span className="mono text-[10px] text-mute">{row.count ?? 1}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{row.count ?? 1}</span>,
     },
   ]
 
@@ -279,15 +279,15 @@ export default function DeploymentDetailPage() {
           <>
             <button
               onClick={() => navigate('/software/workloads')}
-              className="mono flex items-center gap-1 text-[9px] tracking-widest text-mute hover:text-ink"
+              className="mono flex items-center gap-1 text-[12px] tracking-widest text-mute hover:text-ink"
             >
               <ArrowLeft size={10} /> WORKLOADS
             </button>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={status.tone === 'ok' ? 'ok' : status.tone === 'warn' ? 'warn' : 'idle'} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">{status.label}</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{status.label}</span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">
+            <span className="mono text-[12px] tracking-widest text-mute">
               {status.ready}/{status.desired} REPLICAS
             </span>
           </>
@@ -349,7 +349,7 @@ export default function DeploymentDetailPage() {
           <div className="mt-4 border-t border-line pt-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="label">端口映射</span>
-              <span className="mono text-[8.5px] text-mute">{containers.length} CONTAINERS</span>
+              <span className="mono text-[12px] text-mute">{containers.length} CONTAINERS</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {(service?.service?.spec?.ports ?? []).map((port) => (
@@ -358,7 +358,7 @@ export default function DeploymentDetailPage() {
                   {port.nodePort ? ` · NODE ${port.nodePort}` : ''}
                 </Badge>
               ))}
-              {(service?.service?.spec?.ports ?? []).length === 0 && <span className="text-[10.5px] text-mute">未声明端口</span>}
+              {(service?.service?.spec?.ports ?? []).length === 0 && <span className="text-[12px] text-mute">未声明端口</span>}
             </div>
           </div>
         </Panel>
@@ -385,15 +385,15 @@ export default function DeploymentDetailPage() {
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between border-t border-line pt-2">
               <span className="label">可用</span>
-              <span className="mono text-[11px] text-ink">{service?.deployment?.status?.availableReplicas ?? 0}</span>
+              <span className="mono text-[12px] text-ink">{service?.deployment?.status?.availableReplicas ?? 0}</span>
             </div>
             <div className="flex items-center justify-between border-t border-line pt-2">
               <span className="label">已更新</span>
-              <span className="mono text-[11px] text-ink">{service?.deployment?.status?.updatedReplicas ?? 0}</span>
+              <span className="mono text-[12px] text-ink">{service?.deployment?.status?.updatedReplicas ?? 0}</span>
             </div>
             <div className="flex items-center justify-between border-t border-line pt-2">
               <span className="label">Pod 数</span>
-              <span className="mono text-[11px] text-ink">{pods.length}</span>
+              <span className="mono text-[12px] text-ink">{pods.length}</span>
             </div>
           </div>
         </Panel>
@@ -418,10 +418,10 @@ export default function DeploymentDetailPage() {
                   <Box size={13} className="text-ink-3" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="mono text-[11px] text-ink">{container.name}</div>
-                  <div className="mono mt-1 break-all text-[9px] leading-relaxed text-mute">{container.image || '—'}</div>
+                  <div className="mono text-[12px] text-ink">{container.name}</div>
+                  <div className="mono mt-1 break-all text-[12px] leading-relaxed text-mute">{container.image || '—'}</div>
                 </div>
-                <span className="mono text-[8px] text-mute">#{String(index + 1).padStart(2, '0')}</span>
+                <span className="mono text-[12px] text-mute">#{String(index + 1).padStart(2, '0')}</span>
               </div>
             ))}
             {containers.length === 0 && (
@@ -430,7 +430,7 @@ export default function DeploymentDetailPage() {
           </div>
         </Panel>
 
-        <Panel className="xl:col-span-12" kicker="EVENTS" title="事件" actions={<span className="mono text-[9px] tracking-widest text-mute">KUBERNETES EVENTS</span>} bodyClassName="p-0">
+        <Panel className="xl:col-span-12" kicker="EVENTS" title="事件" actions={<span className="mono text-[12px] tracking-widest text-mute">KUBERNETES EVENTS</span>} bodyClassName="p-0">
           <DataTable
             columns={eventColumns}
             rows={events}
@@ -541,7 +541,7 @@ export default function DeploymentDetailPage() {
           </Field>
           <div className="flex items-start gap-2 border border-line bg-paper-2/40 px-3 py-2">
             <Server size={12} className="mt-0.5 text-mute" />
-            <span className="text-[10.5px] leading-relaxed text-ink-3">
+            <span className="text-[12px] leading-relaxed text-ink-3">
               更新期间会创建新的 ReplicaSet。若新版本启动失败，可回滚到原标签。
             </span>
           </div>

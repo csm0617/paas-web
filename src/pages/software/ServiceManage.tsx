@@ -245,7 +245,7 @@ function MultiSelectBox({
         {value.map((item) => (
           <span
             key={item}
-            className="inline-flex items-center gap-1 border border-[#3a6288] bg-[#223a5e] px-1.5 py-[1px] text-[11px] text-white"
+            className="inline-flex items-center gap-1 border border-[#3a6288] bg-[#223a5e] px-1.5 py-[1px] text-[12px] text-white"
           >
             {item}
             <button
@@ -265,7 +265,7 @@ function MultiSelectBox({
           }}
           onFocus={() => setOpen(true)}
           placeholder={value.length === 0 ? placeholder : ''}
-          className="h-5 min-w-[80px] flex-1 bg-transparent text-[12px] text-white outline-none placeholder:text-[#5d7892]"
+          className="h-5 min-w-[80px] flex-1 bg-transparent text-[14px] text-white outline-none placeholder:text-[#5d7892]"
         />
       </div>
       {open && (
@@ -279,13 +279,13 @@ function MultiSelectBox({
                   onChange([...value, option])
                   setKeyword('')
                 }}
-                className="block w-full px-2 py-1.5 text-left text-[12px] text-ink-3 transition-colors hover:bg-line/40 hover:text-ink"
+                className="block w-full px-2 py-1.5 text-left text-[14px] text-ink-3 transition-colors hover:bg-line/40 hover:text-ink"
               >
                 {option}
               </button>
             ))
           ) : (
-            <div className="px-2 py-1.5 text-[12px] text-mute">无匹配项</div>
+            <div className="px-2 py-1.5 text-[14px] text-mute">无匹配项</div>
           )}
         </div>
       )}
@@ -599,7 +599,7 @@ export default function ServiceManagePage() {
       header: '序号',
       width: 56,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[11.5px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
     },
     {
       key: 'name',
@@ -608,7 +608,7 @@ export default function ServiceManagePage() {
       cell: (row) => (
         <button
           onClick={() => setDetail(row)}
-          className="block max-w-[180px] truncate text-left text-[12px] text-ink hover:text-signal hover:underline"
+          className="block max-w-[180px] truncate text-left text-[14px] text-ink hover:text-signal hover:underline"
         >
           {serviceName(row)}
         </button>
@@ -617,7 +617,7 @@ export default function ServiceManagePage() {
     {
       key: 'key',
       header: '服务标识',
-      cell: (row) => <span className="mono text-[11.5px] text-ink-3">{row.nameUs || row.nameFr || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.nameUs || row.nameFr || '—'}</span>,
     },
     {
       key: 'serviceType',
@@ -625,7 +625,7 @@ export default function ServiceManagePage() {
       cell: (row) => {
         const appType = row.service?.metadata?.labels?.['system/appType']
         return (
-          <span className="text-[12px] text-ink-3">
+          <span className="text-[14px] text-ink-3">
             {appType === 'business' ? '前台服务' : appType ? '后台服务' : '—'}
           </span>
         )
@@ -645,7 +645,7 @@ export default function ServiceManagePage() {
             ))}
           </div>
         ) : (
-          <span className="text-[12px] text-mute">暂无关联应用</span>
+          <span className="text-[14px] text-mute">暂无关联应用</span>
         )
       },
     },
@@ -673,14 +673,14 @@ export default function ServiceManagePage() {
                 : 'text-mute'
         return (
           <div className="leading-[1.5]">
-            <div className={cn('flex items-center gap-1 text-[12px]', tone)}>
+            <div className={cn('flex items-center gap-1 text-[14px]', tone)}>
               {text}
               <Info size={10} />
             </div>
-            <div className="text-[11.5px] text-ink-3">
+            <div className="text-[12px] text-ink-3">
               {status.ready}/{status.desired}部分运行
             </div>
-            <div className="flex items-center gap-1 text-[11.5px] text-ink-3">
+            <div className="flex items-center gap-1 text-[12px] text-ink-3">
               已重启 {row.restartCount ?? 0} 次
               <Info size={10} />
             </div>
@@ -692,7 +692,7 @@ export default function ServiceManagePage() {
       key: 'image',
       header: '镜像',
       cell: (row) => (
-        <span className="block max-w-[200px] truncate font-mono text-[11px] text-ink-3" title={imageOf(row)}>
+        <span className="block max-w-[200px] truncate font-mono text-[12px] text-ink-3" title={imageOf(row)}>
           {imageOf(row)}
         </span>
       ),
@@ -707,9 +707,9 @@ export default function ServiceManagePage() {
       sortValue: (row) => (authOf(row) ? 1 : 0),
       cell: (row) => {
         const auth = row.serviceAuth as { auth?: number } | null | undefined
-        if (!auth) return <span className="text-[12px] text-ink-3">—</span>
+        if (!auth) return <span className="text-[14px] text-ink-3">—</span>
         return (
-          <span className={cn('text-[12px]', auth.auth === 1 ? 'text-ok' : 'text-ink-3')}>
+          <span className={cn('text-[14px]', auth.auth === 1 ? 'text-ok' : 'text-ink-3')}>
             {auth.auth === 1 ? '已授权' : '未授权'}
           </span>
         )
@@ -720,7 +720,7 @@ export default function ServiceManagePage() {
       header: '版本更新时间',
       sortValue: (row) => row.deployment?.metadata?.creationTimestamp || '',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[11px] text-ink-3">
+        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
           {formatDate(row.deployment?.metadata?.creationTimestamp, true)}
         </span>
       ),
@@ -730,7 +730,7 @@ export default function ServiceManagePage() {
       header: '创建时间',
       sortValue: (row) => row.service?.metadata?.creationTimestamp || '',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[11px] text-ink-3">
+        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
           {formatDate(row.service?.metadata?.creationTimestamp, true)}
         </span>
       ),
@@ -745,7 +745,7 @@ export default function ServiceManagePage() {
         const status = statusOf(row)
         const running = status.label === 'RUNNING' || status.label === 'PENDING'
         return (
-          <div className="flex items-center justify-end gap-2.5 text-[12px]">
+          <div className="flex items-center justify-end gap-2.5 text-[14px]">
             <button
               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
               onClick={() =>
@@ -969,7 +969,7 @@ export default function ServiceManagePage() {
             </div>
             <div>
               <div className="label mb-2">端口映射</div>
-              {(detail.service?.spec?.ports ?? []).length === 0 && <div className="py-2 text-[11px] text-mute">未声明端口</div>}
+              {(detail.service?.spec?.ports ?? []).length === 0 && <div className="py-2 text-[12px] text-mute">未声明端口</div>}
               {(detail.service?.spec?.ports ?? []).map((port) => (
                 <KV key={`${port.name}-${port.port}`} k={port.name || port.protocol || 'PORT'} v={`${port.port} → ${port.targetPort || '—'}${port.nodePort ? ` (NodePort ${port.nodePort})` : ''}`} />
               ))}
@@ -989,7 +989,7 @@ export default function ServiceManagePage() {
               </div>
               <div className="mt-3 flex items-center gap-2 border border-line bg-paper-2/30 px-3 py-2">
                 <Box size={13} className="text-mute" />
-                <span className="mono text-[9.5px] text-mute">
+                <span className="mono text-[12px] text-mute">
                   K8S OBJECT / {detail.deployment?.metadata?.name || serviceName(detail)}
                 </span>
               </div>
@@ -1039,14 +1039,14 @@ export default function ServiceManagePage() {
             <Button size="sm" onClick={() => setScaleValue((value) => Math.min(50, value + 1))}>
               +
             </Button>
-            <span className="mono ml-1 text-[9px] text-mute">
+            <span className="mono ml-1 text-[12px] text-mute">
               当前 {scaleTarget?.deployment?.spec?.replicas ?? 1}
             </span>
           </div>
         </Field>
         <div className="mt-3 border border-line bg-paper-2/40 px-3 py-2">
           <div className="label mb-1">资源提示</div>
-          <div className="mono text-[9.5px] leading-relaxed text-ink-3">
+          <div className="mono text-[12px] leading-relaxed text-ink-3">
             CPU {formatNumber(scaleTarget?.cpuOrder ?? 0, 2)} CORE · MEM {formatNumber(scaleTarget?.memoryOrder ?? 0, 0)} MiB
           </div>
         </div>
@@ -1172,7 +1172,7 @@ export default function ServiceManagePage() {
               />
               {row.type === 'Pod类型' ? (
                 <Select
-                  className={cn(CREATE_SELECT, 'h-[30px] min-w-0 flex-1 text-[12px]')}
+                  className={cn(CREATE_SELECT, 'h-[30px] min-w-0 flex-1 text-[14px]')}
                   placeholder="请选择"
                   value={row.value}
                   options={POD_ENV_OPTIONS}
@@ -1221,7 +1221,7 @@ export default function ServiceManagePage() {
             </RadioDot>
           </div>
           {createForm.arch === '2' && (
-            <div className="mb-2 flex items-center gap-2 text-[12px] text-[#c6dbef]">
+            <div className="mb-2 flex items-center gap-2 text-[14px] text-[#c6dbef]">
               <span>GPU数量</span>
               <input
                 className={cn(CREATE_INPUT, 'h-[26px] w-[70px] px-1 text-center')}
@@ -1247,13 +1247,13 @@ export default function ServiceManagePage() {
                   })
                 }
                 className={cn(
-                  'flex w-[62px] flex-col items-start gap-0.5 border px-1 py-1 text-left transition-colors',
+                  'flex w-[70px] flex-col items-start gap-0.5 border px-1 py-1 text-left transition-colors',
                   createForm.preset === preset.key ? 'border-signal' : 'border-[#3a6288] hover:border-[#5b8ab8]',
                 )}
               >
-                <span className="text-[12px] font-semibold leading-4 text-white">{preset.key}</span>
-                <span className="whitespace-nowrap text-[10px] leading-4 text-[#4aa3f0]">{preset.memory}</span>
-                <span className="whitespace-nowrap text-[9px] leading-4 text-[#9fb8ce]">{preset.cpu}</span>
+                <span className="text-[14px] font-semibold leading-4 text-white">{preset.key}</span>
+                <span className="whitespace-nowrap text-[12px] leading-4 text-[#4aa3f0]">{preset.memory}</span>
+                <span className="whitespace-nowrap text-[12px] leading-4 text-[#9fb8ce]">{preset.cpu}</span>
               </button>
             ))}
             <div
@@ -1262,38 +1262,38 @@ export default function ServiceManagePage() {
                 createForm.preset === 'custom' ? 'border-signal' : 'border-[#3a6288]',
               )}
             >
-              <span className="text-[12px] leading-4 text-white">自定义</span>
+              <span className="text-[14px] leading-4 text-white">自定义</span>
               <div className="flex items-center gap-1">
                 <input
-                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[12px]')}
                   value={createForm.memoryMin}
                   onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
                   onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', memoryMin: event.target.value })}
                 />
-                <span className="text-[11px] text-[#9fb8ce]">~</span>
+                <span className="text-[12px] text-[#9fb8ce]">~</span>
                 <input
-                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[12px]')}
                   value={createForm.memoryMax}
                   onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
                   onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', memoryMax: event.target.value })}
                 />
-                <span className="text-[10px] text-[#c6dbef]">MB内存</span>
+                <span className="text-[12px] text-[#c6dbef]">MB内存</span>
               </div>
               <div className="flex items-center gap-1">
                 <input
-                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[12px]')}
                   value={createForm.cpuMin}
                   onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
                   onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', cpuMin: event.target.value })}
                 />
-                <span className="text-[11px] text-[#9fb8ce]">~</span>
+                <span className="text-[12px] text-[#9fb8ce]">~</span>
                 <input
-                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[11px]')}
+                  className={cn(CREATE_INPUT, 'h-[22px] w-[38px] px-1 text-center text-[12px]')}
                   value={createForm.cpuMax}
                   onFocus={() => setCreateForm({ ...createForm, preset: 'custom' })}
                   onChange={(event) => setCreateForm({ ...createForm, preset: 'custom', cpuMax: event.target.value })}
                 />
-                <span className="text-[10px] text-[#c6dbef]">核CPU</span>
+                <span className="text-[12px] text-[#c6dbef]">核CPU</span>
               </div>
             </div>
           </div>
@@ -1519,7 +1519,7 @@ export default function ServiceManagePage() {
           type="button"
           onClick={() => createMutation.mutate()}
           disabled={createMutation.isPending}
-          className="mt-4 h-[30px] w-full bg-[#1670c2] text-[13px] text-white transition-colors hover:bg-[#1a82dd] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-4 h-[30px] w-full bg-[#1670c2] text-[14px] text-white transition-colors hover:bg-[#1a82dd] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {createMutation.isPending ? '提交中…' : '提交'}
         </button>
@@ -1542,8 +1542,8 @@ export default function ServiceManagePage() {
           {(restartQuery.data ?? []).map((item, index) => (
             <div key={`${item.podName}-${item.createTime}-${index}`} className="flex items-center justify-between gap-3 px-3 py-2.5">
               <div className="min-w-0">
-                <div className="truncate font-mono text-[10.5px] text-ink">{item.podName || '—'}</div>
-                <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{formatDate(item.createTime)}</div>
+                <div className="truncate font-mono text-[12px] text-ink">{item.podName || '—'}</div>
+                <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{formatDate(item.createTime)}</div>
               </div>
               <Badge tone={Number(item.restartCount) > 5 ? 'bad' : Number(item.restartCount) > 0 ? 'warn' : 'default'}>
                 ×{item.restartCount ?? 0}
@@ -1551,7 +1551,7 @@ export default function ServiceManagePage() {
             </div>
           ))}
           {(restartQuery.data ?? []).length === 0 && (
-            <div className="px-3 py-10 text-center text-[11px] text-mute">
+            <div className="px-3 py-10 text-center text-[12px] text-mute">
               {restartQuery.isLoading ? '正在读取重启记录…' : '暂无重启记录'}
             </div>
           )}
@@ -1623,7 +1623,7 @@ export default function ServiceManagePage() {
               onChange={(value) => setVersionStrategy(value as '1' | '2')}
             />
           </Field>
-          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[8.5px] leading-relaxed tracking-wider text-mute">
+          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] leading-relaxed tracking-wider text-mute">
             切换后 Kubernetes 将按滚动更新策略替换容器实例；若镜像拉取失败，旧实例会保留。
           </div>
         </div>
@@ -1651,7 +1651,7 @@ export default function ServiceManagePage() {
               key={item.key}
               onClick={() => setMonitorRange(item.key)}
               className={cn(
-                'mono px-3 py-1.5 text-[9px] tracking-widest transition-colors',
+                'mono px-3 py-1.5 text-[12px] tracking-widest transition-colors',
                 monitorRange === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
               )}
             >
@@ -1660,7 +1660,7 @@ export default function ServiceManagePage() {
           ))}
         </div>
         {monitorQuery.isLoading ? (
-          <div className="py-10 text-center text-[11px] text-mute">正在采集服务指标…</div>
+          <div className="py-10 text-center text-[12px] text-mute">正在采集服务指标…</div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <div>

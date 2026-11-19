@@ -96,7 +96,7 @@ export default function LoginPage() {
           M
         </span>
         <h1 className="mt-4 text-[22px] font-semibold tracking-[0.04em] text-[#eaf4ff]">微服务公共平台</h1>
-        <p className="mt-1 text-[12px] text-mute">MSOP · Microservice Service Platform</p>
+        <p className="mt-1 text-[14px] text-mute">MSOP · Microservice Service Platform</p>
       </div>
 
       <motion.div
@@ -107,7 +107,7 @@ export default function LoginPage() {
       >
         <div className="mb-5">
           <h2 className="text-[18px] font-semibold text-ink">登录</h2>
-          <p className="mt-1 text-[12px] leading-relaxed text-mute">
+          <p className="mt-1 text-[14px] leading-relaxed text-mute">
             使用平台账户验证身份，所有操作将记录至审计日志。
           </p>
         </div>
@@ -152,11 +152,11 @@ export default function LoginPage() {
 
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-[12px] text-ink-3">席位</span>
+              <span className="text-[14px] text-ink-3">席位</span>
               <button
                 type="button"
                 onClick={() => setShowRole((prev) => !prev)}
-                className="flex items-center gap-1 text-[12px] text-mute transition-colors hover:text-signal"
+                className="flex items-center gap-1 text-[14px] text-mute transition-colors hover:text-signal"
               >
                 <LockKeyhole size={11} /> 更换
               </button>
@@ -182,7 +182,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="rounded border border-[#5c2a2a] bg-[#2a161b] px-3 py-2 text-[12px] leading-relaxed text-danger">
+            <div className="rounded border border-[#5c2a2a] bg-[#2a161b] px-3 py-2 text-[14px] leading-relaxed text-danger">
               {error}
             </div>
           )}
@@ -194,7 +194,7 @@ export default function LoginPage() {
               checked={remember}
               onChange={(event) => setRemember(event.target.checked)}
             />
-            <span className="text-[12px] text-ink-3">在此终端记住用户名</span>
+            <span className="text-[14px] text-ink-3">在此终端记住用户名</span>
           </label>
 
           <Button type="submit" variant="primary" size="lg" loading={loading} className="mt-1 w-full justify-between">
@@ -203,13 +203,13 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 flex items-center justify-between border-t border-line pt-4 text-[11px] text-mute">
+        <div className="mt-6 flex items-center justify-between border-t border-line pt-4 text-[12px] text-mute">
           <span>MSOP CONSOLE</span>
           <span>BUILD 0.0.3 · {platformHost}</span>
         </div>
       </motion.div>
 
-      <div className="mt-5 text-[11px] text-mute">会话令牌由平台网关签发，退出或失效后需重新认证</div>
+      <div className="mt-5 text-[12px] text-mute">会话令牌由平台网关签发，退出或失效后需重新认证</div>
     </div>
   )
 }

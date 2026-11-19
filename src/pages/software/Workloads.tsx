@@ -83,13 +83,13 @@ export default function WorkloadsPage() {
               className="panel group flex flex-col gap-4 p-0 transition-shadow hover:shadow-[3px_3px_0_rgba(21,24,27,0.08)] lg:flex-row lg:items-stretch"
             >
               <div className="flex flex-none items-center gap-3 border-b border-line px-4 py-3 lg:w-[280px] lg:border-b-0 lg:border-r">
-                <span className="mono text-[9px] text-mute">{String(index + 1).padStart(2, '0')}</span>
+                <span className="mono text-[12px] text-mute">{String(index + 1).padStart(2, '0')}</span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <StatusDot tone={healthy ? 'ok' : 'warn'} />
-                    <span className="truncate font-mono text-[12px] text-ink">{nameOf(service)}</span>
+                    <span className="truncate font-mono text-[14px] text-ink">{nameOf(service)}</span>
                   </div>
-                  <div className="mono mt-1 truncate text-[8.5px] tracking-widest text-mute">
+                  <div className="mono mt-1 truncate text-[12px] tracking-widest text-mute">
                     {service.service?.metadata?.namespace || 'default'} / Deployment
                   </div>
                 </div>
@@ -98,7 +98,7 @@ export default function WorkloadsPage() {
               <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3">
                 <div className="min-w-[180px] flex-1">
                   <div className="label mb-1">容器镜像</div>
-                  <div className="mono truncate text-[10px] text-ink-3">{imageOf(service)}</div>
+                  <div className="mono truncate text-[12px] text-ink-3">{imageOf(service)}</div>
                 </div>
                 <div>
                   <div className="label mb-1.5">副本</div>
@@ -114,25 +114,25 @@ export default function WorkloadsPage() {
                     ))}
                     <span className="num ml-2 text-[14px] text-ink">
                       {ready}
-                      <span className="text-[10px] text-mute">/{desired}</span>
+                      <span className="text-[12px] text-mute">/{desired}</span>
                     </span>
                   </div>
                 </div>
                 <div>
                   <div className="label mb-1">可用 / 更新</div>
-                  <div className="mono text-[10.5px] text-ink">
+                  <div className="mono text-[12px] text-ink">
                     {available} / {service.deployment?.status?.updatedReplicas ?? 0}
                   </div>
                 </div>
                 <div>
                   <div className="label mb-1">重启</div>
-                  <div className={cn('mono text-[10.5px]', (service.restartCount ?? 0) > 0 ? 'text-signal' : 'text-ink')}>
+                  <div className={cn('mono text-[12px]', (service.restartCount ?? 0) > 0 ? 'text-signal' : 'text-ink')}>
                     {service.restartCount ?? 0}
                   </div>
                 </div>
                 <div>
                   <div className="label mb-1">创建时间</div>
-                  <div className="mono text-[9.5px] text-mute">
+                  <div className="mono text-[12px] text-mute">
                     {formatDate(service.deployment?.metadata?.creationTimestamp, false)}
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export default function WorkloadsPage() {
           <Panel>
             <div className="flex flex-col items-center gap-2 py-12 text-mute">
               <Boxes size={26} strokeWidth={1.2} />
-              <span className="text-[11.5px]">暂无工作负载</span>
+              <span className="text-[12px]">暂无工作负载</span>
             </div>
           </Panel>
         )}

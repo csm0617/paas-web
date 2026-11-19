@@ -394,11 +394,11 @@ export default function HostServicePage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {totals.ready}/{nodes.length} NODES READY
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">
+            <span className="mono text-[12px] tracking-widest text-mute">
               TOTAL {formatNumber(totals.cpu, 1)} CORE · {formatNumber(totals.mem / 1024, 1)} GiB
             </span>
           </>
@@ -465,7 +465,7 @@ export default function HostServicePage() {
       {(summaryQuery.isError || consumptionQuery.isError) && (
         <div className="mb-4 flex items-center gap-3 border-l-2 border-warn bg-warn/[0.06] px-4 py-2.5">
           <span className="h-1.5 w-1.5 bg-warn" />
-          <span className="text-[11.5px] text-ink">
+          <span className="text-[12px] text-ink">
             metrics-server 暂未返回节点资源指标，容量与配额数据可能缺失；就绪状态仍来自 Kubernetes。
           </span>
         </div>
@@ -482,9 +482,9 @@ export default function HostServicePage() {
             <div className="label">{label}</div>
             <div className="mt-2 flex items-baseline gap-1.5">
               <span className="num text-[32px] leading-none text-ink">{value}</span>
-              <span className="mono text-[9px] uppercase tracking-widest text-mute">{unit}</span>
+              <span className="mono text-[12px] uppercase tracking-widest text-mute">{unit}</span>
             </div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </div>
         ))}
       </section>
@@ -509,15 +509,15 @@ export default function HostServicePage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
                       <StatusDot tone={isReady ? 'ok' : 'bad'} />
-                      <span className="truncate font-mono text-[11.5px]">{name}</span>
+                      <span className="truncate font-mono text-[12px]">{name}</span>
                     </div>
-                    <span className={cn('mono text-[8px] tracking-widest', selected === name ? 'text-white/70' : 'text-mute')}>
+                    <span className={cn('mono text-[12px] tracking-widest', selected === name ? 'text-white/70' : 'text-mute')}>
                       {isReady ? 'READY' : 'DOWN'}
                     </span>
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-3">
                     <div>
-                      <div className={cn('mb-1 flex justify-between text-[8.5px]', selected === name ? 'text-white/60' : 'text-mute')}>
+                      <div className={cn('mb-1 flex justify-between text-[12px]', selected === name ? 'text-white/60' : 'text-mute')}>
                         <span>CPU</span>
                         <span className="mono">{cpu === null ? '—' : `${formatNumber(cpu, 1)}%`}</span>
                       </div>
@@ -532,7 +532,7 @@ export default function HostServicePage() {
                       </div>
                     </div>
                     <div>
-                      <div className={cn('mb-1 flex justify-between text-[8.5px]', selected === name ? 'text-white/60' : 'text-mute')}>
+                      <div className={cn('mb-1 flex justify-between text-[12px]', selected === name ? 'text-white/60' : 'text-mute')}>
                         <span>MEM</span>
                         <span className="mono">{mem === null ? '—' : `${formatNumber(mem, 1)}%`}</span>
                       </div>
@@ -550,7 +550,7 @@ export default function HostServicePage() {
                 </button>
               )
             })}
-            {nodes.length === 0 && <div className="px-4 py-8 text-center text-[11px] text-mute">暂无节点</div>}
+            {nodes.length === 0 && <div className="px-4 py-8 text-center text-[12px] text-mute">暂无节点</div>}
           </div>
         </Panel>
 
@@ -613,20 +613,20 @@ export default function HostServicePage() {
                 <Panel kicker="QUOTA · CPU" title="算力配额">
                   <div className="mb-4 flex items-end justify-between">
                     <span className="num text-[32px] leading-none text-ink">{formatNumber(limitsCpu, 2)}</span>
-                    <span className="mono text-[9px] text-mute">LIMIT / {formatNumber(capacityCpu, 1)} CORE</span>
+                    <span className="mono text-[12px] text-mute">LIMIT / {formatNumber(capacityCpu, 1)} CORE</span>
                   </div>
                   <div className="space-y-3">
                     <div>
                       <div className="mb-1 flex justify-between">
                         <span className="label">已分配 LIMIT</span>
-                        <span className="mono text-[10px] text-ink">{formatNumber((limitsCpu / Math.max(1, capacityCpu)) * 100, 1)}%</span>
+                        <span className="mono text-[12px] text-ink">{formatNumber((limitsCpu / Math.max(1, capacityCpu)) * 100, 1)}%</span>
                       </div>
                       <Meter value={(limitsCpu / Math.max(1, capacityCpu)) * 100} />
                     </div>
                     <div>
                       <div className="mb-1 flex justify-between">
                         <span className="label">已请求 REQUEST</span>
-                        <span className="mono text-[10px] text-ink">{formatNumber(requestsCpu, 2)} CORE</span>
+                        <span className="mono text-[12px] text-ink">{formatNumber(requestsCpu, 2)} CORE</span>
                       </div>
                       <Meter value={(requestsCpu / Math.max(1, capacityCpu)) * 100} tone="ok" />
                     </div>
@@ -636,20 +636,20 @@ export default function HostServicePage() {
                 <Panel kicker="QUOTA · MEMORY" title="内存配额">
                   <div className="mb-4 flex items-end justify-between">
                     <span className="num text-[32px] leading-none text-ink">{formatNumber(limitsMem / 1024, 1)}</span>
-                    <span className="mono text-[9px] text-mute">GiB LIMIT / {formatNumber(capacityMem / 1024, 1)} GiB</span>
+                    <span className="mono text-[12px] text-mute">GiB LIMIT / {formatNumber(capacityMem / 1024, 1)} GiB</span>
                   </div>
                   <div className="space-y-3">
                     <div>
                       <div className="mb-1 flex justify-between">
                         <span className="label">已分配 LIMIT</span>
-                        <span className="mono text-[10px] text-ink">{formatNumber((limitsMem / Math.max(1, capacityMem)) * 100, 1)}%</span>
+                        <span className="mono text-[12px] text-ink">{formatNumber((limitsMem / Math.max(1, capacityMem)) * 100, 1)}%</span>
                       </div>
                       <Meter value={(limitsMem / Math.max(1, capacityMem)) * 100} />
                     </div>
                     <div>
                       <div className="mb-1 flex justify-between">
                         <span className="label">已请求 REQUEST</span>
-                        <span className="mono text-[10px] text-ink">{formatNumber(requestsMem / 1024, 1)} GiB</span>
+                        <span className="mono text-[12px] text-ink">{formatNumber(requestsMem / 1024, 1)} GiB</span>
                       </div>
                       <Meter value={(requestsMem / Math.max(1, capacityMem)) * 100} tone="ok" />
                     </div>
@@ -662,10 +662,10 @@ export default function HostServicePage() {
                   <div>
                     <div className="mb-2 flex items-end justify-between">
                       <span className="label">磁盘使用率</span>
-                      <span className="mono text-[10px] text-ink">{formatNumber(diskUsage, 1)}%</span>
+                      <span className="mono text-[12px] text-ink">{formatNumber(diskUsage, 1)}%</span>
                     </div>
                     <Meter value={diskUsage} tone={diskUsage > 85 ? 'warn' : 'ok'} />
-                    <div className="mono mt-2 flex justify-between text-[8.5px] tracking-wider text-mute">
+                    <div className="mono mt-2 flex justify-between text-[12px] tracking-wider text-mute">
                       <span>DISK {formatNumber(diskSize / 1024 / 1024 / 1024, 1)} GiB</span>
                       <span>USED {formatNumber((diskSize * diskUsage) / 100 / 1024 / 1024 / 1024, 1)} GiB</span>
                     </div>
@@ -673,7 +673,7 @@ export default function HostServicePage() {
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <span className="label">已占用 NodePort</span>
-                      <span className="mono text-[9px] text-mute">{usedPorts.length} PORTS</span>
+                      <span className="mono text-[12px] text-mute">{usedPorts.length} PORTS</span>
                     </div>
                     <div className="flex max-h-[92px] flex-wrap gap-1.5 overflow-y-auto">
                       {usedPorts.map((item) => (
@@ -681,7 +681,7 @@ export default function HostServicePage() {
                           {item.port} · {item.name}
                         </Badge>
                       ))}
-                      {usedPorts.length === 0 && <span className="text-[10.5px] text-mute">暂无 NodePort 占用</span>}
+                      {usedPorts.length === 0 && <span className="text-[12px] text-mute">暂无 NodePort 占用</span>}
                     </div>
                   </div>
                 </div>
@@ -699,28 +699,28 @@ export default function HostServicePage() {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <Field label="CPU 告警 (%)">
                     <input
-                      className="field h-9 font-mono text-[11px]"
+                      className="field h-9 font-mono text-[12px]"
                       value={alertForm.cpu}
                       onChange={(event) => setAlertForm({ ...alertForm, cpu: event.target.value.replace(/[^\d.]/g, '') })}
                     />
                   </Field>
                   <Field label="内存告警 (%)">
                     <input
-                      className="field h-9 font-mono text-[11px]"
+                      className="field h-9 font-mono text-[12px]"
                       value={alertForm.memory}
                       onChange={(event) => setAlertForm({ ...alertForm, memory: event.target.value.replace(/[^\d.]/g, '') })}
                     />
                   </Field>
                   <Field label="磁盘告警 (%)">
                     <input
-                      className="field h-9 font-mono text-[11px]"
+                      className="field h-9 font-mono text-[12px]"
                       value={alertForm.disk}
                       onChange={(event) => setAlertForm({ ...alertForm, disk: event.target.value.replace(/[^\d.]/g, '') })}
                     />
                   </Field>
                 </div>
                 <div className="mt-3 border border-line bg-paper-2/40 px-3 py-2">
-                  <p className="text-[10.5px] leading-relaxed text-ink-3">
+                  <p className="text-[12px] leading-relaxed text-ink-3">
                     阈值仅作用于当前节点，超过阈值后平台将产生节点资源告警。建议结合节点规格设置，避免阈值过低造成告警风暴。
                   </p>
                 </div>
@@ -748,18 +748,18 @@ export default function HostServicePage() {
                         checked={etcdChoice === item.host}
                         onChange={() => setEtcdChoice(item.host || '')}
                       />
-                      <span className="mono flex-1 text-[10.5px] text-ink">{item.hostname || item.host || '—'}</span>
-                      <span className="mono text-[9px] text-mute">{item.host}</span>
+                      <span className="mono flex-1 text-[12px] text-ink">{item.hostname || item.host || '—'}</span>
+                      <span className="mono text-[12px] text-mute">{item.host}</span>
                     </label>
                   ))}
                   {etcdNodes.length === 0 && (
-                    <div className="py-3 text-[10.5px] text-mute">
+                    <div className="py-3 text-[12px] text-mute">
                       {etcdQuery.isLoading ? '正在检测 etcd 标签节点…' : '未检测到 etcd 标签节点'}
                     </div>
                   )}
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-3 border border-line bg-paper-2/40 px-3 py-2">
-                  <span className="text-[10px] leading-relaxed text-mute">
+                  <span className="text-[12px] leading-relaxed text-mute">
                     多节点均带 etcd 标签时，需选择一个节点作为统一入口。
                   </span>
                   <Button
@@ -828,21 +828,21 @@ export default function HostServicePage() {
                       <div key={service.nameUs || service.nameFr} className="flex items-center gap-2 px-4 py-2">
                         <StatusDot tone={desired > 0 && ready >= desired ? 'ok' : 'warn'} />
                         <div className="min-w-0 flex-1">
-                          <div className="truncate font-mono text-[10.5px] text-ink">
+                          <div className="truncate font-mono text-[12px] text-ink">
                             {service.nameUs || service.nameFr || '—'}
                           </div>
-                          <div className="mono mt-0.5 truncate text-[8.5px] tracking-wider text-mute">
+                          <div className="mono mt-0.5 truncate text-[12px] tracking-wider text-mute">
                             {service.service?.spec?.type || '—'} · {ports || 'NO PORT'}
                           </div>
                         </div>
-                        <span className={cn('mono text-[9.5px]', ready >= desired ? 'text-ink-3' : 'text-warn')}>
+                        <span className={cn('mono text-[12px]', ready >= desired ? 'text-ink-3' : 'text-warn')}>
                           {ready}/{desired}
                         </span>
                       </div>
                     )
                   })}
                   {nodeServices.length === 0 && (
-                    <div className="px-4 py-6 text-center text-[10.5px] text-mute">
+                    <div className="px-4 py-6 text-center text-[12px] text-mute">
                       {nodeServicesQuery.isLoading ? '正在读取节点服务…' : '该节点暂未承载服务'}
                     </div>
                   )}
@@ -853,7 +853,7 @@ export default function HostServicePage() {
             <Panel kicker="NODE DETAIL" title="节点详情">
               <div className="flex h-[320px] flex-col items-center justify-center gap-2 text-mute">
                 <ServerCog size={28} strokeWidth={1.2} />
-                <span className="text-[11px]">选择左侧节点查看资源统计</span>
+                <span className="text-[12px]">选择左侧节点查看资源统计</span>
               </div>
             </Panel>
           )}
@@ -891,11 +891,11 @@ export default function HostServicePage() {
           <div className="space-y-3">
             <div className="border border-line px-3 py-2.5">
               <div className="label">目标节点</div>
-              <div className="mt-1 font-mono text-[12px] text-ink">{node.objectMeta.name}</div>
-              <div className="mono mt-0.5 text-[9px] tracking-wider text-mute">{nodeAddress(node)}</div>
+              <div className="mt-1 font-mono text-[14px] text-ink">{node.objectMeta.name}</div>
+              <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{nodeAddress(node)}</div>
             </div>
             {nodeAction === 'uninstall' ? (
-              <div className="border-l-2 border-signal bg-signal/[0.05] px-3 py-2 text-[10.5px] leading-relaxed text-ink-3">
+              <div className="border-l-2 border-signal bg-signal/[0.05] px-3 py-2 text-[12px] leading-relaxed text-ink-3">
                 卸载会驱逐节点上的全部 Pod，并从集群中删除节点对象。请确认业务已完成迁移，且该节点不是唯一调度节点。
               </div>
             ) : (
@@ -919,8 +919,8 @@ export default function HostServicePage() {
                       onChange={() => setNodeAction(item.value)}
                     />
                     <div>
-                      <div className="text-[12px] font-medium text-ink">{item.label}</div>
-                      <div className="mono mt-0.5 text-[8.5px] leading-relaxed tracking-wider text-mute">{item.desc}</div>
+                      <div className="text-[14px] font-medium text-ink">{item.label}</div>
+                      <div className="mono mt-0.5 text-[12px] leading-relaxed tracking-wider text-mute">{item.desc}</div>
                     </div>
                   </label>
                 ))}
@@ -945,7 +945,7 @@ export default function HostServicePage() {
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="mono text-[9px] tracking-widest text-mute">RANGE</span>
+            <span className="mono text-[12px] tracking-widest text-mute">RANGE</span>
             <div className="flex gap-1">
               {[
                 { key: 'ONE_HOURS' as const, label: '1 小时' },
@@ -955,7 +955,7 @@ export default function HostServicePage() {
                   key={item.key}
                   onClick={() => setMonitorRange(item.key)}
                   className={cn(
-                    'mono border px-2.5 py-1 text-[9px] tracking-widest',
+                    'mono border px-2.5 py-1 text-[12px] tracking-widest',
                     monitorRange === item.key ? 'border-signal bg-signal text-white' : 'border-line-strong text-mute',
                   )}
                 >
@@ -1010,7 +1010,7 @@ export default function HostServicePage() {
               />
             </div>
           </div>
-          {nodeMonitorQuery.isLoading && <div className="text-center text-[11px] text-mute">正在读取监控数据…</div>}
+          {nodeMonitorQuery.isLoading && <div className="text-center text-[12px] text-mute">正在读取监控数据…</div>}
         </div>
       </Modal>
 
@@ -1048,7 +1048,7 @@ export default function HostServicePage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
             <Field label="节点 IP" required>
               <input
-                className="field h-9 font-mono text-[11px]"
+                className="field h-9 font-mono text-[12px]"
                 value={addForm.ip}
                 onChange={(event) => setAddForm({ ...addForm, ip: event.target.value.trim() })}
                 placeholder="如 172.16.209.26"
@@ -1064,7 +1064,7 @@ export default function HostServicePage() {
             </Button>
           </div>
           {connectInfo && (
-            <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[9px] tracking-wider text-ink-3">
+            <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] tracking-wider text-ink-3">
               SSH {connectInfo.connect ? 'CONNECTED' : 'FAILED'}
               {connectInfo.hostname ? ` · ${connectInfo.hostname}` : ''}
               {addForm.netWorkInterface ? ` · IFACE ${addForm.netWorkInterface}` : ''}
@@ -1072,7 +1072,7 @@ export default function HostServicePage() {
           )}
           <Field label="节点名称" required hint="集群内唯一，建议使用 kylin-worker01 形式">
             <input
-              className="field h-9 font-mono text-[11px]"
+              className="field h-9 font-mono text-[12px]"
               value={addForm.hostname}
               onChange={(event) => setAddForm({ ...addForm, hostname: event.target.value.trim() })}
               placeholder="kylin-worker01"
@@ -1116,15 +1116,15 @@ export default function HostServicePage() {
                 >
                   <span
                     className={cn(
-                      'flex h-4 w-4 items-center justify-center border text-[8px]',
+                      'flex h-4 w-4 items-center justify-center border text-[12px]',
                       done ? 'border-ok text-ok' : active ? 'border-signal text-signal' : 'border-line-strong text-mute',
                     )}
                   >
                     {done ? '✓' : index + 1}
                   </span>
-                  <span className="text-[10.5px] text-ink-3">{label}</span>
-                  {active && <span className="mono ml-auto text-[8px] tracking-widest text-signal">RUNNING</span>}
-                  {done && <span className="mono ml-auto text-[8px] tracking-widest text-ok">DONE</span>}
+                  <span className="text-[12px] text-ink-3">{label}</span>
+                  {active && <span className="mono ml-auto text-[12px] tracking-widest text-signal">RUNNING</span>}
+                  {done && <span className="mono ml-auto text-[12px] tracking-widest text-ok">DONE</span>}
                 </div>
               )
             })}

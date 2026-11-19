@@ -214,10 +214,10 @@ export default function PackagePage() {
           <div className="flex items-center gap-2.5">
             <FileArchive size={13} className="text-mute" />
             <div className="min-w-0">
-              <div className="truncate font-mono text-[11px] text-ink">
+              <div className="truncate font-mono text-[12px] text-ink">
                 {row.realStoreFilename || row.execFileName || '—'}
               </div>
-              <div className="mono mt-0.5 truncate text-[8.5px] tracking-wider text-mute">
+              <div className="mono mt-0.5 truncate text-[12px] tracking-wider text-mute">
                 {row.execFileName || '—'}
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function PackagePage() {
           return (
             <div className="flex items-center gap-1.5">
               <StatusDot tone={status.tone === 'bad' ? 'bad' : status.tone === 'warn' ? 'warn' : 'ok'} />
-              <span className="mono text-[9px] tracking-widest text-ink-3">{status.label}</span>
+              <span className="mono text-[12px] tracking-widest text-ink-3">{status.label}</span>
             </div>
           )
         },
@@ -241,20 +241,20 @@ export default function PackagePage() {
         key: 'software',
         header: '关联软件',
         cell: (row) => (
-          <span className="mono text-[9.5px] text-ink-3">{row.relationSoftwareId || '—'}</span>
+          <span className="mono text-[12px] text-ink-3">{row.relationSoftwareId || '—'}</span>
         ),
       },
       {
         key: 'updated',
         header: '更新时间',
         sortValue: (row) => Number(row.updatedAt ?? 0),
-        cell: (row) => <span className="mono text-[9.5px] text-mute">{formatDate(row.updatedAt, false)}</span>,
+        cell: (row) => <span className="mono text-[12px] text-mute">{formatDate(row.updatedAt, false)}</span>,
       },
       {
         key: 'error',
         header: '异常信息',
         cell: (row) => (
-          <span className="line-clamp-2 block max-w-[260px] text-[10px] leading-relaxed text-signal">
+          <span className="line-clamp-2 block max-w-[260px] text-[12px] leading-relaxed text-signal">
             {row.execFaultMessage || ''}
           </span>
         ),
@@ -290,11 +290,11 @@ export default function PackagePage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {packages.length} PACKAGES · {query.data?.total ?? 0} TOTAL
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">ZIP / ROLLBACK</span>
+            <span className="mono text-[12px] tracking-widest text-mute">ZIP / ROLLBACK</span>
           </>
         }
         search={{ value: keyword, onChange: setKeyword, placeholder: '搜索文件名' }}
@@ -330,7 +330,7 @@ export default function PackagePage() {
           <Panel key={label} bodyClassName="px-4 py-3.5">
             <div className="label">{label}</div>
             <div className="num mt-1.5 text-[28px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </Panel>
         ))}
       </div>
@@ -383,8 +383,8 @@ export default function PackagePage() {
           className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong bg-paper-2/30 py-10 transition-colors hover:border-signal"
         >
           <Upload size={20} className="text-mute" />
-          <span className="text-[11.5px] text-ink">{file ? file.name : '选择 zip 程序包'}</span>
-          <span className="mono text-[8.5px] tracking-widest text-mute">
+          <span className="text-[12px] text-ink">{file ? file.name : '选择 zip 程序包'}</span>
+          <span className="mono text-[12px] tracking-widest text-mute">
             {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'CLICK TO SELECT'}
           </span>
         </button>
@@ -406,13 +406,13 @@ export default function PackagePage() {
         <div className="space-y-3">
           <div className="grid grid-cols-1 gap-2 border border-line bg-paper-2/40 px-3 py-3 sm:grid-cols-[1fr_1fr_1.2fr_auto]">
             <input
-              className="field h-8 font-mono text-[10.5px]"
+              className="field h-8 font-mono text-[12px]"
               placeholder="类型，如 windows"
               value={clientType}
               onChange={(event) => setClientType(event.target.value)}
             />
             <input
-              className="field h-8 font-mono text-[10.5px]"
+              className="field h-8 font-mono text-[12px]"
               placeholder="版本，如 1.0.0"
               value={clientVersion}
               onChange={(event) => setClientVersion(event.target.value)}
@@ -440,7 +440,7 @@ export default function PackagePage() {
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
             <input
-              className="field h-9 w-full pl-8 text-[11px]"
+              className="field h-9 w-full pl-8 text-[12px]"
               placeholder="按文件名搜索客户端包"
               value={clientKeyword}
               onChange={(event) => setClientKeyword(event.target.value)}
@@ -460,10 +460,10 @@ export default function PackagePage() {
                 key={item.id}
                 className="grid grid-cols-[1.4fr_0.7fr_0.8fr_1fr_120px] items-center gap-2 border-b border-line/60 px-3 py-2 last:border-b-0"
               >
-                <span className="mono truncate text-[10px] text-ink">{item.clientFilename || item.clientStoreFilename || '—'}</span>
+                <span className="mono truncate text-[12px] text-ink">{item.clientFilename || item.clientStoreFilename || '—'}</span>
                 <Badge>{item.type || '—'}</Badge>
-                <span className="mono text-[9.5px] text-ink-3">{item.version || '—'}</span>
-                <span className="mono text-[9px] text-ink-3">{formatDate(item.updatedAt)}</span>
+                <span className="mono text-[12px] text-ink-3">{item.version || '—'}</span>
+                <span className="mono text-[12px] text-ink-3">{formatDate(item.updatedAt)}</span>
                 <div className="flex justify-end gap-1">
                   <Button size="sm" onClick={() => downloadClient(item)}>
                     <Download size={10} />
@@ -489,7 +489,7 @@ export default function PackagePage() {
               </div>
             ))}
             {(clientsQuery.data?.clientList ?? []).length === 0 && (
-              <div className="px-3 py-8 text-center text-[11px] text-mute">
+              <div className="px-3 py-8 text-center text-[12px] text-mute">
                 {clientsQuery.isLoading ? '正在读取客户端包…' : '暂无客户端包'}
               </div>
             )}

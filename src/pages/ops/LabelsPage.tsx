@@ -96,12 +96,12 @@ export default function LabelsPage() {
       key: 'key',
       header: '标签键 / KEY',
       sortValue: (row) => row.key,
-      cell: (row) => <span className="font-mono text-[11px] text-ink">{row.key}</span>,
+      cell: (row) => <span className="font-mono text-[12px] text-ink">{row.key}</span>,
     },
     {
       key: 'value',
       header: '值 / VALUE',
-      cell: (row) => <span className="mono text-[10.5px] text-ink-3">{row.value || '—'}</span>,
+      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.value || '—'}</span>,
     },
     {
       key: 'owner',
@@ -115,13 +115,13 @@ export default function LabelsPage() {
       header: '作用节点',
       cell: (row) => {
         const targets = row.targets ?? []
-        if (targets.length === 0) return <span className="text-[10.5px] text-mute">—</span>
+        if (targets.length === 0) return <span className="text-[12px] text-mute">—</span>
         return (
           <div className="flex flex-wrap gap-1">
             {targets.slice(0, 4).map((target) => (
               <Badge key={target}>{target}</Badge>
             ))}
-            {targets.length > 4 && <span className="mono text-[9px] text-mute">+{targets.length - 4}</span>}
+            {targets.length > 4 && <span className="mono text-[12px] text-mute">+{targets.length - 4}</span>}
           </div>
         )
       },
@@ -139,11 +139,11 @@ export default function LabelsPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {labels.length} LABELS · {nodeCount} NODES
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">{userDefined} USER DEFINED</span>
+            <span className="mono text-[12px] tracking-widest text-mute">{userDefined} USER DEFINED</span>
           </>
         }
         search={{ value: keyword, onChange: setKeyword, placeholder: '搜索标签键 / 值' }}
@@ -169,7 +169,7 @@ export default function LabelsPage() {
           <Panel key={label} bodyClassName="px-4 py-3.5">
             <div className="label">{label}</div>
             <div className="num mt-1.5 text-[28px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </Panel>
         ))}
       </div>
@@ -239,7 +239,7 @@ export default function LabelsPage() {
 
           <div className="max-h-[46vh] space-y-2 overflow-auto pr-1">
             {editRows.length === 0 && (
-              <div className="border border-dashed border-line-strong px-3 py-6 text-center text-[11px] text-mute">
+              <div className="border border-dashed border-line-strong px-3 py-6 text-center text-[12px] text-mute">
                 该节点暂无标签，点击“新增标签”开始配置。
               </div>
             )}
@@ -253,7 +253,7 @@ export default function LabelsPage() {
                     setEditRows((prev) => prev.map((item, i) => (i === index ? { ...item, key: event.target.value } : item)))
                   }
                 />
-                <span className="mono text-[11px] text-mute">=</span>
+                <span className="mono text-[12px] text-mute">=</span>
                 <Input
                   className="flex-1"
                   placeholder="标签值"

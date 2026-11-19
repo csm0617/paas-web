@@ -46,7 +46,7 @@ function CodeEditor({ value, onChange }: { value: string; onChange: (value: stri
     <div className="flex h-[360px] overflow-hidden border border-[#33506e] bg-[#0e2233]">
       <div
         ref={gutterRef}
-        className="w-[42px] flex-none overflow-hidden bg-[#19476f] py-2 text-right font-mono text-[11px] leading-[18px] text-[#d7e6f5]"
+        className="w-[42px] flex-none overflow-hidden bg-[#19476f] py-2 text-right font-mono text-[12px] leading-[18px] text-[#d7e6f5]"
       >
         {Array.from({ length: lines }, (_, index) => (
           <div key={index} className="pr-2">
@@ -55,7 +55,7 @@ function CodeEditor({ value, onChange }: { value: string; onChange: (value: stri
         ))}
       </div>
       <textarea
-        className="h-full flex-1 resize-none bg-transparent px-2 py-2 font-mono text-[11px] leading-[18px] text-ink outline-none"
+        className="h-full flex-1 resize-none bg-transparent px-2 py-2 font-mono text-[12px] leading-[18px] text-ink outline-none"
         spellCheck={false}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -311,18 +311,18 @@ export default function ConfigGroupPage() {
                 />
                 <Folder size={13} className="flex-none text-[#4aa3f0]" />
                 <button
-                  className="min-w-0 truncate text-[12px] text-ink transition-colors hover:text-signal"
+                  className="min-w-0 truncate text-[14px] text-ink transition-colors hover:text-signal"
                   onClick={() => setExpandedName(expanded ? null : group.name)}
                 >
                   {group.name}
                 </button>
-                <span className="flex-none text-[12px] text-ink-3">配置文件 {files.length}个</span>
-                <span className="mono ml-auto flex-none text-[11.5px] text-ink-3">
+                <span className="flex-none text-[14px] text-ink-3">配置文件 {files.length}个</span>
+                <span className="mono ml-auto flex-none text-[12px] text-ink-3">
                   {group.createdAt ? formatDate(group.createdAt, true) : '--'}
                 </span>
                 <div className="flex flex-none items-center">
                   <button
-                    className="inline-flex h-[26px] items-center gap-1 border border-[#2f6fa8] bg-transparent px-2.5 text-[12px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+                    className="inline-flex h-[26px] items-center gap-1 border border-[#2f6fa8] bg-transparent px-2.5 text-[14px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
                     onClick={() => {
                       setActive(group)
                       setFileMode('create')
@@ -361,7 +361,7 @@ export default function ConfigGroupPage() {
               {expanded && (
                 <div className="border-t border-line bg-[#0c1b2a] px-6 py-2">
                   {files.length === 0 ? (
-                    <div className="py-6 text-center text-[12px] text-mute">暂无配置文件</div>
+                    <div className="py-6 text-center text-[14px] text-mute">暂无配置文件</div>
                   ) : (
                     files.map(([name, value], index) => {
                       const related = relations.get(name) ?? []
@@ -375,7 +375,7 @@ export default function ConfigGroupPage() {
                         >
                           <div className="flex w-[240px] flex-none items-center gap-2">
                             <FileText size={13} className="flex-none text-[#4aa3f0]" />
-                            <span className="mono truncate text-[12px] text-ink">{name}</span>
+                            <span className="mono truncate text-[14px] text-ink">{name}</span>
                           </div>
                           <div className="flex flex-none items-center gap-1.5">
                             <button
@@ -409,15 +409,15 @@ export default function ConfigGroupPage() {
                           </div>
                           <div className="flex min-w-0 flex-1 items-center gap-4 border-l border-[#1f3b55] pl-5">
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5 text-[12px] text-ink-3">
+                              <div className="flex items-center gap-1.5 text-[14px] text-ink-3">
                                 关联服务
                                 {related.length > 0 && (
-                                  <span className="inline-flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#3fbf7f] px-1 text-[10px] text-[#0a1622]">
+                                  <span className="inline-flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#3fbf7f] px-1 text-[12px] text-[#0a1622]">
                                     {related.length}
                                   </span>
                                 )}
                               </div>
-                              <div className="mt-1 truncate text-[12px] text-ink-3">
+                              <div className="mt-1 truncate text-[14px] text-ink-3">
                                 {related.length > 0
                                   ? related.map((item) => item.serviceName || '—').join('、')
                                   : '暂无挂载'}
@@ -425,8 +425,8 @@ export default function ConfigGroupPage() {
                             </div>
                           </div>
                           <div className="min-w-0 flex-1 border-l border-[#1f3b55] pl-5">
-                            <div className="text-[12px] text-ink-3">挂载路径</div>
-                            <div className="mono mt-1 truncate text-[12px] text-ink-3">
+                            <div className="text-[14px] text-ink-3">挂载路径</div>
+                            <div className="mono mt-1 truncate text-[14px] text-ink-3">
                               {related.length > 0
                                 ? related.map((item) => item.mountPath || '—').join('、')
                                 : '--'}
@@ -454,7 +454,7 @@ export default function ConfigGroupPage() {
             />
           </div>
         )}
-        {query.isLoading && <div className="px-4 py-10 text-center text-[11px] text-mute">正在读取配置…</div>}
+        {query.isLoading && <div className="px-4 py-10 text-center text-[12px] text-mute">正在读取配置…</div>}
       </Panel>
 
       <Modal
@@ -483,7 +483,7 @@ export default function ConfigGroupPage() {
       >
         <Field label="配置组名称" required hint="小写字母、数字与短横线">
           <input
-            className="field font-mono text-[11px]"
+            className="field font-mono text-[12px]"
             value={groupName}
             onChange={(event) => setGroupName(event.target.value)}
             placeholder="service-config"
@@ -524,11 +524,11 @@ export default function ConfigGroupPage() {
       >
         <div className="space-y-3 pb-2">
           <div className="flex items-center gap-2">
-            <span className="w-[56px] flex-none text-right text-[12px] text-ink-3">
+            <span className="w-[56px] flex-none text-right text-[14px] text-ink-3">
               <span className="text-danger">* </span>名称：
             </span>
             <input
-              className="field h-8 flex-1 font-mono text-[12px]"
+              className="field h-8 flex-1 font-mono text-[14px]"
               value={fileName}
               onChange={(event) => setFileName(event.target.value)}
               placeholder="init.sql"
@@ -536,13 +536,13 @@ export default function ConfigGroupPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-[56px] flex-none text-right text-[12px] text-ink-3">内容：</span>
-            <span className="text-[12px] text-ink-3">导入或直接输入配置文件</span>
+            <span className="w-[56px] flex-none text-right text-[14px] text-ink-3">内容：</span>
+            <span className="text-[14px] text-ink-3">导入或直接输入配置文件</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-[56px] flex-none" />
             <Select
-              className="h-8 text-[12px]"
+              className="h-8 text-[14px]"
               value={fileEncoding}
               options={[
                 { value: 'UTF-8', label: 'UTF-8' },
@@ -567,13 +567,13 @@ export default function ConfigGroupPage() {
               }}
             />
             <button
-              className="inline-flex h-8 items-center gap-1.5 border border-[#2f6fa8] px-3 text-[12px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+              className="inline-flex h-8 items-center gap-1.5 border border-[#2f6fa8] px-3 text-[14px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload size={12} /> 读取文件内容
             </button>
           </div>
-          <div className="pl-[64px] text-[12px] text-mute">请上传文件或直接输入内容</div>
+          <div className="pl-[64px] text-[14px] text-mute">请上传文件或直接输入内容</div>
           <CodeEditor value={fileValue} onChange={setFileValue} />
         </div>
       </Modal>
@@ -596,12 +596,12 @@ export default function ConfigGroupPage() {
         <div className="divide-y divide-line border border-line">
           {(relationFile ? relations.get(relationFile) ?? [] : []).map((item, index) => (
             <div key={`${item.serviceName}-${index}`} className="flex items-center justify-between gap-3 px-3 py-2">
-              <span className="mono min-w-0 truncate text-[10.5px] text-ink">{item.serviceName || '—'}</span>
-              <span className="mono min-w-0 truncate text-[9.5px] text-mute">{item.mountPath || '—'}</span>
+              <span className="mono min-w-0 truncate text-[12px] text-ink">{item.serviceName || '—'}</span>
+              <span className="mono min-w-0 truncate text-[12px] text-mute">{item.mountPath || '—'}</span>
             </div>
           ))}
           {(!relationFile || (relations.get(relationFile) ?? []).length === 0) && (
-            <div className="px-3 py-6 text-center text-[10.5px] text-mute">暂无服务挂载该文件</div>
+            <div className="px-3 py-6 text-center text-[12px] text-mute">暂无服务挂载该文件</div>
           )}
         </div>
       </Modal>

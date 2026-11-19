@@ -181,10 +181,10 @@ export function PageHeader({
 }) {
   return (
     <div className="mb-2.5 flex flex-wrap items-center gap-2">
-      <h1 className="flex-none text-[15px] font-semibold text-ink">{title}</h1>
+      <h1 className="flex-none text-[16px] font-semibold text-ink">{title}</h1>
       {meta && <div className="hidden flex-wrap items-center gap-x-3 gap-y-1 lg:flex">{meta}</div>}
       {description && (
-        <span className="hidden max-w-[420px] truncate text-[12px] text-mute 2xl:inline">{description}</span>
+        <span className="hidden max-w-[420px] truncate text-[14px] text-mute 2xl:inline">{description}</span>
       )}
       <div className="ml-auto flex flex-wrap items-center gap-2">
         {toolbar}
@@ -193,7 +193,7 @@ export function PageHeader({
             <div className="relative">
               <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-mute" />
               <input
-                className="field h-[30px] rounded-r-none pl-8 text-[12px]"
+                className="field h-[30px] rounded-r-none pl-8 text-[14px]"
                 style={{ width: search.width ?? 220 }}
                 placeholder={search.placeholder ?? '请输入关键字搜索'}
                 value={search.value}
@@ -238,7 +238,7 @@ export function PageToolbar({
         {search && (
           <div className="flex h-[30px]">
             <input
-              className="field h-[30px] rounded-r-none text-[12px]"
+              className="field h-[30px] rounded-r-none text-[14px]"
               style={{ width: search.width ?? 232 }}
               placeholder={search.placeholder ?? '请输入关键字搜索'}
               value={search.value}
@@ -293,9 +293,9 @@ export function Stat({
       <div className="label">{label}</div>
       <div className="mt-1.5 flex items-baseline gap-1.5">
         <span className={cn('num text-[34px] leading-none', accent ? 'text-signal' : 'text-ink')}>{value}</span>
-        {unit && <span className="mono text-[10px] uppercase tracking-widest text-mute">{unit}</span>}
+        {unit && <span className="mono text-[12px] uppercase tracking-widest text-mute">{unit}</span>}
       </div>
-      {hint && <div className="mt-2 text-[11px] text-ink-3">{hint}</div>}
+      {hint && <div className="mt-2 text-[12px] text-ink-3">{hint}</div>}
     </div>
   )
 }
@@ -303,8 +303,8 @@ export function Stat({
 export function KV({ k, v, mono = true }: { k: ReactNode; v: ReactNode; mono?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-line py-2 last:border-0">
-      <span className="pt-0.5 text-[12px] text-mute">{k}</span>
-      <span className={cn('text-right text-[13px] text-ink', mono && 'mono')}>{v}</span>
+      <span className="pt-0.5 text-[14px] text-mute">{k}</span>
+      <span className={cn('text-right text-[14px] text-ink', mono && 'mono')}>{v}</span>
     </div>
   )
 }
@@ -329,10 +329,10 @@ export function Field({
     <label className={cn('block', className)}>
       <span className="mb-1.5 flex items-center gap-1.5">
         <span className="label-ink">{label}</span>
-        {required && <span className="text-[11px] text-signal">*</span>}
+        {required && <span className="text-[12px] text-signal">*</span>}
       </span>
       {children}
-      {hint && <span className="mt-1 block text-[10.5px] leading-relaxed text-mute">{hint}</span>}
+      {hint && <span className="mt-1 block text-[12px] leading-relaxed text-mute">{hint}</span>}
     </label>
   )
 }
@@ -465,7 +465,7 @@ export function Select({
               <div className="px-1.5 pb-1">
                 <input
                   autoFocus
-                  className="field h-7 text-[11.5px]"
+                  className="field h-7 text-[12px]"
                   placeholder="搜索"
                   value={keyword}
                   onChange={(event) => setKeyword(event.target.value)}
@@ -482,7 +482,7 @@ export function Select({
                   setOpen(false)
                 }}
                 className={cn(
-                  'flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-[12px] transition-colors',
+                  'flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-[14px] transition-colors',
                   option.value === value
                     ? 'bg-signal/15 text-signal'
                     : 'text-ink-3 hover:bg-line/40 hover:text-ink',
@@ -494,7 +494,7 @@ export function Select({
                 <span className="truncate">{option.label}</span>
               </button>
             ))}
-            {list.length === 0 && <div className="px-2 py-1.5 text-[12px] text-mute">无匹配项</div>}
+            {list.length === 0 && <div className="px-2 py-1.5 text-[14px] text-mute">无匹配项</div>}
           </div>,
           document.body,
         )}
@@ -514,7 +514,7 @@ export function Tip({ content, children }: { content: ReactNode; children: React
       <Tooltip.Portal>
         <Tooltip.Content
           sideOffset={6}
-          className="z-[80] max-w-[260px] rounded border border-[#2b4c6d] bg-[#0b1c2d] px-2.5 py-1.5 text-[12px] leading-relaxed text-[#dbe9f7] shadow-lg"
+          className="z-[80] max-w-[260px] rounded border border-[#2b4c6d] bg-[#0b1c2d] px-2.5 py-1.5 text-[14px] leading-relaxed text-[#dbe9f7] shadow-lg"
         >
           {content}
           <Tooltip.Arrow className="fill-[#0b1c2d]" />
@@ -585,7 +585,7 @@ export function Modal({
                   {kicker && <div className="label mb-1">{kicker}</div>}
                   <Dialog.Title className="text-[16px] font-semibold leading-6 text-ink">{title}</Dialog.Title>
                   {description && (
-                    <Dialog.Description className="mt-1.5 text-[12px] leading-relaxed text-ink-3">
+                    <Dialog.Description className="mt-1.5 text-[14px] leading-relaxed text-ink-3">
                       {description}
                     </Dialog.Description>
                   )}
@@ -643,7 +643,7 @@ export function Drawer({
               <div className="min-w-0">
                 <Dialog.Title className="truncate text-[16px] font-semibold leading-6 text-ink">{title}</Dialog.Title>
                 {description && (
-                  <Dialog.Description className="mt-0.5 truncate text-[11.5px] leading-4 text-mute">
+                  <Dialog.Description className="mt-0.5 truncate text-[12px] leading-4 text-mute">
                     {description}
                   </Dialog.Description>
                 )}
@@ -697,9 +697,9 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             <div className="flex items-start gap-3 border-b border-line px-5 py-4">
               <AlertTriangle size={18} className={options?.danger ? 'mt-0.5 text-danger' : 'mt-0.5 text-warn'} />
               <div>
-                <Dialog.Title className="text-[15px] font-semibold text-ink">{options?.title}</Dialog.Title>
+                <Dialog.Title className="text-[16px] font-semibold text-ink">{options?.title}</Dialog.Title>
                 {options?.description && (
-                  <div className="mt-1.5 text-[12px] leading-relaxed text-ink-3">{options.description}</div>
+                  <div className="mt-1.5 text-[14px] leading-relaxed text-ink-3">{options.description}</div>
                 )}
               </div>
             </div>
@@ -743,7 +743,7 @@ export function ActionMenu({
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         {triggerText ? (
-          <button className="text-[12px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">{triggerText}</button>
+          <button className="text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]">{triggerText}</button>
         ) : (
           <button
             aria-label={label}
@@ -765,7 +765,7 @@ export function ActionMenu({
               disabled={item.disabled}
               onSelect={item.onSelect}
               className={cn(
-                'flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-[12px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white data-[disabled]:opacity-35',
+                'flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-[14px] text-ink-3 outline-none transition-colors data-[highlighted]:bg-[#16304a] data-[highlighted]:text-white data-[disabled]:opacity-35',
                 item.danger && 'text-danger data-[highlighted]:bg-[#3a1b22] data-[highlighted]:text-danger',
               )}
             >
@@ -801,7 +801,7 @@ export function TabStrip<T extends string>({
           onClick={() => onChange(tab.value)}
         >
           {tab.label}
-          {tab.count !== undefined && <span className="ml-1.5 text-[9px] text-mute">{tab.count}</span>}
+          {tab.count !== undefined && <span className="ml-1.5 text-[12px] text-mute">{tab.count}</span>}
         </button>
       ))}
     </div>
@@ -818,7 +818,7 @@ export function Spinner({ size = 16 }: { size?: number }) {
 export function LoadingBlock({ label = '载入中', rows = 3 }: { label?: string; rows?: number }) {
   return (
     <div className="space-y-2 py-2">
-      <div className="flex items-center gap-2 text-[10px] tracking-widest text-mute">
+      <div className="flex items-center gap-2 text-[12px] tracking-widest text-mute">
         <Spinner size={12} /> {label}
       </div>
       {Array.from({ length: rows }).map((_, index) => (
@@ -848,8 +848,8 @@ export function EmptyState({
       <div className="mb-1 flex h-11 w-11 items-center justify-center rounded-lg border border-line bg-paper-2 text-mute">
         {icon || <span className="text-[16px]">∅</span>}
       </div>
-      <div className="text-[13px] font-medium text-ink">{title}</div>
-      {description && <div className="max-w-sm text-[12px] leading-relaxed text-mute">{description}</div>}
+      <div className="text-[14px] font-medium text-ink">{title}</div>
+      {description && <div className="max-w-sm text-[14px] leading-relaxed text-mute">{description}</div>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   )
@@ -860,10 +860,10 @@ export function InlineError({ message, onRetry }: { message: string; onRetry?: (
     <div className="flex items-start gap-2.5 rounded border border-[#5c2a2a] bg-[#2a161b] px-3 py-2.5">
       <XCircle size={14} className="mt-0.5 flex-none text-danger" />
       <div className="min-w-0 flex-1">
-        <div className="text-[12px] text-ink">{message}</div>
+        <div className="text-[14px] text-ink">{message}</div>
       </div>
       {onRetry && (
-        <button onClick={onRetry} className="text-[12px] text-danger hover:underline">
+        <button onClick={onRetry} className="text-[14px] text-danger hover:underline">
           重试
         </button>
       )}
@@ -909,9 +909,9 @@ export function ToastHost() {
               )}
             />
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-medium leading-tight text-ink">{item.title}</div>
+              <div className="text-[14px] font-medium leading-tight text-ink">{item.title}</div>
               {item.description && (
-                <div className="mt-1 break-words text-[12px] leading-relaxed text-ink-3">{item.description}</div>
+                <div className="mt-1 break-words text-[14px] leading-relaxed text-ink-3">{item.description}</div>
               )}
             </div>
             <button onClick={() => dismiss(item.id)} className="text-mute transition-colors hover:text-ink">
@@ -937,7 +937,7 @@ export function CopyText({ value, label }: { value: string; label?: string }) {
   return (
     <button
       key={id}
-      className="group inline-flex items-center gap-1.5 font-mono text-[11px] text-ink-3 transition-colors hover:text-signal"
+      className="group inline-flex items-center gap-1.5 font-mono text-[12px] text-ink-3 transition-colors hover:text-signal"
       onClick={async (event) => {
         event.stopPropagation()
         try {
@@ -951,7 +951,7 @@ export function CopyText({ value, label }: { value: string; label?: string }) {
       title={label || '复制'}
     >
       {value}
-      {copied ? <Check size={11} className="text-ok" /> : <span className="text-[9px] opacity-0 group-hover:opacity-60">COPY</span>}
+      {copied ? <Check size={11} className="text-ok" /> : <span className="text-[12px] opacity-0 group-hover:opacity-60">COPY</span>}
     </button>
   )
 }

@@ -150,8 +150,8 @@ export default function ServiceAuthPage() {
         <div className="flex items-center gap-2.5">
           <StatusDot tone={Number(row.serviceAuth?.auth) === 1 ? 'ok' : 'warn'} />
           <div>
-            <div className="font-mono text-[11px] text-ink">{nameOf(row)}</div>
-            <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">
+            <div className="font-mono text-[12px] text-ink">{nameOf(row)}</div>
+            <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">
               {row.deployment?.status?.readyReplicas ?? 0}/{row.deployment?.spec?.replicas ?? 0} REPLICAS
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function ServiceAuthPage() {
       header: '授权类型',
       cell: (row) => {
         const info = row.serviceAuth
-        if (Number(info?.auth) !== 1) return <span className="text-[10.5px] text-mute">—</span>
+        if (Number(info?.auth) !== 1) return <span className="text-[12px] text-mute">—</span>
         if (info?.authType === 2) return <Badge tone="info">周期 · {info.authInterval || 0} 天</Badge>
         return <Badge tone="info">管理员授权</Badge>
       },
@@ -182,7 +182,7 @@ export default function ServiceAuthPage() {
       header: '授权时间',
       sortValue: (row) => row.serviceAuth?.authTime ?? 0,
       cell: (row) => (
-        <span className="mono text-[9.5px] text-ink-3">{row.serviceAuth?.authTime ? formatDate(row.serviceAuth.authTime) : '—'}</span>
+        <span className="mono text-[12px] text-ink-3">{row.serviceAuth?.authTime ? formatDate(row.serviceAuth.authTime) : '—'}</span>
       ),
     },
     {
@@ -193,7 +193,7 @@ export default function ServiceAuthPage() {
         if (!value) return <span className="text-mute">—</span>
         return (
           <button
-            className="mono flex items-center gap-1 text-[8.5px] tracking-wider text-ink-3 hover:text-signal"
+            className="mono flex items-center gap-1 text-[12px] tracking-wider text-ink-3 hover:text-signal"
             onClick={() => {
               navigator.clipboard?.writeText(value)
               toast.success('授权码已复制')
@@ -241,11 +241,11 @@ export default function ServiceAuthPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {authorized.length}/{services.length} AUTHORIZED
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">LICENSE / SERVICE</span>
+            <span className="mono text-[12px] tracking-widest text-mute">LICENSE / SERVICE</span>
           </>
         }
         actions={
@@ -292,7 +292,7 @@ export default function ServiceAuthPage() {
           <Panel key={label} bodyClassName="px-4 py-3.5">
             <div className="label">{label}</div>
             <div className="num mt-1.5 text-[28px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </Panel>
         ))}
       </div>
@@ -359,8 +359,8 @@ export default function ServiceAuthPage() {
                   >
                     {checked && <span className="h-1.5 w-1.5 bg-paper" />}
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{name}</span>
-                  <span className={cn('mono text-[8px]', checked ? 'text-white/70' : 'text-mute')}>
+                  <span className="min-w-0 flex-1 truncate font-mono text-[12px]">{name}</span>
+                  <span className={cn('mono text-[12px]', checked ? 'text-white/70' : 'text-mute')}>
                     {Number(service.serviceAuth?.auth) === 1 ? 'AUTHORIZED' : 'PENDING'}
                   </span>
                 </button>
@@ -399,7 +399,7 @@ export default function ServiceAuthPage() {
               </div>
               <textarea
                 readOnly
-                className="field h-[110px] resize-none font-mono text-[10px] leading-relaxed"
+                className="field h-[110px] resize-none font-mono text-[12px] leading-relaxed"
                 value={code}
               />
             </div>
@@ -434,7 +434,7 @@ export default function ServiceAuthPage() {
         <div className="space-y-3">
           <Field label="授权码" required>
             <textarea
-              className="field h-[150px] resize-none font-mono text-[10px] leading-relaxed"
+              className="field h-[150px] resize-none font-mono text-[12px] leading-relaxed"
               value={token}
               onChange={(event) => setToken(event.target.value)}
               placeholder="粘贴授权码"
@@ -446,7 +446,7 @@ export default function ServiceAuthPage() {
               <div className="max-h-[140px] overflow-y-auto">
                 {results.map((item) => (
                   <div key={item.serviceId} className="flex items-center justify-between border-b border-line/60 px-3 py-1.5 last:border-0">
-                    <span className="mono text-[10px] text-ink">{item.serviceId || '—'}</span>
+                    <span className="mono text-[12px] text-ink">{item.serviceId || '—'}</span>
                     <Badge tone={item.result ? 'ok' : 'bad'}>{item.result ? 'SUCCESS' : 'FAILED'}</Badge>
                   </div>
                 ))}

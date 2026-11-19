@@ -329,8 +329,8 @@ export default function NetworkPage() {
         <div className="flex items-center gap-2">
           <StatusDot tone="ok" />
           <div className="min-w-0">
-            <div className="font-mono text-[11px] text-ink">{row.name}</div>
-            <div className="mono mt-0.5 truncate text-[8px] tracking-wider text-mute">
+            <div className="font-mono text-[12px] text-ink">{row.name}</div>
+            <div className="mono mt-0.5 truncate text-[12px] tracking-wider text-mute">
               {row.name}.{row.namespace}.svc.cluster.local
             </div>
           </div>
@@ -346,9 +346,9 @@ export default function NetworkPage() {
       key: 'clusterIP',
       header: '集群 IP',
       cell: (row) => (
-        <div className="mono text-[10px] text-ink-3">
+        <div className="mono text-[12px] text-ink-3">
           <div>{row.clusterIP}</div>
-          <div className="mt-0.5 text-[8.5px] text-mute">{row.namespace}</div>
+          <div className="mt-0.5 text-[12px] text-mute">{row.namespace}</div>
         </div>
       ),
     },
@@ -371,7 +371,7 @@ export default function NetworkPage() {
       key: 'selector',
       header: '选择器',
       cell: (row) => (
-        <span className="mono block max-w-[220px] truncate text-[9px] text-mute">
+        <span className="mono block max-w-[220px] truncate text-[12px] text-mute">
           {row.selector
             ? Object.entries(row.selector)
                 .map(([key, value]) => `${key}=${value}`)
@@ -384,7 +384,7 @@ export default function NetworkPage() {
       key: 'created',
       header: '创建时间',
       cell: (row) => (
-        <span className="mono text-[9px] text-mute">
+        <span className="mono text-[12px] text-mute">
           {row.createdAt ? formatDate(row.createdAt, false) : '—'}
         </span>
       ),
@@ -469,7 +469,7 @@ export default function NetworkPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {tab === 'services'
                   ? `${services.length} SERVICES · ${nodePortServices.length} NODE PORT`
                   : tab === 'vip'
@@ -477,7 +477,7 @@ export default function NetworkPage() {
                     : `${nodePortServices.length} INGRESS · ${vips.length} VIP`}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">CN-SH / ENS160</span>
+            <span className="mono text-[12px] tracking-widest text-mute">CN-SH / ENS160</span>
           </>
         }
         actions={
@@ -549,14 +549,14 @@ export default function NetworkPage() {
               {interfaces.map((item) => (
                 <div key={item.name} className="border-b border-line py-2.5 last:border-0">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[11px] text-ink">{item.name}</span>
+                    <span className="font-mono text-[12px] text-ink">{item.name}</span>
                     <Badge tone={item.flags.includes('up') ? 'ok' : 'warn'}>{item.flags.includes('up') ? 'UP' : 'DOWN'}</Badge>
                   </div>
-                  <div className="mono mt-1 text-[8.5px] text-mute">{item.mac}</div>
-                  <div className="mono mt-1 text-[9.5px] text-ink-3">{item.addresses.join(' · ')}</div>
+                  <div className="mono mt-1 text-[12px] text-mute">{item.mac}</div>
+                  <div className="mono mt-1 text-[12px] text-ink-3">{item.addresses.join(' · ')}</div>
                 </div>
               ))}
-              {interfaces.length === 0 && <div className="py-4 text-[10.5px] text-mute">未获取到网卡信息</div>}
+              {interfaces.length === 0 && <div className="py-4 text-[12px] text-mute">未获取到网卡信息</div>}
             </Panel>
             <Panel kicker="NODE PORT" title="对外端口">
               <div className="space-y-2">
@@ -564,14 +564,14 @@ export default function NetworkPage() {
                   const ports = service.ports.filter((port) => port.nodePort)
                   return (
                     <div key={service.name} className="border-b border-line pb-2 last:border-0">
-                      <div className="mono text-[10px] text-ink">{service.name}</div>
-                      <div className="mono mt-1 text-[9px] text-ink-3">
+                      <div className="mono text-[12px] text-ink">{service.name}</div>
+                      <div className="mono mt-1 text-[12px] text-ink-3">
                         {ports.map((port) => `${port.nodePort} → ${port.port}`).join(' / ')}
                       </div>
                     </div>
                   )
                 })}
-                {nodePortServices.length === 0 && <div className="py-3 text-[10.5px] text-mute">没有 NodePort 服务</div>}
+                {nodePortServices.length === 0 && <div className="py-3 text-[12px] text-mute">没有 NodePort 服务</div>}
               </div>
             </Panel>
           </div>
@@ -598,15 +598,15 @@ export default function NetworkPage() {
               {interfaces.map((item) => (
                 <div key={item.name} className="border-b border-line py-2.5 last:border-0">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[11px] text-ink">{item.name}</span>
-                    <span className="mono text-[8.5px] text-mute">IDX {item.index}</span>
+                    <span className="font-mono text-[12px] text-ink">{item.name}</span>
+                    <span className="mono text-[12px] text-mute">IDX {item.index}</span>
                   </div>
-                  <div className="mono mt-1 text-[9px] text-ink-3">{item.addresses[0]}</div>
+                  <div className="mono mt-1 text-[12px] text-ink-3">{item.addresses[0]}</div>
                 </div>
               ))}
             </Panel>
             <Panel kicker="NOTICE" title="使用建议">
-              <p className="text-[10.5px] leading-relaxed text-ink-3">
+              <p className="text-[12px] leading-relaxed text-ink-3">
                 虚拟 IP 需与网卡所在子网一致。在主备场景下，配合 VIP 漂移可实现服务入口的快速切换。
               </p>
             </Panel>
@@ -624,9 +624,9 @@ export default function NetworkPage() {
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-2">
                         <StatusDot tone="ok" />
-                        <span className="truncate font-mono text-[11px] text-ink">{name}</span>
+                        <span className="truncate font-mono text-[12px] text-ink">{name}</span>
                       </div>
-                      <span className="mono text-[8.5px] tracking-widest text-mute">
+                      <span className="mono text-[12px] tracking-widest text-mute">
                         {service.clusterIP} · {service.type}
                       </span>
                     </div>
@@ -636,16 +636,16 @@ export default function NetworkPage() {
                           <CopyText key={`${ip}-${port.nodePort}`} value={`${ip}:${port.nodePort}`} />
                         )),
                       )}
-                      {ports.length === 0 && <span className="text-[10px] text-mute">未暴露 NodePort</span>}
+                      {ports.length === 0 && <span className="text-[12px] text-mute">未暴露 NodePort</span>}
                     </div>
-                    <div className="mono mt-1.5 text-[8px] tracking-wider text-mute">
+                    <div className="mono mt-1.5 text-[12px] tracking-wider text-mute">
                       {ports.map((port) => `${port.nodePort} → ${port.port}/${port.protocol || 'TCP'}`).join(' · ') || '—'}
                     </div>
                   </div>
                 )
               })}
               {nodePortServices.length === 0 && (
-                <div className="px-4 py-10 text-center text-[11px] text-mute">
+                <div className="px-4 py-10 text-center text-[12px] text-mute">
                   当前没有 NodePort 类型服务，可在「服务配置 → 端口」中暴露
                 </div>
               )}
@@ -657,13 +657,13 @@ export default function NetworkPage() {
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_100px] gap-2">
                   <input
-                    className="field h-9 font-mono text-[11px]"
+                    className="field h-9 font-mono text-[12px]"
                     value={probeIp}
                     onChange={(event) => setProbeIp(event.target.value)}
                     placeholder="节点 IP"
                   />
                   <input
-                    className="field h-9 font-mono text-[11px]"
+                    className="field h-9 font-mono text-[12px]"
                     value={probePort}
                     onChange={(event) => setProbePort(event.target.value.replace(/[^\d]/g, ''))}
                     placeholder="端口"
@@ -686,11 +686,11 @@ export default function NetworkPage() {
                     <Badge tone={probeResult.connect ? 'ok' : 'bad'}>
                       {probeResult.connect ? 'REACHABLE' : 'UNREACHABLE'}
                     </Badge>
-                    <span className="mono text-[9px] text-ink-3">{probeResult.hostname || '—'}</span>
+                    <span className="mono text-[12px] text-ink-3">{probeResult.hostname || '—'}</span>
                   </div>
                   <div className="mt-2 space-y-1">
                     {(probeResult.netWorkInfo ?? []).map((item) => (
-                      <div key={item.netName} className="mono flex items-start gap-2 text-[9px] text-mute">
+                      <div key={item.netName} className="mono flex items-start gap-2 text-[12px] text-mute">
                         <span className="flex-none text-ink-3">{item.netName}</span>
                         <span className="break-all">{(item.ipList ?? []).slice(0, 3).join(' / ')}</span>
                       </div>
@@ -704,11 +704,11 @@ export default function NetworkPage() {
               <div className="space-y-2">
                 {vips.map((item) => (
                   <div key={`${item.netName}-${item.ip}`} className="flex items-center justify-between border-b border-line pb-2 last:border-0">
-                    <span className="font-mono text-[10.5px] text-ink">{item.ip}</span>
+                    <span className="font-mono text-[12px] text-ink">{item.ip}</span>
                     <Badge tone="info">{item.netName}</Badge>
                   </div>
                 ))}
-                {vips.length === 0 && <div className="py-2 text-[10.5px] text-mute">尚未配置虚拟 IP</div>}
+                {vips.length === 0 && <div className="py-2 text-[12px] text-mute">尚未配置虚拟 IP</div>}
               </div>
             </Panel>
           </div>
@@ -755,7 +755,7 @@ export default function NetworkPage() {
           </Field>
           <div className="flex items-center gap-2 border border-line bg-paper-2/30 px-3 py-2">
             <Network size={12} className="text-mute" />
-            <span className="mono text-[9px] text-mute">ADDRESS WILL BE BOUND TO {netName || '—'}</span>
+            <span className="mono text-[12px] text-mute">ADDRESS WILL BE BOUND TO {netName || '—'}</span>
           </div>
         </div>
       </Drawer>
@@ -787,10 +787,10 @@ export default function NetworkPage() {
         }
       >
         {yamlLoading ? (
-          <div className="py-10 text-center text-[11px] text-mute">正在读取 Service 配置…</div>
+          <div className="py-10 text-center text-[12px] text-mute">正在读取 Service 配置…</div>
         ) : (
           <textarea
-            className="field min-h-[420px] font-mono text-[10px] leading-relaxed"
+            className="field min-h-[420px] font-mono text-[12px] leading-relaxed"
             spellCheck={false}
             value={yamlText}
             onChange={(event) => setYamlText(event.target.value)}
@@ -833,7 +833,7 @@ export default function NetworkPage() {
           ] as const).map(([value, label]) => (
             <button
               key={value}
-              className={`mono h-8 flex-1 text-[9.5px] tracking-[0.14em] ${
+              className={`mono h-8 flex-1 text-[12px] tracking-[0.14em] ${
                 createMode === value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2'
               }`}
               onClick={() => {
@@ -874,7 +874,7 @@ export default function NetworkPage() {
         </div>
         {createMode === 'json' ? (
           <textarea
-            className="field min-h-[420px] font-mono text-[10px] leading-relaxed"
+            className="field min-h-[420px] font-mono text-[12px] leading-relaxed"
             spellCheck={false}
             value={createJson}
             onChange={(event) => setCreateJson(event.target.value)}
@@ -884,7 +884,7 @@ export default function NetworkPage() {
         <div className="grid grid-cols-2 gap-3">
           <Field label="名称" required hint="小写字母、数字与短横线">
             <input
-              className="field font-mono text-[11px]"
+              className="field font-mono text-[12px]"
               value={createForm.name}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, name: event.target.value }))}
               placeholder="my-service"
@@ -892,7 +892,7 @@ export default function NetworkPage() {
           </Field>
           <Field label="命名空间" required>
             <input
-              className="field font-mono text-[11px]"
+              className="field font-mono text-[12px]"
               value={createForm.namespace}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, namespace: event.target.value }))}
               placeholder="gaop-namespace"
@@ -921,7 +921,7 @@ export default function NetworkPage() {
           </Field>
           <Field label="服务端口" required hint="Service 暴露的端口">
             <input
-              className="field font-mono text-[11px]"
+              className="field font-mono text-[12px]"
               value={createForm.port}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, port: event.target.value.replace(/[^\d]/g, '') }))}
               placeholder="8080"
@@ -929,7 +929,7 @@ export default function NetworkPage() {
           </Field>
           <Field label="目标端口" hint="留空则与服务端口一致">
             <input
-              className="field font-mono text-[11px]"
+              className="field font-mono text-[12px]"
               value={createForm.targetPort}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, targetPort: event.target.value }))}
               placeholder="80 或 http"
@@ -938,7 +938,7 @@ export default function NetworkPage() {
           {(createForm.type === 'NodePort' || createForm.type === 'LoadBalancer') && (
             <Field label="NodePort" hint="留空由集群自动分配 30000-32767">
               <input
-                className="field font-mono text-[11px]"
+                className="field font-mono text-[12px]"
                 value={createForm.nodePort}
                 onChange={(event) =>
                   setCreateForm((prev) => ({ ...prev, nodePort: event.target.value.replace(/[^\d]/g, '') }))
@@ -950,7 +950,7 @@ export default function NetworkPage() {
           <div className={createForm.type === 'NodePort' || createForm.type === 'LoadBalancer' ? '' : 'col-span-2'}>
             <Field label="标签选择器" hint="每行一个 key=value">
               <textarea
-                className="field min-h-[86px] font-mono text-[10.5px]"
+                className="field min-h-[86px] font-mono text-[12px]"
                 value={createForm.selector}
                 onChange={(event) => setCreateForm((prev) => ({ ...prev, selector: event.target.value }))}
                 placeholder={'app=my-app\nrelease=prod'}

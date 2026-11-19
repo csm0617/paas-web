@@ -207,7 +207,7 @@ body {
     color: #cfe2f3;
     border-radius: 3px;
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: 14px;
     letter-spacing: 0;
     text-transform: none;
     cursor: pointer;
@@ -272,12 +272,12 @@ body {
   .btn-sm {
     height: 26px;
     padding: 0 9px;
-    font-size: 12px;
+    font-size: 14px;
   }
   .btn-lg {
     height: 36px;
     padding: 0 18px;
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .field {
@@ -287,7 +287,7 @@ body {
     background: #0d1f2f;
     border: 1px solid var(--color-line-strong);
     border-radius: 3px;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--color-ink);
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -304,7 +304,7 @@ body {
   }
   .field-lg {
     height: 38px;
-    font-size: 14px;
+    font-size: 16px;
   }
   select.field {
     appearance: none;
@@ -331,7 +331,7 @@ body {
   .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 14px;
   }
   .table-scroll {
     overflow-x: auto;
@@ -365,7 +365,7 @@ body {
   }
   .data-table thead th {
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: 14px;
     letter-spacing: 0;
     text-transform: none;
     color: var(--color-ink-3);
@@ -424,7 +424,7 @@ body {
     border: 1px solid #24405a;
     border-radius: 3px;
     font-family: var(--font-sans);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0;
     text-transform: none;
     color: var(--color-ink-3);
@@ -459,7 +459,7 @@ body {
     gap: 8px;
     height: 38px;
     padding: 0 12px;
-    font-size: 13px;
+    font-size: 14px;
     color: #a9bfd4;
     transition: color 0.15s ease, background 0.15s ease;
     border-left: 0;
@@ -491,7 +491,7 @@ body {
     position: relative;
     padding: 8px 0;
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: 14px;
     letter-spacing: 0;
     text-transform: none;
     color: var(--color-ink-3);
@@ -544,7 +544,7 @@ body {
     border: 1px solid #24405a;
     border-radius: 3px;
     font-family: var(--font-sans);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--color-ink-3);
     background: #142a3e;
   }

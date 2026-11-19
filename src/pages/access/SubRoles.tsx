@@ -251,8 +251,8 @@ export default function SubRolesPage() {
         <div className="flex items-center gap-2.5">
           <StatusDot tone="ok" />
           <div>
-            <div className="text-[12px] font-medium text-ink">{row.name}</div>
-            <div className="mono mt-0.5 text-[8.5px] tracking-widest text-mute">KEY / {row.key}</div>
+            <div className="text-[14px] font-medium text-ink">{row.name}</div>
+            <div className="mono mt-0.5 text-[12px] tracking-widest text-mute">KEY / {row.key}</div>
           </div>
         </div>
       ),
@@ -262,8 +262,8 @@ export default function SubRolesPage() {
       header: '英文 / 法文',
       cell: (row) => (
         <div className="space-y-1">
-          <div className="mono text-[10px] text-ink-3">{row.nameUs || '—'}</div>
-          <div className="mono text-[9px] text-mute">{row.nameFr || '—'}</div>
+          <div className="mono text-[12px] text-ink-3">{row.nameUs || '—'}</div>
+          <div className="mono text-[12px] text-mute">{row.nameFr || '—'}</div>
         </div>
       ),
     },
@@ -272,13 +272,13 @@ export default function SubRolesPage() {
       header: '成员',
       cell: (row) => {
         const members = row.userList ?? []
-        if (members.length === 0) return <span className="text-[10.5px] text-mute">—</span>
+        if (members.length === 0) return <span className="text-[12px] text-mute">—</span>
         return (
           <div className="flex flex-wrap items-center gap-1">
             {members.slice(0, 3).map((user, index) => (
               <Badge key={`${memberName(user)}-${index}`}>{memberName(user)}</Badge>
             ))}
-            {members.length > 3 && <span className="mono text-[9px] text-mute">+{members.length - 3}</span>}
+            {members.length > 3 && <span className="mono text-[12px] text-mute">+{members.length - 3}</span>}
           </div>
         )
       },
@@ -286,13 +286,13 @@ export default function SubRolesPage() {
     {
       key: 'desc',
       header: '描述',
-      cell: (row) => <span className="line-clamp-2 block max-w-[280px] text-[10.5px] leading-relaxed text-ink-3">{row.desc || '—'}</span>,
+      cell: (row) => <span className="line-clamp-2 block max-w-[280px] text-[12px] leading-relaxed text-ink-3">{row.desc || '—'}</span>,
     },
     {
       key: 'updated',
       header: '更新时间',
       sortValue: (row) => row.updatedAt ?? row.createdAt ?? 0,
-      cell: (row) => <span className="mono text-[9.5px] text-mute">{formatDate(row.updatedAt ?? row.createdAt, false)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{formatDate(row.updatedAt ?? row.createdAt, false)}</span>,
     },
     {
       key: 'actions',
@@ -320,11 +320,11 @@ export default function SubRolesPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone="ok" />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {roles.length} SUB ROLES · {query.data?.total ?? 0} TOTAL
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">ROLE CHAIN / USER → SEAT → SUB ROLE</span>
+            <span className="mono text-[12px] tracking-widest text-mute">ROLE CHAIN / USER → SEAT → SUB ROLE</span>
           </>
         }
         search={{ value: keyword, onChange: setKeyword, placeholder: '搜索名称 / 标识', width: 200 }}
@@ -359,7 +359,7 @@ export default function SubRolesPage() {
           <Panel key={label} bodyClassName="px-4 py-3.5">
             <div className="label">{label}</div>
             <div className="num mt-1.5 text-[28px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </Panel>
         ))}
       </div>
@@ -462,7 +462,7 @@ export default function SubRolesPage() {
             <div className="flex items-center gap-1.5">
               <Search size={10} className="text-mute" />
               <input
-                className="h-6 w-36 bg-transparent font-mono text-[10px] text-ink outline-none placeholder:text-mute"
+                className="h-6 w-36 bg-transparent font-mono text-[12px] text-ink outline-none placeholder:text-mute"
                 placeholder="搜索用户"
                 value={userKeyword}
                 onChange={(event) => setUserKeyword(event.target.value)}
@@ -490,21 +490,21 @@ export default function SubRolesPage() {
                     {checked && <span className="h-1.5 w-1.5 bg-paper" />}
                   </span>
                   <UserRound size={11} className={checked ? 'text-white/70' : 'text-mute'} />
-                  <span className="min-w-0 flex-1 truncate text-[11px]">{memberName(user)}</span>
-                  <span className={cn('mono text-[8px]', checked ? 'text-white/70' : 'text-mute')}>{user.username}</span>
+                  <span className="min-w-0 flex-1 truncate text-[12px]">{memberName(user)}</span>
+                  <span className={cn('mono text-[12px]', checked ? 'text-white/70' : 'text-mute')}>{user.username}</span>
                 </button>
               )
             })}
             {visibleUsers.length === 0 && (
-              <div className="col-span-2 px-3 py-6 text-center text-[10.5px] text-mute">
+              <div className="col-span-2 px-3 py-6 text-center text-[12px] text-mute">
                 {usersQuery.isLoading ? '正在读取用户…' : '没有匹配的用户'}
               </div>
             )}
           </div>
           <div className="flex items-center justify-between px-3 py-1.5">
-            <span className="mono text-[8px] tracking-widest text-mute">USER LIST / V1.USER.INFO</span>
+            <span className="mono text-[12px] tracking-widest text-mute">USER LIST / V1.USER.INFO</span>
             <button
-              className="mono text-[8px] tracking-widest text-ink-3 hover:text-signal"
+              className="mono text-[12px] tracking-widest text-ink-3 hover:text-signal"
               onClick={() => setForm((current) => ({ ...current, userIds: [] }))}
             >
               清空选择
@@ -553,14 +553,14 @@ export default function SubRolesPage() {
             className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong px-4 py-8 text-mute hover:border-signal hover:text-signal"
           >
             <Upload size={18} strokeWidth={1.4} />
-            <span className="text-[11px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>
-            <span className="mono text-[8.5px] tracking-widest">XLS / XLSX</span>
+            <span className="text-[12px]">{importFile ? importFile.name : '点击选择 Excel 文件'}</span>
+            <span className="mono text-[12px] tracking-widest">XLS / XLSX</span>
           </button>
           <label className="flex items-center gap-2 border border-line px-3 py-2">
             <input type="checkbox" className="check" checked={importCover} onChange={(event) => setImportCover(event.target.checked)} />
-            <span className="text-[11px] text-ink-3">覆盖同名子角色</span>
+            <span className="text-[12px] text-ink-3">覆盖同名子角色</span>
           </label>
-          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[8.5px] leading-relaxed tracking-wider text-mute">
+          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] leading-relaxed tracking-wider text-mute">
             模板包含子角色名称、唯一标识、描述等列。请先下载模板填写后再上传。
           </div>
         </div>

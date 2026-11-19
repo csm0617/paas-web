@@ -205,8 +205,8 @@ export default function SystemServicesPage() {
         <div className="flex items-center gap-2.5">
           <StatusDot tone={row.desired > 0 && row.ready >= row.desired ? 'ok' : 'warn'} />
           <div className="min-w-0">
-            <div className="truncate font-mono text-[11px] text-ink">{row.name}</div>
-            <div className="mono mt-0.5 text-[8.5px] tracking-wider text-mute">{row.namespace}</div>
+            <div className="truncate font-mono text-[12px] text-ink">{row.name}</div>
+            <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{row.namespace}</div>
           </div>
         </div>
       ),
@@ -222,7 +222,7 @@ export default function SystemServicesPage() {
       align: 'center',
       sortValue: (row) => (row.desired ? row.ready / row.desired : 0),
       cell: (row) => (
-        <span className={cn('mono text-[10.5px]', row.ready >= row.desired ? 'text-ink' : 'text-warn')}>
+        <span className={cn('mono text-[12px]', row.ready >= row.desired ? 'text-ink' : 'text-warn')}>
           {row.ready}/{row.desired}
         </span>
       ),
@@ -230,12 +230,12 @@ export default function SystemServicesPage() {
     {
       key: 'image',
       header: '镜像',
-      cell: (row) => <span className="mono block max-w-[320px] truncate text-[9.5px] text-ink-3">{row.image}</span>,
+      cell: (row) => <span className="mono block max-w-[320px] truncate text-[12px] text-ink-3">{row.image}</span>,
     },
     {
       key: 'created',
       header: '创建时间',
-      cell: (row) => <span className="mono text-[9px] text-mute">{formatDate(row.createdAt, false)}</span>,
+      cell: (row) => <span className="mono text-[12px] text-mute">{formatDate(row.createdAt, false)}</span>,
     },
     {
       key: 'actions',
@@ -260,11 +260,11 @@ export default function SystemServicesPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={healthy === rows.length ? 'ok' : 'warn'} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 {healthy}/{rows.length} HEALTHY
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">KUBE / SYSTEM</span>
+            <span className="mono text-[12px] tracking-widest text-mute">KUBE / SYSTEM</span>
           </>
         }
         toolbar={
@@ -291,12 +291,12 @@ export default function SystemServicesPage() {
                 key={item.value}
                 onClick={() => setFilter(item.value)}
                 className={cn(
-                  'h-[30px] px-3 text-[12px] transition-colors',
+                  'h-[30px] px-3 text-[14px] transition-colors',
                   filter === item.value ? 'bg-signal text-white' : 'text-ink-3 hover:bg-paper-2 hover:text-ink',
                 )}
               >
                 {item.label}
-                <span className={cn('ml-1.5 text-[9px]', filter === item.value ? 'text-white/70' : 'text-mute')}>
+                <span className={cn('ml-1.5 text-[12px]', filter === item.value ? 'text-white/70' : 'text-mute')}>
                   {item.count}
                 </span>
               </button>
@@ -320,7 +320,7 @@ export default function SystemServicesPage() {
           <Panel key={label} bodyClassName="px-4 py-3.5">
             <div className="label">{label}</div>
             <div className="num mt-1.5 text-[28px] leading-none text-ink">{value}</div>
-            <div className="mono mt-2 text-[8.5px] tracking-[0.14em] text-mute">{hint}</div>
+            <div className="mono mt-2 text-[12px] tracking-[0.14em] text-mute">{hint}</div>
           </Panel>
         ))}
       </div>
@@ -332,7 +332,7 @@ export default function SystemServicesPage() {
         actions={
           <span className="flex items-center gap-1.5">
             <StatusDot tone={corePods.length > 0 && coreReady === corePods.length ? 'ok' : 'warn'} />
-            <span className="mono text-[9px] tracking-widest text-ink-3">
+            <span className="mono text-[12px] tracking-widest text-ink-3">
               {coreReady}/{corePods.length} READY
             </span>
           </span>
@@ -349,13 +349,13 @@ export default function SystemServicesPage() {
                 className="flex items-center gap-2 border border-line px-2.5 py-1.5"
               >
                 <StatusDot tone={ready ? 'ok' : 'warn'} />
-                <span className="mono min-w-0 flex-1 truncate text-[9.5px] text-ink-3">{pod.metadata?.name}</span>
+                <span className="mono min-w-0 flex-1 truncate text-[12px] text-ink-3">{pod.metadata?.name}</span>
                 <Badge tone={ready ? 'ok' : 'warn'}>{pod.status?.phase || 'UNKNOWN'}</Badge>
               </div>
             )
           })}
           {corePods.length === 0 && (
-            <div className="col-span-full py-4 text-center text-[10.5px] text-mute">
+            <div className="col-span-full py-4 text-center text-[12px] text-mute">
               {componentsQuery.isLoading ? '正在读取 K8s 核心组件…' : '未返回 K8s 核心组件状态'}
             </div>
           )}
@@ -400,13 +400,13 @@ export default function SystemServicesPage() {
               ].map(([label, value]) => (
                 <div key={label}>
                   <div className="label">{label}</div>
-                  <div className="mono mt-1 truncate text-[10px] text-ink">{value}</div>
+                  <div className="mono mt-1 truncate text-[12px] text-ink">{value}</div>
                 </div>
               ))}
             </div>
             <div className="border border-line bg-paper-2/40 px-3 py-2">
               <div className="label mb-1">镜像</div>
-              <div className="mono break-all text-[10px] text-ink-3">{detail.image}</div>
+              <div className="mono break-all text-[12px] text-ink-3">{detail.image}</div>
             </div>
             <div>
               <div className="mb-2 flex items-center justify-between">
@@ -437,14 +437,14 @@ export default function SystemServicesPage() {
                   return (
                     <div key={pod.metadata?.name} className="flex flex-wrap items-center gap-2 px-3 py-2">
                       <StatusDot tone={running ? 'ok' : 'warn'} />
-                      <span className="mono min-w-0 flex-1 truncate text-[10px] text-ink">
+                      <span className="mono min-w-0 flex-1 truncate text-[12px] text-ink">
                         {pod.metadata?.name || '—'}
                       </span>
-                      <span className="mono text-[9px] text-mute">{pod.spec?.nodeName || '—'}</span>
+                      <span className="mono text-[12px] text-mute">{pod.spec?.nodeName || '—'}</span>
                       <Badge tone={restarts > 0 ? 'warn' : 'default'}>×{restarts}</Badge>
                       <Badge tone={running ? 'ok' : 'warn'}>{pod.status?.phase || 'UNKNOWN'}</Badge>
                       <button
-                        className="mono text-[8.5px] tracking-widest text-ink-3 hover:text-signal"
+                        className="mono text-[12px] tracking-widest text-ink-3 hover:text-signal"
                         onClick={() => openConsole('logs', pod)}
                       >
                         日志
@@ -453,7 +453,7 @@ export default function SystemServicesPage() {
                   )
                 })}
                 {detailPods.length === 0 && (
-                  <div className="px-3 py-6 text-center text-[10.5px] text-mute">
+                  <div className="px-3 py-6 text-center text-[12px] text-mute">
                     {podQuery.isLoading ? '正在读取 Pod 实例…' : '该组件暂无运行中的 Pod'}
                   </div>
                 )}
@@ -476,13 +476,13 @@ export default function SystemServicesPage() {
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <Badge tone={event.type === 'Warning' ? 'warn' : 'default'}>{event.type || 'Normal'}</Badge>
-                        <span className="mono text-[10px] text-ink">{event.reason || '—'}</span>
+                        <span className="mono text-[12px] text-ink">{event.reason || '—'}</span>
                       </div>
-                      <span className="mono text-[8.5px] text-mute">
+                      <span className="mono text-[12px] text-mute">
                         {event.count ? `×${event.count}` : ''} {formatDate(event.lastTimestamp || event.firstTimestamp, false)}
                       </span>
                     </div>
-                    <div className="mt-1 text-[10px] leading-relaxed text-ink-3">{event.message || '—'}</div>
+                    <div className="mt-1 text-[12px] leading-relaxed text-ink-3">{event.message || '—'}</div>
                   </div>
                 ))}
                 {events.length === 0 && !eventsQuery.isLoading && (

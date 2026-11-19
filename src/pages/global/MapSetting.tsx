@@ -76,11 +76,11 @@ export default function MapSettingPage() {
           <>
             <span className="flex items-center gap-1.5">
               <StatusDot tone={gisReady ? 'ok' : 'warn'} />
-              <span className="mono text-[9.5px] tracking-widest text-ink-3">
+              <span className="mono text-[12px] tracking-widest text-ink-3">
                 GIS {gisReady ? 'READY' : gisQuery.isLoading ? 'CHECKING' : 'NOT ACTIVATED'}
               </span>
             </span>
-            <span className="mono text-[9.5px] tracking-widest text-mute">FRAME / GIS-MANAGER-WEB</span>
+            <span className="mono text-[12px] tracking-widest text-mute">FRAME / GIS-MANAGER-WEB</span>
           </>
         }
         actions={
@@ -105,7 +105,7 @@ export default function MapSettingPage() {
       >
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
-            className="field h-9 flex-1 font-mono text-[11px]"
+            className="field h-9 flex-1 font-mono text-[12px]"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder={DEFAULT_MAP_HOST}
@@ -114,7 +114,7 @@ export default function MapSettingPage() {
             <Save size={11} /> 保存地址
           </Button>
         </div>
-        <p className="mt-2 text-[10.5px] leading-relaxed text-ink-3">
+        <p className="mt-2 text-[12px] leading-relaxed text-ink-3">
           默认指向当前主机的 63000 端口。若 GIS 管理端部署在其他节点，请填写完整地址，例如 172.16.209.25:63000/GIS-Manager-Web/#/。
         </p>
       </Panel>
@@ -133,11 +133,11 @@ export default function MapSettingPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[13px] font-medium text-ink">{entry.label}</div>
-                    <div className="mono mt-1 text-[8.5px] tracking-widest text-mute">{entry.en}</div>
+                    <div className="text-[14px] font-medium text-ink">{entry.label}</div>
+                    <div className="mono mt-1 text-[12px] tracking-widest text-mute">{entry.en}</div>
                   </div>
                 </div>
-                <div className="border-t border-line px-4 py-2 text-[10px] leading-relaxed text-ink-3">
+                <div className="border-t border-line px-4 py-2 text-[12px] leading-relaxed text-ink-3">
                   {entry.description}
                 </div>
               </button>
@@ -150,11 +150,11 @@ export default function MapSettingPage() {
           kicker="GIS / CONSOLE"
           title="地图管理端"
           actions={
-            <span className="mono max-w-[420px] truncate text-[8.5px] tracking-wider text-mute">{src}</span>
+            <span className="mono max-w-[420px] truncate text-[12px] tracking-wider text-mute">{src}</span>
           }
         >
           {!gisReady && (
-            <div className="border-b border-line bg-warn/5 px-4 py-2.5 text-[10.5px] leading-relaxed text-warn">
+            <div className="border-b border-line bg-warn/5 px-4 py-2.5 text-[12px] leading-relaxed text-warn">
               GIS 授权状态为 {gisQuery.data ?? '未知'}，管理端可能无法访问。请先在「版本与授权」中完成 GIS 授权。
             </div>
           )}
