@@ -381,10 +381,11 @@ function Section({
 }) {
   return (
     <section id={id} className="mb-7 scroll-mt-2">
-      <div className="mb-2 flex h-7 items-center justify-between">
-        <h3 className="text-[13.5px] font-semibold text-white">{title}</h3>
-        <div className="flex items-center gap-3 text-[12px]">
-          {extra}
+      <div className="mb-2.5 flex h-8 items-center border-b border-[#1b3550]">
+        <h3 className="flex h-8 items-center border-l-[5px] border-[#2db7f5] pl-2.5 text-[16px] leading-8 text-white">
+          {title}
+        </h3>
+        <div className="ml-4 flex items-center gap-3 text-[12px]">
           {onEdit ? (
             editing ? (
               <>
@@ -402,8 +403,9 @@ function Section({
             )
           ) : null}
         </div>
+        {extra && <div className="ml-auto flex items-center gap-3 text-[12px]">{extra}</div>}
       </div>
-      {children}
+      <div className="px-6 py-2.5">{children}</div>
     </section>
   )
 }
@@ -491,6 +493,23 @@ export default function ServiceConfigPage() {
   const detail = detailQuery.data
   const container = detail?.deployment?.spec?.template?.spec?.containers?.[0]
   const podSpec = detail?.deployment?.spec?.template?.spec
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const sync = () => {
+      const elTop = el.getBoundingClientRect().top
+      let current: string = NAV[0].id
+      for (const item of NAV) {
+        const section = document.getElementById(item.id)
+        if (section && section.getBoundingClientRect().top - elTop <= 72) current = item.id
+      }
+      setActiveNav(current)
+    }
+    el.addEventListener('scroll', sync, { passive: true })
+    sync()
+    return () => el.removeEventListener('scroll', sync)
+  }, [detailQuery.data])
 
   const configMapQuery = useQuery({
     queryKey: ['config-maps'],
@@ -1204,7 +1223,7 @@ export default function ServiceConfigPage() {
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <nav className="w-[130px] flex-none border-r border-[#1b3550] bg-[#0e2233] py-2">
+        <nav className="relative w-[130px] flex-none border-r border-[#1b3550] bg-[#0e2233] py-2">
           {NAV.map((item) => (
             <button
               key={item.id}
@@ -1214,18 +1233,20 @@ export default function ServiceConfigPage() {
                 setActiveNav(item.id)
               }}
               className={cn(
-                'flex h-[34px] w-full items-center border-l-[3px] px-3 text-left text-[12px] transition-colors',
-                activeNav === item.id
-                  ? 'border-signal bg-[#15395c] text-white'
-                  : 'border-transparent text-ink-3 hover:bg-[#142a3e] hover:text-white',
+                'flex h-[46px] w-full items-center px-4 text-left text-[13px] transition-colors',
+                activeNav === item.id ? 'text-[#2db7f5]' : 'text-ink-3 hover:text-white',
               )}
             >
               {item.label}
             </button>
           ))}
+          <span
+            className="pointer-events-none absolute right-0 h-[46px] w-[2px] bg-[#2db7f5] transition-[top] duration-300"
+            style={{ top: 8 + NAV.findIndex((item) => item.id === activeNav) * 46 }}
+          />
         </nav>
 
-        <div ref={scrollRef} className="min-w-0 flex-1 overflow-auto px-6 py-4">
+        <div ref={scrollRef} className="min-w-0 flex-1 overflow-auto px-2 py-4">
           {detailQuery.isLoading ? (
             <div className="py-20 text-center text-[12px] text-mute">正在读取服务配置…</div>
           ) : (
