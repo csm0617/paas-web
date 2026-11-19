@@ -335,9 +335,10 @@ body {
   }
   .table-scroll {
     overflow-x: auto;
+    background: #182445;
   }
   .data-table tbody tr {
-    background: #0f2133;
+    background: #182445;
   }
   .data-table .is-sticky-right {
     position: sticky;
@@ -348,7 +349,7 @@ body {
   }
   .data-table thead th.is-sticky-right {
     z-index: 2;
-    background: #14293e;
+    background: #1d335d;
   }
   .table-scroll::-webkit-scrollbar {
     height: 10px;
@@ -366,19 +367,22 @@ body {
   .data-table thead th {
     font-family: var(--font-sans);
     font-size: 14px;
+    height: 30px;
     letter-spacing: 0;
     text-transform: none;
     color: var(--color-ink-3);
-    font-weight: 500;
-    text-align: left;
-    padding: 10px 14px;
-    border-bottom: 1px solid #1e3d5a;
-    background: #14293e;
+    font-weight: 600;
+    text-align: center;
+    padding: 2px 8px;
+    border-bottom: 1px solid #3a6288;
+    background: #1d335d;
     white-space: nowrap;
   }
   .data-table tbody td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #16324a;
+    padding: 2px 8px;
+    height: 30px;
+    text-align: center;
+    border-bottom: 1px solid #3a6288;
     vertical-align: middle;
     color: var(--color-ink-2);
   }
@@ -386,7 +390,7 @@ body {
     transition: background 0.15s ease;
   }
   .data-table tbody tr:hover {
-    background: #16304a;
+    background: #283a6a;
   }
   .data-table tbody tr:last-child td {
     border-bottom: none;

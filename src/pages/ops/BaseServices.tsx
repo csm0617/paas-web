@@ -265,7 +265,7 @@ export default function BaseServicesPage() {
     },
     {
       key: 'updated',
-      header: '版本更新时间',
+      header: '更新时间',
       width: 120,
       align: 'center',
       cell: (row) => {
