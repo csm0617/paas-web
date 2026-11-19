@@ -917,12 +917,14 @@ export default function ServiceConfigPage() {
   /* ---------------------------- actions ---------------------------- */
 
   function closePanel() {
-    if (searchParams.has('service')) {
+    const from = searchParams.get('from')
+    if (searchParams.has('service') || from) {
       const next = new URLSearchParams(searchParams)
       next.delete('service')
+      next.delete('from')
       setSearchParams(next, { replace: true })
     }
-    navigate('/software/application/service')
+    navigate(from === 'base-service' ? '/software/application/base-service' : '/software/application/service')
   }
 
   function exportConfig() {

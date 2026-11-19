@@ -97,7 +97,6 @@ export default function BaseServicesPage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const navigate = useNavigate()
-  const [detail, setDetail] = useState<ServiceItem | null>(null)
   const [consoleState, setConsoleState] = useState<{
     service: string
     mode: 'logs' | 'terminal'
@@ -292,7 +291,11 @@ export default function BaseServicesPage() {
           <div className="flex items-center justify-center gap-2.5 text-[12px]">
             <button
               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-              onClick={() => setDetail(row)}
+              onClick={() =>
+                navigate(
+                  `/software/application/service-params?service=${encodeURIComponent(k8sName(row))}&from=base-service`,
+                )
+              }
             >
               配置
             </button>
@@ -355,43 +358,6 @@ export default function BaseServicesPage() {
           emptyDescription="未检测到平台基础组件，或当前账户无权查看。"
         />
       </Panel>
-
-      <Drawer
-        open={!!detail}
-        onOpenChange={(open) => !open && setDetail(null)}
-        title={detail ? k8sName(detail) : '配置'}
-        width={680}
-        footer={
-          <Button size="sm" onClick={() => setDetail(null)}>
-            关闭
-          </Button>
-        }
-      >
-        {detail && (
-          <div className="space-y-3">
-            <div>
-              <InfoRow k="服务名称" v={serviceLabel(detail)} />
-              <InfoRow k="服务标识" v={k8sName(detail)} />
-              <InfoRow k="镜像" v={imageOf(detail)} />
-              <InfoRow k="命名空间" v={detail.service?.metadata?.namespace || '—'} />
-              <InfoRow k="重启次数" v={detail.restartCount ?? 0} />
-            </div>
-            <div>
-              <div className="mb-2 text-[12px] text-ink-3">端口映射</div>
-              {(detail.service?.spec?.ports ?? []).length === 0 && (
-                <div className="py-2 text-[12px] text-mute">未声明端口</div>
-              )}
-              {(detail.service?.spec?.ports ?? []).map((port) => (
-                <InfoRow
-                  key={`${port.name}-${port.port}`}
-                  k={port.name || port.protocol || 'PORT'}
-                  v={`${port.port} → ${port.targetPort || '—'}${port.nodePort ? ` (NodePort ${port.nodePort})` : ''}`}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </Drawer>
 
       <Drawer
         open={!!versionTarget}
@@ -541,15 +507,6 @@ export default function BaseServicesPage() {
           onClose={() => setConsoleState(null)}
         />
       </Suspense>
-    </div>
-  )
-}
-
-function InfoRow({ k, v }: { k: string; v: React.ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-line py-2 last:border-0">
-      <span className="text-[12px] text-mute">{k}</span>
-      <span className="mono text-right text-[12px] text-ink">{v}</span>
     </div>
   )
 }
