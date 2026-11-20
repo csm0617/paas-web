@@ -32,6 +32,8 @@ const ServiceConsole = lazy(() =>
   import('@/components/console/ServiceConsole').then((module) => ({ default: module.ServiceConsole })),
 )
 
+const ServiceConfigPanel = lazy(() => import('@/pages/software/ServiceConfigPage'))
+
 interface ServiceEventItem {
   reason?: string
   message?: string
@@ -486,6 +488,7 @@ export default function SoftwareListPage() {
   const [versionCurrentTag, setVersionCurrentTag] = useState('')
   const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
   const [eventTarget, setEventTarget] = useState('')
+  const [configTarget, setConfigTarget] = useState<ServiceItem | null>(null)
   const [restartTarget, setRestartTarget] = useState<ServiceItem | null>(null)
   const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
   const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
@@ -1617,11 +1620,7 @@ export default function SoftwareListPage() {
                                           <div className="flex items-center justify-center gap-2.5 text-[14px]">
                                             <button
                                               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-                                              onClick={() =>
-                                                navigate(
-                                                  `/software/application/service-params?service=${encodeURIComponent(name)}`,
-                                                )
-                                              }
+                                              onClick={() => setConfigTarget(service)}
                                             >
                                               配置
                                             </button>
@@ -3305,6 +3304,12 @@ export default function SoftwareListPage() {
           </div>
         )}
       </Drawer>
+
+      {configTarget && (
+        <Suspense fallback={null}>
+          <ServiceConfigPanel service={serviceNameOf(configTarget)} onClose={() => setConfigTarget(null)} />
+        </Suspense>
+      )}
 
       <Suspense fallback={null}>
         <ServiceConsole

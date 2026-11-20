@@ -414,12 +414,18 @@ function Section({
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
-export default function ServiceConfigPage() {
+export default function ServiceConfigPage({
+  service: serviceProp,
+  onClose,
+}: {
+  service?: string
+  onClose?: () => void
+} = {}) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const [searchParams, setSearchParams] = useSearchParams()
-  const selected = searchParams.get('service') || ''
+  const selected = serviceProp || searchParams.get('service') || ''
 
   const [keyword, setKeyword] = useState('')
   const [activeNav, setActiveNav] = useState<string>('BaseForm')
@@ -936,6 +942,10 @@ export default function ServiceConfigPage() {
   /* ---------------------------- actions ---------------------------- */
 
   function closePanel() {
+    if (onClose) {
+      onClose()
+      return
+    }
     const from = searchParams.get('from')
     if (searchParams.has('service') || from) {
       const next = new URLSearchParams(searchParams)

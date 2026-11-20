@@ -15,7 +15,6 @@ import {
   X,
 } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate, formatNumber } from '@/lib/format'
 import type { ImageProject, NodesResponse, ServiceItem, ServiceList } from '@/types'
@@ -42,6 +41,8 @@ import { cn } from '@/lib/utils'
 const ServiceConsole = lazy(() =>
   import('@/components/console/ServiceConsole').then((module) => ({ default: module.ServiceConsole })),
 )
+
+const ServiceConfigPanel = lazy(() => import('@/pages/software/ServiceConfigPage'))
 
 function serviceName(service: ServiceItem) {
   return service.nameUs || service.nameFr
@@ -322,7 +323,6 @@ function MultiSelectBox({
 export default function ServiceManagePage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
-  const navigate = useNavigate()
   const [keyword, setKeyword] = useState('')
   const [selected, setSelected] = useState<string[]>([])
   const [importing, setImporting] = useState(false)
@@ -338,6 +338,7 @@ export default function ServiceManagePage() {
   const [versionCurrentTag, setVersionCurrentTag] = useState('')
   const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
   const [eventTarget, setEventTarget] = useState('')
+  const [configTarget, setConfigTarget] = useState<ServiceItem | null>(null)
   const [scaleValue, setScaleValue] = useState(1)
   const [consoleState, setConsoleState] = useState<{
     service: string
@@ -813,9 +814,7 @@ export default function ServiceManagePage() {
           <div className="flex items-center justify-center gap-2.5 text-[14px]">
             <button
               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-              onClick={() =>
-                navigate(`/software/application/service-params?service=${encodeURIComponent(serviceName(row))}`)
-              }
+              onClick={() => setConfigTarget(row)}
             >
               配置
             </button>
@@ -1804,6 +1803,12 @@ export default function ServiceManagePage() {
           </div>
         )}
       </Drawer>
+
+      {configTarget && (
+        <Suspense fallback={null}>
+          <ServiceConfigPanel service={serviceName(configTarget)} onClose={() => setConfigTarget(null)} />
+        </Suspense>
+      )}
 
       <Suspense fallback={null}>
         <ServiceConsole
