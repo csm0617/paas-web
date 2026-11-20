@@ -125,20 +125,57 @@ function monitorTrend(list: MonitorSeries[] | undefined, factor = 1, pod?: strin
     seen.add(series.podName)
     return true
   })
+  const span = monitorTimeSpan(source)
   return unique.slice(0, 4).map((series, index) => ({
     name: series.podName || `SERIES ${index + 1}`,
     points: (series.metrics ?? [])
       .filter((point) => point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)))
       .map((point) => {
         const value = Number(point.floatValue) * factor
-        const date = point.timestamp ? new Date(point.timestamp) : null
-        if (!date || Number.isNaN(date.getTime())) return { label: '', value, tip: '' }
-        const pad = (n: number) => String(n).padStart(2, '0')
-        const label = `${pad(date.getHours())}:${pad(date.getMinutes())}`
-        const tip = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-        return { label, value, tip }
+        return { ...monitorPointLabel(point.timestamp, span), value }
       }),
   }))
+}
+
+function monitorTimeSpan(list: MonitorSeries[] | undefined) {
+  let min = Infinity
+  let max = -Infinity
+  ;(list ?? []).forEach((series) => {
+    ;(series.metrics ?? []).forEach((point) => {
+      const time = point.timestamp ? new Date(point.timestamp).getTime() : Number.NaN
+      if (!Number.isFinite(time)) return
+      if (time < min) min = time
+      if (time > max) max = time
+    })
+  })
+  return Number.isFinite(min) && Number.isFinite(max) ? max - min : 0
+}
+
+function monitorPointLabel(timestamp: string | undefined, span: number) {
+  const date = timestamp ? new Date(timestamp) : null
+  if (!date || Number.isNaN(date.getTime())) return { label: '', tip: '' }
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const mmdd = `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  const hhmm = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  const label = span >= 7 * 86_400_000 ? mmdd : span >= 86_400_000 ? `${mmdd} ${hhmm}` : hhmm
+  const tip = `${date.getFullYear()}-${mmdd} ${hhmm}:${pad(date.getSeconds())}`
+  return { label, tip }
+}
+
+function sumTrend(list: MonitorSeries[] | undefined, factor = 1) {
+  const values = new Map<string, number>()
+  ;(list ?? []).forEach((series) => {
+    ;(series.metrics ?? []).forEach((point) => {
+      const raw = point.floatValue
+      if (raw === null || raw === undefined || !Number.isFinite(Number(raw))) return
+      const key = point.timestamp || ''
+      values.set(key, (values.get(key) ?? 0) + Number(raw) * factor)
+    })
+  })
+  const span = monitorTimeSpan(list)
+  return Array.from(values.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([timestamp, value]) => ({ ...monitorPointLabel(timestamp, span), value }))
 }
 
 const CREATE_INPUT = 'field h-[32px] rounded-none border-[#3a6288] bg-[#182445] text-[14px]'
@@ -441,7 +478,46 @@ export default function ServiceManagePage() {
     setMonitorPod((prev) => (prev && monitorPods.includes(prev) ? prev : monitorPods[0]))
   }, [monitorPodKey])
 
-  const activeMonitorPod = monitorMode === '2' ? monitorPod : undefined
+  const combined = monitorMode === '1'
+  const cpuSeries = combined
+    ? [{ name: 'CPU', points: sumTrend(monitorQuery.data?.cpu, 1000) }]
+    : monitorTrend(monitorQuery.data?.cpu, 1000, monitorPod).map((series) => ({ ...series, name: 'CPU' }))
+  const memorySeries = combined
+    ? [{ name: '内存', points: sumTrend(monitorQuery.data?.memory, 1 / 1024 / 1024) }]
+    : monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024, monitorPod).map((series) => ({
+        ...series,
+        name: '内存',
+      }))
+  const networkSeries = combined
+    ? [
+        { name: '网络-入站', points: sumTrend(monitorQuery.data?.inboundNetwork, 1 / 1024) },
+        { name: '网络-出站', points: sumTrend(monitorQuery.data?.outboundNetwork, 1 / 1024) },
+      ]
+    : [
+        ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024, monitorPod).map((series) => ({
+          ...series,
+          name: '网络-入站',
+        })),
+        ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024, monitorPod).map((series) => ({
+          ...series,
+          name: '网络-出站',
+        })),
+      ]
+  const diskSeries = combined
+    ? [
+        { name: '磁盘-读', points: sumTrend(monitorQuery.data?.diskReadIo, 1 / 1024) },
+        { name: '磁盘-写', points: sumTrend(monitorQuery.data?.diskWriteIo, 1 / 1024) },
+      ]
+    : [
+        ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024, monitorPod).map((series) => ({
+          ...series,
+          name: '磁盘-读',
+        })),
+        ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024, monitorPod).map((series) => ({
+          ...series,
+          name: '磁盘-写',
+        })),
+      ]
 
   const versionTagsQuery = useQuery({
     queryKey: ['version-tags', versionImage],
@@ -1892,49 +1968,19 @@ export default function ServiceManagePage() {
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <div>
               <div className="label mb-2">CPU 使用量（m）</div>
-              <AreaTrend series={monitorTrend(monitorQuery.data?.cpu, 1000, activeMonitorPod)} height={170} unit=" m" />
+              <AreaTrend series={cpuSeries} height={170} unit=" m" />
             </div>
             <div>
               <div className="label mb-2">内存使用量（MB）</div>
-              <AreaTrend
-                series={monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024, activeMonitorPod)}
-                height={170}
-                unit=" MB"
-              />
+              <AreaTrend series={memorySeries} height={170} unit=" MB" />
             </div>
             <div>
               <div className="label mb-2">网络吞吐（KB/s）</div>
-              <AreaTrend
-                series={[
-                  ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024, activeMonitorPod).map((series) => ({
-                    ...series,
-                    name: `${series.name}-入站`,
-                  })),
-                  ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024, activeMonitorPod).map((series) => ({
-                    ...series,
-                    name: `${series.name}-出站`,
-                  })),
-                ]}
-                height={170}
-                unit=" KB/s"
-              />
+              <AreaTrend series={networkSeries} height={170} unit=" KB/s" />
             </div>
             <div>
               <div className="label mb-2">磁盘 IO（KB/s）</div>
-              <AreaTrend
-                series={[
-                  ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024, activeMonitorPod).map((series) => ({
-                    ...series,
-                    name: `${series.name}-读`,
-                  })),
-                  ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024, activeMonitorPod).map((series) => ({
-                    ...series,
-                    name: `${series.name}-写`,
-                  })),
-                ]}
-                height={170}
-                unit=" KB/s"
-              />
+              <AreaTrend series={diskSeries} height={170} unit=" KB/s" />
             </div>
           </div>
         )}
