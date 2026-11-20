@@ -75,9 +75,9 @@ export default function ServiceStartupPage() {
     {
       key: 'index',
       header: '序号',
-      width: 80,
+      width: 240,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="text-[14px] text-ink">{index + 1}</span>,
     },
     {
       key: 'name',
@@ -89,19 +89,19 @@ export default function ServiceStartupPage() {
       key: 'key',
       header: '服务标识',
       align: 'center',
-      cell: (row) => <span className="mono text-[12px] text-ink-3">{serviceKey(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{serviceKey(row)}</span>,
     },
     {
       key: 'type',
       header: '服务类型',
       align: 'center',
-      cell: (row) => <span className="text-[14px] text-ink-3">{serviceType(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{serviceType(row)}</span>,
     },
     {
       key: 'delay',
       header: '延迟时间',
       align: 'center',
-      cell: (row) => <span className="text-[14px] text-ink-3">{delayTime(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{delayTime(row)}</span>,
     },
   ]
 
@@ -138,6 +138,7 @@ export default function ServiceStartupPage() {
           selectable
           selectedKeys={selected}
           onSelectionChange={setSelected}
+          rowHeight={65}
           emptyTitle="暂无服务"
           emptyDescription="未检测到可设置延迟启动的服务。"
         />

@@ -63,7 +63,7 @@ export const navigation: NavGroup[] = [
         en: 'WORKLOADS',
         path: '/software/workloads',
         code: 'WLD',
-        children: [{ label: '工作负载', en: 'WORKLOADS', path: '/software/workloads', code: 'WLD' }],
+        children: [{ label: '部署文件', en: 'DEPLOY FILES', path: '/software/workloads', code: 'WLD' }],
       },
     ],
   },

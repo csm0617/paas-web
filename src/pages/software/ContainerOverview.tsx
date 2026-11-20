@@ -196,32 +196,32 @@ export default function ContainerOverviewPage() {
                 return (
                   <tr key={item.podName}>
                     <td>
-                      <span className="font-mono text-[12px] text-ink">{item.podName}</span>
+                      <span className="text-[14px] text-ink">{item.podName}</span>
                     </td>
                     <td>
                       <span className="num text-[14px] text-ink">{Math.round(cpu * 1000)}m</span>
                     </td>
                     <td>
-                      <span className="mono text-[12px] text-ink-3">{formatBytes(Number(item.memory ?? 0))}</span>
+                      <span className="text-[14px] text-ink">{formatBytes(Number(item.memory ?? 0))}</span>
                     </td>
                     <td>
-                      <span className="mono text-[12px] text-ink-3">{rate(item.networkOutBound)}</span>
+                      <span className="text-[14px] text-ink">{rate(item.networkOutBound)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[12px] text-ink-3">{rate(item.networkInBound)}</span>
+                      <span className="text-[14px] text-ink">{rate(item.networkInBound)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[12px] text-ink-3">{rate(item.diskRead)}</span>
+                      <span className="text-[14px] text-ink">{rate(item.diskRead)}</span>
                     </td>
                     <td>
-                      <span className="mono text-[12px] text-ink-3">{rate(item.diskWrite)}</span>
+                      <span className="text-[14px] text-ink">{rate(item.diskWrite)}</span>
                     </td>
                   </tr>
                 )
               })}
               {top.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-[12px] text-mute">
+                  <td colSpan={7} className="py-10 text-center text-[14px] text-mute">
                     {topQuery.isLoading ? '正在采集容器指标…' : '暂无容器指标，可能监控组件尚未就绪'}
                   </td>
                 </tr>

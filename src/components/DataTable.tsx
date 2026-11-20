@@ -31,6 +31,7 @@ interface DataTableProps<T> {
   onSelectionChange?: (keys: string[]) => void
   onRowClick?: (row: T) => void
   dense?: boolean
+  rowHeight?: number
   footer?: ReactNode
   className?: string
   hidePager?: boolean
@@ -50,6 +51,7 @@ export function DataTable<T>({
   onSelectionChange,
   onRowClick,
   dense,
+  rowHeight,
   footer,
   className,
   hidePager,
@@ -173,6 +175,7 @@ export function DataTable<T>({
                   <tr
                     key={key}
                     onClick={() => onRowClick?.(row)}
+                    style={rowHeight ? { height: rowHeight } : undefined}
                     className={cn(
                       onRowClick && 'cursor-pointer',
                       selected && 'bg-[#16395a]',

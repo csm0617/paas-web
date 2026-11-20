@@ -1036,13 +1036,13 @@ export default function SoftwareListPage() {
               <thead>
                 <tr>
                   <th className="w-12" />
-                  <th className="w-20 text-center">序号</th>
+                  <th style={{ width: 80 }}>序号</th>
                   <th style={{ width: 200 }}>名称</th>
                   <th style={{ width: 200 }}>
                     <button
                       onClick={() => toggleSort('key')}
                       className={cn(
-                        'inline-flex items-center gap-1 transition-colors hover:text-white',
+                        'inline-flex items-center gap-1 transition-colors hover:text-ink',
                         sortField === 'key' && 'text-[#4aa3f0]',
                       )}
                     >
@@ -1053,12 +1053,12 @@ export default function SoftwareListPage() {
                   <th style={{ width: 200 }}>关联席位</th>
                   <th style={{ width: 180 }}>更新时间</th>
                   <th style={{ width: 150 }}>描述</th>
-                  <th className="w-20 text-center">置顶</th>
+                  <th style={{ width: 80 }}>置顶</th>
                   <th style={{ width: 180 }}>
                     <button
                       onClick={() => toggleSort('createdAt')}
                       className={cn(
-                        'inline-flex items-center gap-1 transition-colors hover:text-white',
+                        'inline-flex items-center gap-1 transition-colors hover:text-ink',
                         sortField === 'createdAt' && 'text-[#4aa3f0]',
                       )}
                     >
@@ -1066,7 +1066,9 @@ export default function SoftwareListPage() {
                       <SortIndicator active={sortField === 'createdAt'} dir={sortDir} />
                     </button>
                   </th>
-                  <th style={{ width: 220 }} className="text-center">操作</th>
+                  <th style={{ width: 220 }} className="is-sticky-right">
+                    操作
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -1094,16 +1096,16 @@ export default function SoftwareListPage() {
                           </button>
                         </td>
                         <td className="text-center">
-                          <span className="mono text-[12px] text-ink-3">{(current - 1) * pageSize + index + 1}</span>
+                          <span className="text-[14px] text-ink">{(current - 1) * pageSize + index + 1}</span>
                         </td>
                         <td>
                           <span className="text-[14px] text-ink">{item.name}</span>
                         </td>
                         <td>
-                          <span className="mono text-[12px] text-ink-3">{item.key}</span>
+                          <span className="text-[14px] text-ink">{item.key}</span>
                         </td>
                         <td>
-                          <div className="flex flex-wrap items-center gap-1">
+                          <div className="flex flex-wrap items-center justify-center gap-1">
                             {(item.roleList ?? []).slice(0, 2).map((role) => (
                               <Badge key={role.key || role.id} tone="info">
                                 {role.name || role.key}
@@ -1129,12 +1131,12 @@ export default function SoftwareListPage() {
                           </div>
                         </td>
                         <td>
-                          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+                          <span className="whitespace-nowrap text-[14px] text-ink">
                             {updatedAt ? formatDate(updatedAt, true) : ''}
                           </span>
                         </td>
                         <td>
-                          <span className="block max-w-[150px] truncate text-[14px] text-ink-3">{item.desc || ''}</span>
+                          <span className="mx-auto block max-w-[130px] truncate text-[14px] text-ink">{item.desc || ''}</span>
                         </td>
                         <td className="text-center">
                           {item.orderTop ? (
@@ -1144,12 +1146,12 @@ export default function SoftwareListPage() {
                           ) : null}
                         </td>
                         <td>
-                          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+                          <span className="whitespace-nowrap text-[14px] text-ink">
                             {formatDate(item.createdAt, true)}
                           </span>
                         </td>
-                        <td onClick={(event) => event.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-2.5 text-[14px]">
+                        <td className="is-sticky-right" onClick={(event) => event.stopPropagation()}>
+                          <div className="flex items-center justify-center gap-2.5 text-[14px]">
                             <button
                               disabled={item.framework !== 'CS' && (!item.routerKey || item.web !== 1)}
                               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff] disabled:cursor-not-allowed disabled:text-mute"
@@ -1209,12 +1211,12 @@ export default function SoftwareListPage() {
                               <table className="data-table">
                                 <thead>
                                   <tr>
-                                    <th>服务名称</th>
-                                    <th>服务标识</th>
-                                    <th>状态</th>
-                                    <th>镜像</th>
-                                    <th>版本更新时间</th>
-                                    <th>
+                                    <th style={{ width: 200 }}>服务名称</th>
+                                    <th style={{ width: 200 }}>服务标识</th>
+                                    <th style={{ width: 140 }}>状态</th>
+                                    <th style={{ width: 200 }}>镜像</th>
+                                    <th style={{ width: 180 }}>版本更新时间</th>
+                                    <th style={{ width: 120 }}>
                                       <DropdownMenu.Root>
                                         <DropdownMenu.Trigger asChild>
                                           <button
@@ -1252,7 +1254,9 @@ export default function SoftwareListPage() {
                                         </DropdownMenu.Portal>
                                       </DropdownMenu.Root>
                                     </th>
-                                    <th className="text-center">操作</th>
+                                    <th style={{ width: 200 }} className="is-sticky-right">
+                                      操作
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1266,30 +1270,35 @@ export default function SoftwareListPage() {
                                           <span className="text-[14px] text-ink">{name}</span>
                                         </td>
                                         <td>
-                                          <span className="mono text-[12px] text-ink-3">{service.nameUs || service.nameFr}</span>
+                                          <span className="text-[14px] text-ink">{service.nameUs || service.nameFr}</span>
                                         </td>
                                         <td>
-                                          <div className="leading-[1.5]">
-                                            <div className={cn('flex items-center gap-1 text-[14px]', status.tone)}>
+                                          <div className="leading-[1.5715]">
+                                            <div className={cn('flex items-center justify-center gap-1 text-[14px]', status.tone)}>
                                               {status.text}
-                                              <Info size={10} />
+                                              <Info size={12} />
                                             </div>
-                                            <div className="text-[12px] text-ink-3">
-                                              {status.ready}/{status.desired}部分运行
+                                            <div className="text-[14px] text-ink">
+                                              {status.ready}/{status.desired}
+                                              {status.desired === 0
+                                                ? '全部停止'
+                                                : status.ready === status.desired
+                                                  ? '全部运行'
+                                                  : '部分运行'}
                                             </div>
-                                            <div className="flex items-center gap-1 text-[12px] text-ink-3">
+                                            <div className="flex items-center justify-center gap-1 text-[14px] text-ink">
                                               已重启 {service.restartCount ?? 0} 次
-                                              <Info size={10} />
+                                              <Info size={12} />
                                             </div>
                                           </div>
                                         </td>
                                         <td>
-                                          <span className="block max-w-[200px] truncate font-mono text-[12px] text-ink-3">
+                                          <span className="mx-auto block max-w-[190px] truncate text-[14px] text-ink">
                                             {serviceImageOf(service)}
                                           </span>
                                         </td>
                                         <td>
-                                          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+                                          <span className="whitespace-nowrap text-[14px] text-ink">
                                             {formatDate(service.deployment?.metadata?.creationTimestamp, true)}
                                           </span>
                                         </td>
@@ -1302,8 +1311,8 @@ export default function SoftwareListPage() {
                                             <span className="text-[14px] text-ink-3">—</span>
                                           )}
                                         </td>
-                                        <td>
-                                          <div className="flex items-center justify-end gap-2.5 text-[14px]">
+                                        <td className="is-sticky-right">
+                                          <div className="flex items-center justify-center gap-2.5 text-[14px]">
                                             <button
                                               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
                                               onClick={() =>

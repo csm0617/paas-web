@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, Box, Filter, History, Info, Layers, Plus, RefreshCw, SquareTerminal, Trash2, Upload, X } from 'lucide-react'
+import { Activity, Box, History, Info, Layers, Plus, RefreshCw, SquareTerminal, Trash2, Upload, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '@/lib/api'
@@ -36,11 +36,6 @@ function imageOf(service: ServiceItem) {
   if (typeof service.imageInfo === 'string') return service.imageInfo
   if (service.imageInfo?.image) return service.imageInfo.image
   return '—'
-}
-
-function authOf(service: ServiceItem) {
-  const auth = service.serviceAuth as { auth?: number } | null | undefined
-  return auth?.auth === 1
 }
 
 function statusOf(service: ServiceItem) {
@@ -197,7 +192,7 @@ function CreateField({ label, required, children }: { label: string; required?: 
 
 function RadioDot({ checked, onChange, children }: { checked: boolean; onChange: () => void; children: ReactNode }) {
   return (
-    <button type="button" onClick={onChange} className="inline-flex items-center gap-1.5 text-[14px] text-white">
+    <button type="button" onClick={onChange} className="inline-flex items-center gap-1.5 text-[14px] text-ink">
       <span
         className={cn(
           'flex h-[14px] w-[14px] flex-none items-center justify-center rounded-full border transition-colors',
@@ -265,7 +260,7 @@ function MultiSelectBox({
           }}
           onFocus={() => setOpen(true)}
           placeholder={value.length === 0 ? placeholder : ''}
-          className="h-5 min-w-[80px] flex-1 bg-transparent text-[14px] text-white outline-none placeholder:text-[#5d7892]"
+          className="h-5 min-w-[80px] flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-[#5d7892]"
         />
       </div>
       {open && (
@@ -599,16 +594,18 @@ export default function ServiceManagePage() {
       header: '序号',
       width: 56,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="text-[14px] text-ink">{index + 1}</span>,
     },
     {
       key: 'name',
       header: '服务名称',
+      width: 200,
+      align: 'center',
       sortValue: (row) => serviceName(row),
       cell: (row) => (
         <button
           onClick={() => setDetail(row)}
-          className="mx-auto block max-w-[180px] truncate text-[14px] text-ink hover:text-signal hover:underline"
+          className="mx-auto block max-w-[180px] truncate text-center text-[14px] text-ink hover:text-signal hover:underline"
         >
           {serviceName(row)}
         </button>
@@ -617,15 +614,19 @@ export default function ServiceManagePage() {
     {
       key: 'key',
       header: '服务标识',
-      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.nameUs || row.nameFr || '—'}</span>,
+      width: 200,
+      align: 'center',
+      cell: (row) => <span className="text-[14px] text-ink">{row.nameUs || row.nameFr || '—'}</span>,
     },
     {
       key: 'serviceType',
       header: '服务类型',
+      width: 120,
+      align: 'center',
       cell: (row) => {
         const appType = row.service?.metadata?.labels?.['system/appType']
         return (
-          <span className="text-[14px] text-ink-3">
+          <span className="text-[14px] text-ink">
             {appType === 'business' ? '前台服务' : appType ? '后台服务' : '—'}
           </span>
         )
@@ -634,6 +635,8 @@ export default function ServiceManagePage() {
     {
       key: 'software',
       header: '所属应用',
+      width: 200,
+      align: 'center',
       cell: (row) => {
         const apps = (row.softwareNameList ?? []).filter(Boolean)
         return apps.length > 0 ? (
@@ -645,13 +648,15 @@ export default function ServiceManagePage() {
             ))}
           </div>
         ) : (
-          <span className="text-[14px] text-mute">暂无关联应用</span>
+          <span className="text-[14px] text-ink">—</span>
         )
       },
     },
     {
       key: 'status',
       header: '状态',
+      width: 140,
+      align: 'center',
       cell: (row) => {
         const status = statusOf(row)
         const partial = status.label === 'RUNNING' && status.ready < status.desired
@@ -671,18 +676,21 @@ export default function ServiceManagePage() {
               : status.label === 'RUNNING'
                 ? 'text-ok'
                 : 'text-mute'
+        const runLabel =
+          status.desired === 0 ? '全部停止' : status.ready === status.desired ? '全部运行' : '部分运行'
         return (
-          <div className="leading-[1.5]">
+          <div className="leading-[1.5715]">
             <div className={cn('flex items-center justify-center gap-1 text-[14px]', tone)}>
               {text}
-              <Info size={10} />
+              <Info size={12} />
             </div>
-            <div className="text-[12px] text-ink-3">
-              {status.ready}/{status.desired}部分运行
+            <div className="text-[14px] text-ink">
+              {status.ready}/{status.desired}
+              {runLabel}
             </div>
-            <div className="flex items-center gap-1 text-[12px] text-ink-3">
+            <div className="flex items-center justify-center gap-1 text-[14px] text-ink">
               已重启 {row.restartCount ?? 0} 次
-              <Info size={10} />
+              <Info size={12} />
             </div>
           </div>
         )
@@ -691,36 +699,22 @@ export default function ServiceManagePage() {
     {
       key: 'image',
       header: '镜像',
+      width: 200,
+      align: 'center',
       cell: (row) => (
-        <span className="block max-w-[200px] truncate font-mono text-[12px] text-ink-3" title={imageOf(row)}>
+        <span className="mx-auto block max-w-[200px] truncate text-[14px] text-ink" title={imageOf(row)}>
           {imageOf(row)}
         </span>
       ),
     },
     {
-      key: 'auth',
-      header: (
-        <span className="inline-flex items-center gap-1">
-          授权状态 <Filter size={10} />
-        </span>
-      ),
-      sortValue: (row) => (authOf(row) ? 1 : 0),
-      cell: (row) => {
-        const auth = row.serviceAuth as { auth?: number } | null | undefined
-        if (!auth) return <span className="text-[14px] text-ink-3">—</span>
-        return (
-          <span className={cn('text-[14px]', auth.auth === 1 ? 'text-ok' : 'text-ink-3')}>
-            {auth.auth === 1 ? '已授权' : '未授权'}
-          </span>
-        )
-      },
-    },
-    {
       key: 'updatedAt',
       header: '版本更新时间',
+      width: 180,
+      align: 'center',
       sortValue: (row) => row.deployment?.metadata?.creationTimestamp || '',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+        <span className="whitespace-nowrap text-[14px] text-ink">
           {formatDate(row.deployment?.metadata?.creationTimestamp, true)}
         </span>
       ),
@@ -728,9 +722,11 @@ export default function ServiceManagePage() {
     {
       key: 'createdAt',
       header: '创建时间',
+      width: 180,
+      align: 'center',
       sortValue: (row) => row.service?.metadata?.creationTimestamp || '',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+        <span className="whitespace-nowrap text-[14px] text-ink">
           {formatDate(row.service?.metadata?.creationTimestamp, true)}
         </span>
       ),
@@ -738,14 +734,14 @@ export default function ServiceManagePage() {
     {
       key: 'actions',
       header: '操作',
-      align: 'right',
-      headerAlign: 'center',
+      width: 200,
+      align: 'center',
       fixed: 'right',
       cell: (row) => {
         const status = statusOf(row)
         const running = status.label === 'RUNNING' || status.label === 'PENDING'
         return (
-          <div className="flex items-center justify-end gap-2.5 text-[14px]">
+          <div className="flex items-center justify-center gap-2.5 text-[14px]">
             <button
               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
               onClick={() =>
@@ -1519,7 +1515,7 @@ export default function ServiceManagePage() {
           type="button"
           onClick={() => createMutation.mutate()}
           disabled={createMutation.isPending}
-          className="mt-4 h-[30px] w-full bg-[#1670c2] text-[14px] text-white transition-colors hover:bg-[#1a82dd] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-4 h-[30px] w-full bg-[#1670c2] text-[14px] text-ink transition-colors hover:bg-[#1a82dd] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {createMutation.isPending ? '提交中…' : '提交'}
         </button>

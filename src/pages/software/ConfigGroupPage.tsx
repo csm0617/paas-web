@@ -294,144 +294,156 @@ export default function ConfigGroupPage() {
         </Button>
       </PageToolbar>
 
-      <Panel bodyClassName="p-0">
+      <Panel bodyClassName="bg-paper p-2">
         {groups.map((group) => {
           const files = Object.entries(group.data)
           const checked = selected.includes(group.name)
           const expanded = expandedName === group.name
           return (
-            <div key={group.name} className="border-b border-line last:border-b-0">
-              <div className="flex items-center gap-2.5 px-4 py-2.5">
-                <input
-                  type="checkbox"
-                  className="check"
-                  checked={checked}
-                  onChange={() => toggle(group.name)}
-                  aria-label={`选择 ${group.name}`}
-                />
-                <Folder size={13} className="flex-none text-[#4aa3f0]" />
-                <button
-                  className="min-w-0 truncate text-[14px] text-ink transition-colors hover:text-signal"
-                  onClick={() => setExpandedName(expanded ? null : group.name)}
-                >
-                  {group.name}
-                </button>
-                <span className="flex-none text-[14px] text-ink-3">配置文件 {files.length}个</span>
-                <span className="mono ml-auto flex-none text-[12px] text-ink-3">
-                  {group.createdAt ? formatDate(group.createdAt, true) : '--'}
-                </span>
-                <div className="flex flex-none items-center">
+            <div key={group.name} className="mb-3 border border-line bg-[#0f2133] last:mb-0">
+              <div className="flex h-[42px] items-center px-4">
+                <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    className="check"
+                    checked={checked}
+                    onChange={() => toggle(group.name)}
+                    aria-label={`选择 ${group.name}`}
+                  />
+                  <Folder size={13} className="flex-none text-[#4aa3f0]" />
                   <button
-                    className="inline-flex h-[26px] items-center gap-1 border border-[#2f6fa8] bg-transparent px-2.5 text-[14px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
-                    onClick={() => {
-                      setActive(group)
-                      setFileMode('create')
-                      setFileOpen(true)
-                      setFileName('')
-                      setFileValue('')
-                    }}
+                    className="min-w-0 truncate text-left text-[14px] text-ink transition-colors hover:text-signal"
+                    onClick={() => setExpandedName(expanded ? null : group.name)}
                   >
-                    <Plus size={10} /> 创建配置文件
-                  </button>
-                  <button
-                    className="inline-flex h-[26px] items-center border border-l-0 border-[#2f6fa8] px-1 text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
-                    title="更多"
-                    onClick={() => {
-                      setActive(group)
-                      setFileMode('create')
-                      setFileOpen(true)
-                      setFileName('')
-                      setFileValue('')
-                    }}
-                  >
-                    <ChevronDown size={11} />
+                    {group.name}
                   </button>
                 </div>
-                <button
-                  className="flex h-6 w-6 flex-none items-center justify-center text-mute transition-colors hover:text-ink"
-                  onClick={() => setExpandedName(expanded ? null : group.name)}
-                  aria-label={expanded ? '收起' : '展开'}
-                >
-                  <ChevronDown
-                    size={14}
-                    className={cn('transition-transform', expanded && 'rotate-180')}
-                  />
-                </button>
+                <div className="flex-1 text-[14px] text-ink-3">配置文件 {files.length}个</div>
+                <div className="flex-1 text-[14px] text-ink-3">
+                  {group.createdAt ? formatDate(group.createdAt, true) : '--'}
+                </div>
+                <div className="flex flex-1 items-center justify-between">
+                  <div className="flex items-center">
+                    <button
+                      className="inline-flex h-[26px] items-center gap-1 border border-[#2f6fa8] bg-transparent px-2.5 text-[14px] text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+                      onClick={() => {
+                        setActive(group)
+                        setFileMode('create')
+                        setFileOpen(true)
+                        setFileName('')
+                        setFileValue('')
+                      }}
+                    >
+                      <Plus size={10} /> 创建配置文件
+                    </button>
+                    <button
+                      className="inline-flex h-[26px] items-center border border-l-0 border-[#2f6fa8] px-1 text-[#4aa3f0] transition-colors hover:border-signal hover:text-[#7cc4ff]"
+                      title="更多"
+                      onClick={() => {
+                        setActive(group)
+                        setFileMode('create')
+                        setFileOpen(true)
+                        setFileName('')
+                        setFileValue('')
+                      }}
+                    >
+                      <ChevronDown size={11} />
+                    </button>
+                  </div>
+                  <button
+                    className="flex h-6 w-6 flex-none items-center justify-center text-mute transition-colors hover:text-ink"
+                    onClick={() => setExpandedName(expanded ? null : group.name)}
+                    aria-label={expanded ? '收起' : '展开'}
+                  >
+                    <ChevronDown
+                      size={14}
+                      className={cn('transition-transform', expanded && 'rotate-180')}
+                    />
+                  </button>
+                </div>
               </div>
               {expanded && (
-                <div className="border-t border-line bg-[#0c1b2a] px-6 py-2">
+                <div className="border-t border-line bg-[#0c1b2a] py-8">
                   {files.length === 0 ? (
                     <div className="py-6 text-center text-[14px] text-mute">暂无配置文件</div>
                   ) : (
                     files.map(([name, value], index) => {
                       const related = relations.get(name) ?? []
+                      const services =
+                        related.length > 0 ? related.map((item) => item.serviceName || '—').join('、') : '暂无挂载'
+                      const mounts =
+                        related.length > 0 ? related.map((item) => item.mountPath || '—').join('、') : '--'
                       return (
-                        <div
-                          key={name}
-                          className={cn(
-                            'flex items-center gap-5 py-3',
-                            index < files.length - 1 && 'border-b border-line/70',
-                          )}
-                        >
-                          <div className="flex w-[240px] flex-none items-center gap-2">
-                            <FileText size={13} className="flex-none text-[#4aa3f0]" />
-                            <span className="mono truncate text-[14px] text-ink">{name}</span>
-                          </div>
-                          <div className="flex flex-none items-center gap-1.5">
-                            <button
-                              className="flex h-6 w-6 items-center justify-center bg-[#1670c2] text-white transition-colors hover:bg-[#1a82dd]"
-                              title="编辑"
-                              onClick={() => {
-                                setActive(group)
-                                setFileMode('edit')
-                                setFileName(name)
-                                setFileValue(value)
-                                setFileOpen(true)
-                              }}
-                            >
-                              <Pencil size={11} />
-                            </button>
-                            <button
-                              className="flex h-6 w-6 items-center justify-center bg-[#25384a] text-ink-3 transition-colors hover:text-white"
-                              title="删除"
-                              onClick={async () => {
-                                const ok = await confirm({
-                                  title: `删除配置文件「${name}」？`,
-                                  description: '挂载该配置组的服务将无法读取此文件。',
-                                  danger: true,
-                                  confirmText: '删除文件',
-                                })
-                                if (ok) deleteFile.mutate({ group: group.name, file: name })
-                              }}
-                            >
-                              <X size={11} />
-                            </button>
-                          </div>
-                          <div className="flex min-w-0 flex-1 items-center gap-4 border-l border-[#1f3b55] pl-5">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5 text-[14px] text-ink-3">
-                                关联服务
-                                {related.length > 0 && (
-                                  <span className="inline-flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#3fbf7f] px-1 text-[12px] text-[#0a1622]">
-                                    {related.length}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="mt-1 truncate text-[14px] text-ink-3">
-                                {related.length > 0
-                                  ? related.map((item) => item.serviceName || '—').join('、')
-                                  : '暂无挂载'}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="min-w-0 flex-1 border-l border-[#1f3b55] pl-5">
-                            <div className="text-[14px] text-ink-3">挂载路径</div>
-                            <div className="mono mt-1 truncate text-[14px] text-ink-3">
-                              {related.length > 0
-                                ? related.map((item) => item.mountPath || '—').join('、')
-                                : '--'}
-                            </div>
-                          </div>
+                        <div key={name} className={cn('relative pl-[46px]', index < files.length - 1 && 'pb-5')}>
+                          {/* 子级缩进：时间线竖线、圆点与横向连接线 */}
+                          <span className="absolute bottom-0 left-[16px] top-0 border-l border-[#1f3b55]" />
+                          <span className="absolute left-[12px] top-[40px] h-[9px] w-[9px] rounded-full border border-[#4aa3f0] bg-[#0c1b2a]" />
+                          <span className="absolute left-[21px] top-[44px] h-px w-[25px] bg-[#1f3b55]" />
+                          <table className="border-collapse">
+                            <tbody>
+                              <tr>
+                                <td className="w-[307px] border border-[#2b4c6d] px-[15px] py-[15px] align-middle">
+                                  <div className="flex items-center gap-2">
+                                    <FileText size={13} className="flex-none text-[#4aa3f0]" />
+                                    <span className="w-[250px] truncate text-[14px] text-ink" title={name}>
+                                      {name}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="w-[150px] border border-[#2b4c6d] px-5 py-[15px] align-middle">
+                                  <div className="flex items-center gap-2.5">
+                                    <button
+                                      className="flex h-6 w-6 items-center justify-center bg-[#1670c2] text-white transition-colors hover:bg-[#1a82dd]"
+                                      title="编辑"
+                                      onClick={() => {
+                                        setActive(group)
+                                        setFileMode('edit')
+                                        setFileName(name)
+                                        setFileValue(value)
+                                        setFileOpen(true)
+                                      }}
+                                    >
+                                      <Pencil size={11} />
+                                    </button>
+                                    <button
+                                      className="flex h-6 w-6 items-center justify-center bg-[#25384a] text-ink-3 transition-colors hover:text-white"
+                                      title="删除"
+                                      onClick={async () => {
+                                        const ok = await confirm({
+                                          title: `删除配置文件「${name}」？`,
+                                          description: '挂载该配置组的服务将无法读取此文件。',
+                                          danger: true,
+                                          confirmText: '删除文件',
+                                        })
+                                        if (ok) deleteFile.mutate({ group: group.name, file: name })
+                                      }}
+                                    >
+                                      <X size={11} />
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="w-[150px] border border-[#2b4c6d] align-middle">
+                                  <div className="flex h-10 items-center gap-1.5 px-[15px] text-[14px] text-ink-3">
+                                    关联服务
+                                    <span className="inline-flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#3fbf7f] px-1 text-[12px] text-[#0a1622]">
+                                      {related.length}
+                                    </span>
+                                  </div>
+                                  <div className="flex h-10 items-center border-t border-[#2b4c6d] px-[15px] text-[14px] text-ink-3">
+                                    挂载路径
+                                  </div>
+                                </td>
+                                <td className="w-[150px] border border-[#2b4c6d] align-middle">
+                                  <div className="flex h-10 items-center truncate px-[15px] text-[14px] text-ink-3">
+                                    {services}
+                                  </div>
+                                  <div className="flex h-10 items-center truncate border-t border-[#2b4c6d] px-[15px] text-[14px] text-ink-3">
+                                    {mounts}
+                                  </div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       )
                     })

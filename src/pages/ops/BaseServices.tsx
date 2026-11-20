@@ -207,7 +207,7 @@ export default function BaseServicesPage() {
       header: '序号',
       width: 80,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="text-[14px] text-ink">{index + 1}</span>,
     },
     {
       key: 'label',
@@ -221,7 +221,7 @@ export default function BaseServicesPage() {
       header: '服务标识',
       width: 120,
       align: 'center',
-      cell: (row) => <span className="mono text-[12px] text-ink-3">{k8sName(row)}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{k8sName(row)}</span>,
     },
     {
       key: 'status',
@@ -232,13 +232,13 @@ export default function BaseServicesPage() {
         const status = statusOf(row)
         const allRunning = status.desired > 0 && status.ready === status.desired
         return (
-          <div className="leading-[1.5]">
+          <div className="leading-[1.5715]">
             <div className={cn('text-[14px]', status.tone)}>{status.label}</div>
-            <div className="text-[12px] text-ink-3">
+            <div className="text-[14px] text-ink">
               {status.ready}/{status.desired}
               {status.desired === 0 ? '全部停止' : allRunning ? '全部运行' : '部分运行'}
             </div>
-            <div className="text-[12px] text-ink-3">已重启 {row.restartCount ?? 0} 次</div>
+            <div className="text-[14px] text-ink">已重启 {row.restartCount ?? 0} 次</div>
           </div>
         )
       },
@@ -248,7 +248,7 @@ export default function BaseServicesPage() {
       header: '镜像',
       width: 350,
       align: 'center',
-      cell: (row) => <span className="mono text-[12px] text-ink-3">{imageShort(row)}</span>,
+      cell: (row) => <span className="mx-auto block max-w-[330px] truncate text-[14px] text-ink">{imageShort(row)}</span>,
     },
     {
       key: 'created',
@@ -256,7 +256,7 @@ export default function BaseServicesPage() {
       width: 180,
       align: 'center',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+        <span className="whitespace-nowrap text-[14px] text-ink">
           {row.deployment?.metadata?.creationTimestamp
             ? formatDate(row.deployment.metadata.creationTimestamp, true)
             : '--'}
@@ -271,7 +271,7 @@ export default function BaseServicesPage() {
       cell: (row) => {
         const stamp = row.deployment?.spec?.template?.metadata?.annotations?.['gaop/updateTimestamp']
         return (
-          <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+          <span className="whitespace-nowrap text-[14px] text-ink">
             {stamp ? formatDate(Number(stamp), true) : '--'}
           </span>
         )

@@ -365,7 +365,7 @@ export default function PodsPage() {
       header: '序号',
       width: 80,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="text-[14px] text-ink">{index + 1}</span>,
     },
     {
       key: 'name',
@@ -375,7 +375,7 @@ export default function PodsPage() {
       cell: (row) => (
         <button
           onClick={() => setDetail(row)}
-          className="max-w-[260px] truncate text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+          className="mx-auto block max-w-[220px] truncate text-center text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
         >
           {row.metadata?.name || '—'}
         </button>
@@ -390,15 +390,15 @@ export default function PodsPage() {
         const phase = phaseText(row.metadata?.deletionTimestamp ? 'Terminating' : row.status?.phase)
         const { running, total, partial } = runningOf(row)
         return (
-          <div className="leading-[1.5]">
+          <div className="leading-[1.5715]">
             <div className={cn('text-[14px]', phase.tone)}>{phase.text}</div>
             {total > 0 && row.status?.phase === 'Running' && (
-              <div className="text-[12px] text-ink-3">
+              <div className="text-[14px] text-ink">
                 {running}/{total}
                 {partial ? '部分运行' : '全部运行'}
               </div>
             )}
-            <div className="text-[12px] text-ink-3">已重启 {restartsOf(row)} 次</div>
+            <div className="text-[14px] text-ink">已重启 {restartsOf(row)} 次</div>
           </div>
         )
       },
@@ -408,21 +408,25 @@ export default function PodsPage() {
       header: '所属服务',
       width: 160,
       align: 'center',
-      cell: (row) => <span className="mono text-[12px] text-ink-3">{serviceOf(row) || '--'}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{serviceOf(row) || '--'}</span>,
     },
     {
       key: 'image',
       header: '镜像',
       width: 200,
       align: 'center',
-      cell: (row) => <span className="mono text-[12px] text-ink-3">{imageOf(row)}</span>,
+      cell: (row) => (
+        <span className="mx-auto block max-w-[190px] truncate text-[14px] text-ink" title={imageOf(row)}>
+          {imageOf(row)}
+        </span>
+      ),
     },
     {
       key: 'ip',
       header: '访问地址',
       width: 180,
       align: 'center',
-      cell: (row) => <span className="mono text-[12px] text-ink-3">{row.status?.podIP || '—'}</span>,
+      cell: (row) => <span className="text-[14px] text-ink">{row.status?.podIP || '—'}</span>,
     },
     {
       key: 'created',
@@ -430,7 +434,7 @@ export default function PodsPage() {
       width: 180,
       align: 'center',
       cell: (row) => (
-        <span className="mono whitespace-nowrap text-[12px] text-ink-3">
+        <span className="whitespace-nowrap text-[14px] text-ink">
           {row.metadata?.creationTimestamp ? formatDate(row.metadata.creationTimestamp, true) : '—'}
         </span>
       ),

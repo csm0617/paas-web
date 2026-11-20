@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowUpRight, Boxes, Layers, RefreshCw, RotateCw } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { dump, load } from 'js-yaml'
+import { Plus } from 'lucide-react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem, ServiceList } from '@/types'
-import { Badge, Button, Drawer, Field, PageToolbar, Panel, StatusDot } from '@/components/ui'
+import { Button, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
+import { DataTable, type Column } from '@/components/DataTable'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
@@ -13,17 +14,136 @@ function nameOf(service: ServiceItem) {
   return service.nameUs || service.nameFr
 }
 
-function imageOf(service: ServiceItem) {
-  if (typeof service.imageInfo === 'string') return service.imageInfo
-  return service.imageInfo?.image || service.imageInfo?.imageName || '—'
+function imageShort(service: ServiceItem) {
+  const images = (service.deployment?.spec?.template?.spec?.containers ?? []).map((container) => {
+    const parts = (container.image || '').split('/')
+    return parts[1] || parts[2] ? `${parts[1] || '--'}/${parts[2] || '--'}` : '--'
+  })
+  return images.join(',') || '--'
+}
+
+function statusOf(service: ServiceItem) {
+  const ready = service.deployment?.status?.readyReplicas ?? 0
+  const desired = service.deployment?.spec?.replicas ?? 0
+  const tone = service.terminated
+    ? 'text-danger'
+    : ready > 0 && desired > 0 && ready < desired
+      ? 'text-[#2884d8]'
+      : ready > 0
+        ? 'text-ok'
+        : desired > 0
+          ? 'text-warn'
+          : 'text-danger'
+  const text = service.terminated
+    ? '已停止'
+    : ready > 0 && desired > 0 && ready < desired
+      ? '滚动发布中'
+      : ready > 0
+        ? '运行中'
+        : desired > 0
+          ? '启动中'
+          : '已停止'
+  const runText = desired === 0 ? '全部停止' : ready === desired ? '全部运行' : '部分运行'
+  return { text, tone, ready, desired, runText }
+}
+
+function toYaml(deployment: unknown) {
+  if (!deployment) return ''
+  const clone = JSON.parse(JSON.stringify(deployment)) as Record<string, unknown>
+  const metadata = clone.metadata as Record<string, unknown> | undefined
+  if (metadata) delete metadata.managedFields
+  return dump(clone)
+}
+
+function deploymentYaml(service: ServiceItem) {
+  return toYaml(service.deployment)
+}
+
+const YamlEditor = lazy(() => import('@/components/yaml/YamlEditor'))
+
+/* 厂商内置的框架系统服务，禁止删除 */
+const FRAMEWORK_SERVICES = new Set([
+  'zk',
+  'redis',
+  'mysql',
+  'kafka',
+  'gaop-startup',
+  'gaop-gateway-auth',
+  'gaop-gateway',
+  'gaop-image-uploader',
+  'gaop-be',
+  'gaop-mysql',
+  'gaop-fdfs',
+  'gaop-web',
+  'gaop-auth',
+  'gaop-login',
+  'gaop-redis',
+  'gaop-radondb-mysql-leader',
+  'service-top-high-priority-class',
+  'service-high-priority-class',
+  'service-low-priority-class',
+  'service-mid-priority-class',
+  'high-priority-class',
+])
+
+function isFrameworkService(service: ServiceItem) {
+  const metadata = service.deployment?.metadata
+  const appType = metadata?.labels?.['system/appType']
+  if (appType) return appType.startsWith('gaop')
+  return FRAMEWORK_SERVICES.has(metadata?.name || nameOf(service))
+}
+
+const DEPLOY_TEMPLATE = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ''
+  namespace: gaop-namespace
+  labels:
+    app: ''
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ''
+  template:
+    metadata:
+      labels:
+        app: ''
+    spec:
+      containers:
+        - name: ''
+          image: ''
+`
+
+function validateCreateYaml(text: string): string[] {
+  if (!text.trim()) return ['YAML 内容不能为空']
+  try {
+    const body = load(text) as Record<string, unknown> | undefined
+    if (!body) return ['YAML 内容不是合法的对象']
+    const errors: string[] = []
+    if (body.kind !== 'Deployment') errors.push('kind 必须为 Deployment')
+    const metadata = body.metadata as { name?: string } | undefined
+    if (!metadata?.name) errors.push('metadata.name 不能为空')
+    else if (!/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(metadata.name))
+      errors.push('metadata.name 只能包含小写字母、数字和中划线')
+    return errors
+  } catch (error) {
+    return [`YAML 解析失败：${(error as Error).message}`]
+  }
 }
 
 export default function WorkloadsPage() {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
+  const confirm = useConfirm()
   const [keyword, setKeyword] = useState('')
-  const [scaleTarget, setScaleTarget] = useState<ServiceItem | null>(null)
-  const [scale, setScale] = useState(1)
+  const [yamlTarget, setYamlTarget] = useState<ServiceItem | null>(null)
+  const [yamlDraft, setYamlDraft] = useState('')
+  const [yamlOrigin, setYamlOrigin] = useState('')
+  const [yamlErrors, setYamlErrors] = useState<string[]>([])
+  const [yamlLoading, setYamlLoading] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createYaml, setCreateYaml] = useState(DEPLOY_TEMPLATE)
+  const [createErrors, setCreateErrors] = useState<string[]>(validateCreateYaml(DEPLOY_TEMPLATE))
 
   const query = useQuery({
     queryKey: ['services'],
@@ -32,185 +152,340 @@ export default function WorkloadsPage() {
   })
 
   const services = query.data?.services ?? []
+
   const filtered = useMemo(() => {
     const q = keyword.trim().toLowerCase()
     if (!q) return services
     return services.filter(
       (service) =>
         nameOf(service).toLowerCase().includes(q) ||
-        imageOf(service).toLowerCase().includes(q) ||
+        imageShort(service).toLowerCase().includes(q) ||
         (service.service?.metadata?.namespace || '').toLowerCase().includes(q),
     )
   }, [services, keyword])
 
-  const restartMutation = useMutation({
-    mutationFn: (name: string) => api.put('/v1/service/reStart', [name]),
+  const deleteMutation = useMutation({
+    mutationFn: (names: string[]) => api.del('/v1/service', names),
     onSuccess: () => {
-      toast.success('滚动重启已下发')
+      toast.success('删除指令已下发')
       queryClient.invalidateQueries({ queryKey: ['services'] })
     },
-    onError: (error) => toast.error('重启失败', errorMessage(error)),
+    onError: (error) => toast.error('删除失败', errorMessage(error)),
   })
 
-  const scaleMutation = useMutation({
-    mutationFn: ({ name, replicas }: { name: string; replicas: number }) =>
-      api.put('/v1/service/scale', undefined, { serviceName: name, scale: replicas }),
+  const saveYamlMutation = useMutation({
+    mutationFn: () => {
+      if (!yamlTarget?.deployment) throw new Error('未获取到 Deployment 信息')
+      const namespace = yamlTarget.deployment.metadata?.namespace || 'gaop-namespace'
+      const name = yamlTarget.deployment.metadata?.name || nameOf(yamlTarget)
+      let body: unknown
+      try {
+        body = load(yamlDraft)
+      } catch (error) {
+        throw new Error(`YAML 解析失败：${(error as Error).message}`)
+      }
+      return api.put(`/k8s/apis/apps/v1/namespaces/${namespace}/deployments/${name}`, body)
+    },
     onSuccess: () => {
-      toast.success('副本数已更新')
-      setScaleTarget(null)
+      toast.success('YAML 已保存', 'Deployment 将按新配置滚动更新')
+      setYamlTarget(null)
       queryClient.invalidateQueries({ queryKey: ['services'] })
     },
-    onError: (error) => toast.error('更新失败', errorMessage(error)),
+    onError: (error) => toast.error('保存失败', errorMessage(error)),
   })
+
+  const createMutation = useMutation({
+    mutationFn: () => {
+      const body = load(createYaml) as Record<string, unknown>
+      const metadata = body.metadata as { name?: string; namespace?: string } | undefined
+      if (!metadata?.name) throw new Error('metadata.name 不能为空')
+      const namespace = metadata.namespace || 'gaop-namespace'
+      return api.post(`/k8s/apis/apps/v1/namespaces/${namespace}/deployments`, body)
+    },
+    onSuccess: () => {
+      toast.success('部署文件创建成功')
+      setCreateOpen(false)
+      setCreateYaml(DEPLOY_TEMPLATE)
+      setCreateErrors(validateCreateYaml(DEPLOY_TEMPLATE))
+      queryClient.invalidateQueries({ queryKey: ['services'] })
+    },
+    onError: (error) => toast.error('创建失败', errorMessage(error)),
+  })
+
+  async function remove(names: string[]) {
+    if (names.length === 0) return
+    const ok = await confirm({
+      title: names.length > 1 ? `删除 ${names.length} 个工作负载？` : `删除工作负载「${names[0]}」？`,
+      description: '删除后对应 Deployment 将被移除，服务将停止运行。',
+      confirmText: '删除',
+      danger: true,
+    })
+    if (ok) deleteMutation.mutate(names)
+  }
+
+  async function openYaml(service: ServiceItem) {
+    const namespace = service.deployment?.metadata?.namespace || 'gaop-namespace'
+    const name = service.deployment?.metadata?.name || nameOf(service)
+    setYamlTarget(service)
+    setYamlDraft('')
+    setYamlOrigin('')
+    setYamlErrors([])
+    setYamlLoading(true)
+    let text = ''
+    try {
+      const full = await api.get<Record<string, unknown>>(
+        `/k8s/apis/apps/v1/namespaces/${namespace}/deployments/${name}`,
+      )
+      text = toYaml(full)
+    } catch (error) {
+      text = deploymentYaml(service)
+      toast.error('读取 Deployment 失败，已展示本地缓存', errorMessage(error))
+    }
+    setYamlDraft(text)
+    setYamlOrigin(text)
+    const { validateDeploymentYaml } = await import('@/components/yaml/YamlEditor')
+    setYamlErrors(validateDeploymentYaml(text))
+    setYamlLoading(false)
+  }
+
+  const columns: Array<Column<ServiceItem>> = [
+    {
+      key: 'index',
+      header: '序号',
+      width: 80,
+      align: 'center',
+      cell: (_row, index) => <span className="text-[14px] text-ink">{index + 1}</span>,
+    },
+    {
+      key: 'key',
+      header: '服务标识',
+      align: 'center',
+      cell: (row) => <span className="text-[14px] text-ink">{nameOf(row)}</span>,
+    },
+    {
+      key: 'status',
+      header: '状态',
+      width: 140,
+      align: 'center',
+      cell: (row) => {
+        const status = statusOf(row)
+        return (
+          <div className="leading-[1.5715]">
+            <div className={cn('text-[14px]', status.tone)}>{status.text}</div>
+            <div className="text-[14px] text-ink-3">
+              {status.ready}/{status.desired}
+              {status.runText}
+            </div>
+          </div>
+        )
+      },
+    },
+    {
+      key: 'image',
+      header: '镜像',
+      width: 200,
+      align: 'center',
+      cell: (row) => (
+        <span className="mx-auto block max-w-[240px] truncate text-[14px] text-ink" title={imageShort(row)}>
+          {imageShort(row)}
+        </span>
+      ),
+    },
+    {
+      key: 'created',
+      header: '创建时间',
+      width: 200,
+      align: 'center',
+      cell: (row) => (
+        <span className="whitespace-nowrap text-[14px] text-ink">
+          {row.deployment?.metadata?.creationTimestamp
+            ? formatDate(row.deployment.metadata.creationTimestamp, true)
+            : '--'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '操作',
+      width: 200,
+      align: 'center',
+      cell: (row) => {
+        const locked = isFrameworkService(row)
+        return (
+          <div className="flex items-center justify-center gap-2.5 text-[14px]">
+            <button
+              className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+              onClick={() => openYaml(row)}
+            >
+              查看/编辑Yaml
+            </button>
+            <button
+              disabled={locked}
+              title={locked ? '框架系统服务是禁止删除的' : undefined}
+              className={cn(
+                'transition-colors',
+                locked
+                  ? 'cursor-not-allowed text-mute'
+                  : 'text-[#ff7b7b] hover:text-[#ff9a9a]',
+              )}
+              onClick={() => {
+                if (!locked) remove([nameOf(row)])
+              }}
+            >
+              删除
+            </button>
+          </div>
+        )
+      },
+    },
+  ]
 
   return (
     <div>
-      <PageToolbar search={{ value: keyword, onChange: setKeyword, placeholder: '请输入工作负载名称/镜像搜索' }}>
-        <Button size="sm" loading={query.isFetching} onClick={() => query.refetch()}>
-          <RefreshCw size={11} /> 刷新
+      <PageToolbar
+        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入部署文件名搜索' }}
+      >
+        <Button
+          size="sm"
+          variant="signal"
+          onClick={() => {
+            setCreateYaml(DEPLOY_TEMPLATE)
+            setCreateErrors(validateCreateYaml(DEPLOY_TEMPLATE))
+            setCreateOpen(true)
+          }}
+        >
+          <Plus size={11} /> 创建部署文件
         </Button>
       </PageToolbar>
 
-      <div className="space-y-2.5">
-        {filtered.map((service, index) => {
-          const desired = service.deployment?.spec?.replicas ?? 0
-          const ready = service.deployment?.status?.readyReplicas ?? 0
-          const available = service.deployment?.status?.availableReplicas ?? 0
-          const healthy = desired > 0 && ready >= desired
-          return (
-            <article
-              key={nameOf(service)}
-              className="panel group flex flex-col gap-4 p-0 transition-shadow hover:shadow-[3px_3px_0_rgba(21,24,27,0.08)] lg:flex-row lg:items-stretch"
-            >
-              <div className="flex flex-none items-center gap-3 border-b border-line px-4 py-3 lg:w-[280px] lg:border-b-0 lg:border-r">
-                <span className="mono text-[12px] text-mute">{String(index + 1).padStart(2, '0')}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <StatusDot tone={healthy ? 'ok' : 'warn'} />
-                    <span className="truncate font-mono text-[14px] text-ink">{nameOf(service)}</span>
-                  </div>
-                  <div className="mono mt-1 truncate text-[12px] tracking-widest text-mute">
-                    {service.service?.metadata?.namespace || 'default'} / Deployment
-                  </div>
-                </div>
-              </div>
+      <Panel title="部署文件" bodyClassName="p-0">
+        <DataTable
+          columns={columns}
+          rows={filtered}
+          rowKey={(row) => nameOf(row)}
+          loading={query.isLoading}
+          rowHeight={77}
+          emptyTitle="暂无部署文件"
+          emptyDescription="命名空间内没有可展示的 Deployment。"
+        />
+      </Panel>
 
-              <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3">
-                <div className="min-w-[180px] flex-1">
-                  <div className="label mb-1">容器镜像</div>
-                  <div className="mono truncate text-[12px] text-ink-3">{imageOf(service)}</div>
-                </div>
-                <div>
-                  <div className="label mb-1.5">副本</div>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(12, Math.max(desired, 1)) }).map((_, i) => (
-                      <span
-                        key={i}
-                        className={cn(
-                          'h-5 w-[6px]',
-                          i < ready ? 'bg-ok' : i < desired ? 'bg-warn/50' : 'bg-line',
-                        )}
-                      />
-                    ))}
-                    <span className="num ml-2 text-[14px] text-ink">
-                      {ready}
-                      <span className="text-[12px] text-mute">/{desired}</span>
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <div className="label mb-1">可用 / 更新</div>
-                  <div className="mono text-[12px] text-ink">
-                    {available} / {service.deployment?.status?.updatedReplicas ?? 0}
-                  </div>
-                </div>
-                <div>
-                  <div className="label mb-1">重启</div>
-                  <div className={cn('mono text-[12px]', (service.restartCount ?? 0) > 0 ? 'text-signal' : 'text-ink')}>
-                    {service.restartCount ?? 0}
-                  </div>
-                </div>
-                <div>
-                  <div className="label mb-1">创建时间</div>
-                  <div className="mono text-[12px] text-mute">
-                    {formatDate(service.deployment?.metadata?.creationTimestamp, false)}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-none items-center gap-1.5 border-t border-line px-4 py-2 lg:border-l lg:border-t-0">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => navigate(`/software/workloads/deploymentViewer/${encodeURIComponent(nameOf(service))}`)}
-                >
-                  详情 <ArrowUpRight size={10} />
-                </Button>
-                <Button size="sm" onClick={() => restartMutation.mutate(nameOf(service))} loading={restartMutation.isPending}>
-                  <RotateCw size={10} /> 重启
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setScaleTarget(service)
-                    setScale(desired || 1)
-                  }}
-                >
-                  <Layers size={10} /> 副本
-                </Button>
-              </div>
-            </article>
-          )
-        })}
-
-        {!query.isLoading && filtered.length === 0 && (
-          <Panel>
-            <div className="flex flex-col items-center gap-2 py-12 text-mute">
-              <Boxes size={26} strokeWidth={1.2} />
-              <span className="text-[12px]">暂无工作负载</span>
-            </div>
-          </Panel>
-        )}
-      </div>
-
-      <Drawer
-        open={!!scaleTarget}
-        onOpenChange={(open) => !open && setScaleTarget(null)}
-        kicker="WORKLOAD / SCALE"
-        title={`调整「${scaleTarget ? nameOf(scaleTarget) : ''}」副本`}
-        description="副本变更将触发 Deployment 滚动更新。"
-        width={400}
+      <Modal
+        open={!!yamlTarget}
+        onOpenChange={(open) => {
+          if (!open) setYamlTarget(null)
+        }}
+        title="YAML"
+        width={1080}
         footer={
           <>
-            <Button size="sm" onClick={() => setScaleTarget(null)}>
+            <Button size="sm" onClick={() => setYamlTarget(null)}>
               取消
             </Button>
             <Button
               size="sm"
               variant="signal"
-              loading={scaleMutation.isPending}
-              onClick={() => scaleTarget && scaleMutation.mutate({ name: nameOf(scaleTarget), replicas: scale })}
+              disabled={yamlLoading || yamlDraft === yamlOrigin || yamlErrors.length > 0}
+              loading={saveYamlMutation.isPending}
+              onClick={() => saveYamlMutation.mutate()}
             >
-              应用
+              保存
             </Button>
           </>
         }
       >
-        <Field label="副本数">
-          <input
-            type="number"
-            min={0}
-            max={50}
-            className="field h-12 text-center text-[20px]"
-            value={scale}
-            onChange={(event) => setScale(Math.max(0, Number(event.target.value)))}
-          />
-        </Field>
-        <div className="mt-3">
-          <Badge tone="info">当前 {scaleTarget?.deployment?.spec?.replicas ?? 0} 副本</Badge>
+        <div className="h-[560px] overflow-hidden border border-[#33506e]">
+          {yamlLoading ? (
+            <div className="flex h-full items-center justify-center text-[14px] text-mute">
+              正在读取 Deployment…
+            </div>
+          ) : (
+            <Suspense
+              fallback={
+                <div className="flex h-full items-center justify-center text-[14px] text-mute">
+                  编辑器加载中…
+                </div>
+              }
+            >
+              <YamlEditor
+                value={yamlDraft}
+                onChange={setYamlDraft}
+                onValidate={setYamlErrors}
+                height="100%"
+              />
+            </Suspense>
+          )}
         </div>
-      </Drawer>
+        <div className="mt-2 flex min-h-8 items-start gap-4 border border-line bg-[#0c1b2a] px-3 py-1.5 text-[12px] text-ink-3">
+          <span className="flex-none pt-[1px]">错误信息栏</span>
+          {yamlErrors.length > 0 ? (
+            <span className="min-w-0 flex-1 whitespace-pre-wrap text-danger">
+              {yamlErrors.slice(0, 6).join('\n')}
+              {yamlErrors.length > 6 ? `\n… 还有 ${yamlErrors.length - 6} 条` : ''}
+            </span>
+          ) : (
+            <span className="text-mute">暂无错误信息</span>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open)
+          if (!open) {
+            setCreateYaml(DEPLOY_TEMPLATE)
+            setCreateErrors(validateCreateYaml(DEPLOY_TEMPLATE))
+          }
+        }}
+        title="创建部署文件"
+        width={1080}
+        footer={
+          <>
+            <Button size="sm" onClick={() => setCreateOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="signal"
+              disabled={createErrors.length > 0}
+              loading={createMutation.isPending}
+              onClick={() => createMutation.mutate()}
+            >
+              保存
+            </Button>
+          </>
+        }
+      >
+        <div className="h-[560px] overflow-hidden border border-[#33506e]">
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center text-[14px] text-mute">
+                编辑器加载中…
+              </div>
+            }
+          >
+            <YamlEditor
+              value={createYaml}
+              onChange={(value) => {
+                setCreateYaml(value)
+                setCreateErrors(validateCreateYaml(value))
+              }}
+              height="100%"
+            />
+          </Suspense>
+        </div>
+        <div className="mt-2 flex min-h-8 items-start gap-4 border border-line bg-[#0c1b2a] px-3 py-1.5 text-[12px] text-ink-3">
+          <span className="flex-none pt-[1px]">错误信息栏</span>
+          {createErrors.length > 0 ? (
+            <span className="min-w-0 flex-1 whitespace-pre-wrap text-danger">
+              {createErrors.slice(0, 6).join('\n')}
+            </span>
+          ) : (
+            <span className="text-mute">暂无错误信息</span>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }

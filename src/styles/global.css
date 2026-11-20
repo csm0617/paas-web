@@ -329,17 +329,17 @@ body {
   /* Table                                                             */
   /* ---------------------------------------------------------------- */
   .data-table {
-    width: max-content;
-    min-width: 100%;
+    width: 100%;
+    min-width: max-content;
     border-collapse: collapse;
     font-size: 14px;
   }
   .table-scroll {
     overflow-x: auto;
-    background: #182445;
+    background: #0f2133;
   }
   .data-table tbody tr {
-    background: #182445;
+    background: #0f2133;
   }
   .data-table .is-sticky-right {
     position: sticky;
@@ -350,7 +350,7 @@ body {
   }
   .data-table thead th.is-sticky-right {
     z-index: 2;
-    background: #1d335d;
+    background: #14293e;
   }
   .table-scroll::-webkit-scrollbar {
     height: 10px;
@@ -375,23 +375,25 @@ body {
     font-weight: 600;
     text-align: center;
     padding: 2px 8px;
-    border-bottom: 1px solid #3a6288;
-    background: #1d335d;
+    border-bottom: 1px solid #1e3d5a;
+    background: #14293e;
     white-space: nowrap;
   }
   .data-table tbody td {
     padding: 2px 8px;
     height: 30px;
+    font-size: 14px;
+    line-height: 1.5715;
     text-align: center;
-    border-bottom: 1px solid #3a6288;
+    border-bottom: 1px solid #16324a;
     vertical-align: middle;
-    color: var(--color-ink-2);
+    color: var(--color-ink);
   }
   .data-table tbody tr {
     transition: background 0.15s ease;
   }
   .data-table tbody tr:hover {
-    background: #283a6a;
+    background: #16304a;
   }
   .data-table tbody tr:last-child td {
     border-bottom: none;

@@ -375,7 +375,6 @@ function Sidebar({
   const confirm = useConfirm()
   const group = navigation.find((item) => item.index === groupIndex) ?? navigation[0]
   const activeNav = findNav(location.pathname)
-  const [collapsed, setCollapsed] = useState(false)
   const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -404,61 +403,53 @@ function Sidebar({
   return (
     <div className="flex h-full flex-col border-r border-[#10293d] bg-[#0a1928]">
       <nav className="scrollbar-thin flex-1 overflow-y-auto py-2">
-        <button
-          className="flex w-full items-center gap-1.5 px-3 pb-1.5 pt-1 text-left text-[14px] text-[#7f9ab4]"
-          onClick={() => setCollapsed((prev) => !prev)}
-        >
-          {collapsed ? <ChevronRight size={11} /> : <ChevronDown size={11} />}
-          <span>{group.label}</span>
-        </button>
-        {!collapsed &&
-          group.items
-            .filter((item) => !item.hidden)
-            .map((item) => {
-              const Icon = navIcons[item.label]
-              if (item.children?.length) {
-                const activeInside = item.children.some((child) => child.path === activeNav?.path)
-                const open = closedGroups[item.label] === undefined ? activeInside : !closedGroups[item.label]
-                return (
-                  <div key={item.label}>
-                    <button
-                      onClick={() => setClosedGroups((prev) => ({ ...prev, [item.label]: open }))}
-                      className="flex h-10 w-full items-center gap-2 px-3 text-left text-[14px] text-[#a9bfd4] transition-colors hover:text-white"
-                    >
-                      {Icon && <Icon size={13} className="flex-none text-[#4791d0]" />}
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
-                    </button>
-                    {open &&
-                      item.children
-                        .filter((child) => !child.hidden)
-                        .map((child) => (
-                          <NavLink
-                            key={child.path + child.label}
-                            to={child.path}
-                            onClick={onNavigate}
-                            className={() =>
-                              cn('nav-item pl-8', activeNav?.path === child.path && 'active')
-                            }
-                          >
-                            <span className="flex-1 truncate">{child.label}</span>
-                          </NavLink>
-                        ))}
-                  </div>
-                )
-              }
+        {group.items
+          .filter((item) => !item.hidden)
+          .map((item) => {
+            const Icon = navIcons[item.label]
+            if (item.children?.length) {
+              const activeInside = item.children.some((child) => child.path === activeNav?.path)
+              const open = closedGroups[item.label] === undefined ? activeInside : !closedGroups[item.label]
               return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={onNavigate}
-                  className={() => cn('nav-item', activeNav?.path === item.path && 'active')}
-                >
-                  {Icon && <Icon size={13} className="flex-none text-[#4791d0]" />}
-                  <span className="flex-1 truncate">{item.label}</span>
-                </NavLink>
+                <div key={item.label}>
+                  <button
+                    onClick={() => setClosedGroups((prev) => ({ ...prev, [item.label]: open }))}
+                    className="mx-1.5 flex h-10 w-[calc(100%-12px)] items-center gap-2 px-3 text-left text-[14px] text-[#a9bfd4] transition-colors hover:text-white"
+                  >
+                    {Icon && <Icon size={13} className="flex-none text-[#4791d0]" />}
+                    <span className="flex-1 truncate">{item.label}</span>
+                    {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                  </button>
+                  {open &&
+                    item.children
+                      .filter((child) => !child.hidden)
+                      .map((child) => (
+                        <NavLink
+                          key={child.path + child.label}
+                          to={child.path}
+                          onClick={onNavigate}
+                          className={() =>
+                            cn('nav-item pl-8', activeNav?.path === child.path && 'active')
+                          }
+                        >
+                          <span className="flex-1 truncate">{child.label}</span>
+                        </NavLink>
+                      ))}
+                </div>
               )
-            })}
+            }
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onNavigate}
+                className={() => cn('nav-item', activeNav?.path === item.path && 'active')}
+              >
+                {Icon && <Icon size={13} className="flex-none text-[#4791d0]" />}
+                <span className="flex-1 truncate">{item.label}</span>
+              </NavLink>
+            )
+          })}
       </nav>
       <div className="border-t border-[#10293d] p-2">
         <button
