@@ -658,7 +658,7 @@ export default function BaseServicesPage() {
           !monitorQuery.data.diskWriteIo?.length ? (
           <div className="py-10 text-center text-[14px] text-mute">该时间范围内暂无监控数据</div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="space-y-5">
             <div>
               <div className="mb-2 text-[14px] text-ink-3">CPU 使用量（m）</div>
               <AreaTrend series={cpuSeries} height={170} unit=" m" />
