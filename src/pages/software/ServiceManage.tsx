@@ -1613,9 +1613,12 @@ export default function ServiceManagePage() {
               className="flex-1"
               placeholder="请选择目标版本"
               value={versionTag}
-              options={(versionTagsQuery.data?.list ?? [])
-                .filter((tag) => tag.name !== versionCurrentTag)
-                .map((tag) => ({ value: tag.name, label: tag.name }))}
+              options={(versionTagsQuery.data?.list ?? []).map((tag) => ({
+                value: tag.name,
+                label: tag.name,
+                disabled: tag.name === versionCurrentTag,
+                tag: tag.name === versionCurrentTag ? '当前' : undefined,
+              }))}
               onChange={setVersionTag}
             />
           </div>

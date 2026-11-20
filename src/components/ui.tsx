@@ -347,6 +347,8 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
 export interface SelectOption {
   value: string
   label: string
+  disabled?: boolean
+  tag?: string
 }
 
 export function Select({
@@ -476,22 +478,31 @@ export function Select({
               <button
                 key={option.value}
                 type="button"
+                disabled={option.disabled}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
+                  if (option.disabled) return
                   onChange(option.value)
                   setOpen(false)
                 }}
                 className={cn(
                   'flex w-full items-center gap-1.5 px-2 py-1.5 text-left text-[14px] transition-colors',
-                  option.value === value
-                    ? 'bg-signal/15 text-signal'
-                    : 'text-ink-3 hover:bg-line/40 hover:text-ink',
+                  option.disabled
+                    ? 'cursor-not-allowed text-mute opacity-60'
+                    : option.value === value
+                      ? 'bg-signal/15 text-signal'
+                      : 'text-ink-3 hover:bg-line/40 hover:text-ink',
                 )}
               >
                 <span className="flex w-3 flex-none justify-center">
-                  {option.value === value && <Check size={11} />}
+                  {option.value === value && !option.disabled && <Check size={11} />}
                 </span>
                 <span className="truncate">{option.label}</span>
+                {option.tag && (
+                  <span className="ml-auto flex-none rounded-[2px] border border-[#2b6ea8] bg-[#12354f] px-1 text-[11px] leading-[16px] text-[#52a8ff]">
+                    {option.tag}
+                  </span>
+                )}
               </button>
             ))}
             {list.length === 0 && <div className="px-2 py-1.5 text-[14px] text-mute">无匹配项</div>}
