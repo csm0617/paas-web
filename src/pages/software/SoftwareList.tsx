@@ -467,6 +467,7 @@ export default function SoftwareListPage() {
   const [versionTarget, setVersionTarget] = useState<ServiceItem | null>(null)
   const [versionImage, setVersionImage] = useState('')
   const [versionTag, setVersionTag] = useState('')
+  const [versionCurrentTag, setVersionCurrentTag] = useState('')
   const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
   const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
   const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
@@ -931,7 +932,8 @@ export default function SoftwareListPage() {
   const versionMutation = useMutation({
     mutationFn: async () => {
       if (!versionTarget) throw new Error('未选择服务')
-      if (!versionImage.trim() || !versionTag.trim()) throw new Error('请填写镜像与版本')
+      if (!versionImage.trim() || !versionTag.trim()) throw new Error('请选择目标版本')
+      if (versionTag === versionCurrentTag) throw new Error('目标版本不能与当前版本相同')
       return api.put('/v1/service/rollingUpdate', {
         name: serviceNameOf(versionTarget),
         version: `${versionImage.trim()}:${versionTag.trim()}`,
@@ -955,11 +957,12 @@ export default function SoftwareListPage() {
     const slash = image.lastIndexOf('/')
     if (colon > slash) {
       setVersionImage(image.slice(0, colon))
-      setVersionTag(image.slice(colon + 1))
+      setVersionCurrentTag(image.slice(colon + 1))
     } else {
       setVersionImage(image)
-      setVersionTag('')
+      setVersionCurrentTag('')
     }
+    setVersionTag('')
     setVersionTarget(service)
   }
 
@@ -3025,15 +3028,14 @@ export default function SoftwareListPage() {
         )}
       </Drawer>
 
-      <Drawer
+      <Modal
         open={!!versionTarget}
         onOpenChange={(open) => !open && setVersionTarget(null)}
-        kicker="SERVICE / IMAGE VERSION"
-        title={versionTarget ? `${serviceNameOf(versionTarget)} 版本切换` : '版本切换'}
-        description="选择目标镜像与版本，平台将更新 Deployment 镜像并触发滚动更新。"
-        width={520}
+        title="版本切换"
+        titleAlign="center"
+        width={620}
         footer={
-          <>
+          <div className="flex w-full items-center justify-center gap-3">
             <Button size="sm" onClick={() => setVersionTarget(null)}>
               取消
             </Button>
@@ -3041,57 +3043,55 @@ export default function SoftwareListPage() {
               size="sm"
               variant="signal"
               loading={versionMutation.isPending}
-              disabled={!versionImage.trim() || !versionTag.trim()}
+              disabled={!versionTag}
               onClick={() => versionMutation.mutate()}
             >
-              切换版本
+              确定
             </Button>
-          </>
+          </div>
         }
       >
-        <div className="space-y-3">
-          <Field label="镜像仓库" required hint="不含标签的镜像地址">
-            <input
-              className="field"
-              value={versionImage}
-              onChange={(event) => setVersionImage(event.target.value)}
-              placeholder="如：gaop/nginx"
-            />
-          </Field>
-          <Field label="镜像版本" required hint="从镜像仓库版本列表中选择，或手动输入">
-            <div className="flex gap-2">
-              <input
-                className="field flex-1"
-                value={versionTag}
-                onChange={(event) => setVersionTag(event.target.value)}
-                placeholder="如：alpine-arm64"
-              />
-              <Select
-                className="w-[180px]"
-                placeholder="选择已有版本"
-                value=""
-                options={(versionTagsQuery.data?.list ?? []).map((tag) => ({
-                  value: tag.name,
-                  label: tag.name,
-                }))}
-                onChange={(value) => {
-                  if (value) setVersionTag(value)
-                }}
-              />
-            </div>
-          </Field>
-          <Field label="滚动策略" required hint="先启动：新实例就绪后再停止旧实例；先停止：先停旧实例再启动新实例">
+        <div className="space-y-4 px-2 text-[14px]">
+          <div className="flex items-center">
+            <span className="w-[110px] flex-none text-right text-ink-3">服务标识：</span>
+            <span className="text-ink">{versionTarget ? serviceNameOf(versionTarget) : ''}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="w-[110px] flex-none text-right text-ink-3">镜像版本：</span>
+            <span className="truncate text-ink" title={versionImage}>
+              {versionImage ? `${versionImage}:${versionCurrentTag}` : '--'}
+            </span>
+          </div>
+          <div className="flex items-center">
+            <span className="w-[110px] flex-none text-right text-ink-3">
+              <span className="mr-0.5 text-danger">*</span>滚动策略：
+            </span>
             <Select
+              className="flex-1"
               value={versionStrategy}
               options={[
-                { value: '2', label: '先停止（FIRST STOP）' },
-                { value: '1', label: '先启动（FIRST START）' },
+                { value: '2', label: '先停止旧服务，再启动新服务' },
+                { value: '1', label: '先启动新服务，再停止旧服务' },
               ]}
               onChange={(value) => setVersionStrategy(value as '1' | '2')}
             />
-          </Field>
+          </div>
+          <div className="flex items-center">
+            <span className="w-[110px] flex-none text-right text-ink-3">
+              <span className="mr-0.5 text-danger">*</span>目标版本：
+            </span>
+            <Select
+              className="flex-1"
+              placeholder="请选择目标版本"
+              value={versionTag}
+              options={(versionTagsQuery.data?.list ?? [])
+                .filter((tag) => tag.name !== versionCurrentTag)
+                .map((tag) => ({ value: tag.name, label: tag.name }))}
+              onChange={setVersionTag}
+            />
+          </div>
         </div>
-      </Drawer>
+      </Modal>
 
       <Drawer
         open={!!monitorTarget}
