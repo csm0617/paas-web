@@ -494,8 +494,7 @@ export default function SoftwareListPage() {
   const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
   const [consoleState, setConsoleState] = useState<{
     service: string
-    mode: 'logs' | 'terminal'
-    history?: boolean
+    mode: 'history' | 'logs' | 'terminal'
   } | null>(null)
   const [govOpen, setGovOpen] = useState(false)
   const [govTab, setGovTab] = useState<'auth' | 'gateway'>('auth')
@@ -1649,8 +1648,7 @@ export default function SoftwareListPage() {
                                                 { label: '版本切换', onSelect: () => openImageVersion(service) },
                                                 {
                                                   label: '历史日志',
-                                                  onSelect: () =>
-                                                    setConsoleState({ service: name, mode: 'logs', history: true }),
+                                                  onSelect: () => setConsoleState({ service: name, mode: 'history' }),
                                                 },
                                                 {
                                                   label: '实时日志',
@@ -3316,7 +3314,6 @@ export default function SoftwareListPage() {
           open={!!consoleState}
           serviceName={consoleState?.service || ''}
           initialMode={consoleState?.mode || 'logs'}
-          initialPaused={!!consoleState?.history}
           onClose={() => setConsoleState(null)}
         />
       </Suspense>

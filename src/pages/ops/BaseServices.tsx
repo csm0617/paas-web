@@ -101,8 +101,7 @@ export default function BaseServicesPage() {
   const navigate = useNavigate()
   const [consoleState, setConsoleState] = useState<{
     service: string
-    mode: 'logs' | 'terminal'
-    history?: boolean
+    mode: 'history' | 'logs' | 'terminal'
   } | null>(null)
   const [versionTarget, setVersionTarget] = useState<ServiceItem | null>(null)
   const [versionImage, setVersionImage] = useState('')
@@ -324,7 +323,7 @@ export default function BaseServicesPage() {
                 { label: '版本切换', onSelect: () => openVersion(row) },
                 {
                   label: '历史日志',
-                  onSelect: () => setConsoleState({ service: k8sName(row), mode: 'logs', history: true }),
+                  onSelect: () => setConsoleState({ service: k8sName(row), mode: 'history' }),
                 },
                 { label: '实时日志', onSelect: () => setConsoleState({ service: k8sName(row), mode: 'logs' }) },
                 { label: '终端登录', onSelect: () => setConsoleState({ service: k8sName(row), mode: 'terminal' }) },
@@ -508,7 +507,6 @@ export default function BaseServicesPage() {
           open={!!consoleState}
           serviceName={consoleState?.service || ''}
           initialMode={consoleState?.mode || 'logs'}
-          initialPaused={!!consoleState?.history}
           onClose={() => setConsoleState(null)}
         />
       </Suspense>

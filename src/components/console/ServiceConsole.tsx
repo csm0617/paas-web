@@ -3,9 +3,12 @@ import { FitAddon } from '@xterm/addon-fit'
 import { Terminal } from '@xterm/xterm'
 import {
   ArrowDownToLine,
+  ChevronDown,
+  ChevronUp,
   CirclePause,
   CirclePlay,
   Eraser,
+  History,
   Maximize2,
   Minimize2,
   PlugZap,
@@ -26,7 +29,7 @@ import { cn } from '@/lib/utils'
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) || '/api/gaop'
 
-type ConsoleMode = 'logs' | 'terminal'
+type ConsoleMode = 'history' | 'logs' | 'terminal'
 type ConnState = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
 type SockJsClient = InstanceType<typeof SockJS>
 
@@ -114,7 +117,6 @@ export interface ServiceConsoleProps {
   podOverride?: string
   namespaceOverride?: string
   containerOverride?: string
-  initialPaused?: boolean
 }
 
 export function ServiceConsole({
@@ -125,7 +127,6 @@ export function ServiceConsole({
   podOverride,
   namespaceOverride,
   containerOverride,
-  initialPaused = false,
 }: ServiceConsoleProps) {
   const [mode, setMode] = useState<ConsoleMode>(initialMode)
   const [pod, setPod] = useState('')
@@ -134,7 +135,8 @@ export function ServiceConsole({
   const [reconnectKey, setReconnectKey] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [logText, setLogText] = useState('')
-  const [paused, setPaused] = useState(initialPaused)
+  const [paused, setPaused] = useState(false)
+  const [matchCursor, setMatchCursor] = useState(0)
   const [autoScroll, setAutoScroll] = useState(true)
   const [wrap, setWrap] = useState(true)
   const [keyword, setKeyword] = useState('')
@@ -217,9 +219,10 @@ export function ServiceConsole({
     setConn('idle')
     seedKeyRef.current = ''
     pendingRef.current = ''
-    pausedRef.current = initialPaused
-    setPaused(initialPaused)
-  }, [open, serviceName, initialMode, initialPaused])
+    pausedRef.current = false
+    setPaused(false)
+    setMatchCursor(0)
+  }, [open, serviceName, initialMode])
 
   /* auto-select pod */
   useEffect(() => {
@@ -239,16 +242,16 @@ export function ServiceConsole({
     if (!container || !containers.includes(container)) setContainer(containers[0])
   }, [open, containers, container])
 
-  /* seed historical logs */
+  /* seed historical logs (history view only) */
   useEffect(() => {
-    if (!open || mode !== 'logs' || !pod || !container) return
+    if (!open || mode !== 'history' || !pod || !container) return
     if (podOverride) return
     if (historyQuery.isLoading) return
     const key = `${pod}|${container}`
     if (seedKeyRef.current === key) return
     seedKeyRef.current = key
     setLogText(historyText ? `${historyText}\n` : '')
-  }, [open, mode, pod, container, historyQuery.isLoading, historyText, podOverride])
+  }, [open, mode, pod, container, historyQuery.isLoading, historyQuery.dataUpdatedAt, historyText, podOverride])
 
   useEffect(() => {
     pausedRef.current = paused
@@ -259,7 +262,7 @@ export function ServiceConsole({
     }
   }, [paused])
 
-  /* live logs socket */
+  /* live logs socket (live view only) */
   useEffect(() => {
     if (!open || mode !== 'logs' || !pod || !container) return
     if (historyQuery.isLoading) return
@@ -478,15 +481,36 @@ export function ServiceConsole({
   }, [open, onClose])
 
   const displayLines = useMemo(() => {
+    if (!logText) return [] as string[]
     const lines = logText.split('\n')
     return lines.length > 5000 ? lines.slice(lines.length - 5000) : lines
   }, [logText])
 
-  const matchCount = useMemo(() => {
-    if (!keyword.trim()) return 0
+  const matchedLines = useMemo(() => {
     const value = keyword.trim().toLowerCase()
-    return displayLines.filter((line) => line.toLowerCase().includes(value)).length
+    if (!value) return [] as number[]
+    const result: number[] = []
+    displayLines.forEach((line, index) => {
+      if (line.toLowerCase().includes(value)) result.push(index)
+    })
+    return result
   }, [displayLines, keyword])
+
+  const matchedSet = useMemo(() => new Set(matchedLines), [matchedLines])
+
+  useEffect(() => {
+    setMatchCursor(0)
+  }, [keyword])
+
+  const jumpMatch = (delta: number) => {
+    if (matchedLines.length === 0) return
+    const next = (matchCursor + delta + matchedLines.length) % matchedLines.length
+    setMatchCursor(next)
+    setAutoScroll(false)
+    window.requestAnimationFrame(() => {
+      logRef.current?.querySelector(`[data-line="${matchedLines[next]}"]`)?.scrollIntoView({ block: 'center' })
+    })
+  }
 
   if (!open) return null
 
@@ -500,7 +524,27 @@ export function ServiceConsole({
   const clearLogs = () => {
     setLogText('')
     pendingRef.current = ''
-    seedKeyRef.current = `${pod}|${container}`
+    seedKeyRef.current = mode === 'history' ? `${pod}|${container}` : ''
+  }
+
+  const switchMode = (next: ConsoleMode) => {
+    if (next === mode) return
+    setMode(next)
+    setError(null)
+    if (next === 'logs') {
+      setLogText('')
+      pendingRef.current = ''
+      pausedRef.current = false
+      setPaused(false)
+    }
+    if (next === 'history') {
+      seedKeyRef.current = ''
+    }
+  }
+
+  const refreshHistory = () => {
+    seedKeyRef.current = ''
+    historyQuery.refetch()
   }
 
   const downloadLogs = () => {
@@ -530,7 +574,9 @@ export function ServiceConsole({
             <SquareTerminal size={15} />
           </div>
           <div className="min-w-0">
-            <div className="font-mono text-[12px] tracking-[0.24em] text-[#68716f]">CONTAINER CONSOLE / SOCKJS</div>
+            <div className="font-mono text-[12px] tracking-[0.24em] text-[#68716f]">
+              CONTAINER CONSOLE / {mode === 'history' ? 'HISTORY' : mode === 'logs' ? 'SOCKJS' : 'SHELL'}
+            </div>
             <div className="flex items-baseline gap-2">
               <span className="truncate text-[14px] font-medium text-[#ece7db]">{serviceName}</span>
               <span className="mono truncate text-[12px] text-[#7f8987]">
@@ -542,13 +588,14 @@ export function ServiceConsole({
           <div className="ml-3 flex h-8 border border-[#343c41]">
             {(
               [
+                { value: 'history', label: '历史日志', icon: <History size={11} /> },
                 { value: 'logs', label: '实时日志', icon: <ScrollText size={11} /> },
                 { value: 'terminal', label: '容器终端', icon: <SquareTerminal size={11} /> },
               ] as const
             ).map((item) => (
               <button
                 key={item.value}
-                onClick={() => setMode(item.value)}
+                onClick={() => switchMode(item.value)}
                 className={cn(
                   'flex items-center gap-1.5 px-3 font-mono text-[12px] tracking-[0.12em] transition-colors',
                   mode === item.value
@@ -563,16 +610,25 @@ export function ServiceConsole({
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <div className="flex h-8 items-center gap-2 border border-[#343c41] px-2.5">
-              <StateDot state={conn} />
-              <span className="font-mono text-[12px] tracking-[0.14em] text-[#aab1b0]">{stateLabel[conn]}</span>
-            </div>
+            {mode === 'history' ? (
+              <div className="flex h-8 items-center gap-2 border border-[#343c41] px-2.5">
+                <StateDot state={historyQuery.isLoading ? 'connecting' : 'open'} />
+                <span className="font-mono text-[12px] tracking-[0.14em] text-[#aab1b0]">
+                  {historyQuery.isLoading ? '读取历史' : `历史记录 · ${formatNumber(displayLines.length, 0)} 行`}
+                </span>
+              </div>
+            ) : (
+              <div className="flex h-8 items-center gap-2 border border-[#343c41] px-2.5">
+                <StateDot state={conn} />
+                <span className="font-mono text-[12px] tracking-[0.14em] text-[#aab1b0]">{stateLabel[conn]}</span>
+              </div>
+            )}
             <button
-              onClick={reconnect}
+              onClick={mode === 'history' ? refreshHistory : reconnect}
               className="flex h-8 w-8 items-center justify-center border border-[#343c41] text-[#8b9492] transition-colors hover:border-[#59656b] hover:text-[#e7e2d5]"
-              title="重新连接"
+              title={mode === 'history' ? '刷新历史日志' : '重新连接'}
             >
-              <RotateCw size={13} />
+              <RotateCw size={13} className={mode === 'history' && historyQuery.isFetching ? 'animate-spin' : undefined} />
             </button>
             <button
               onClick={() => setMaximized((value) => !value)}
@@ -616,48 +672,75 @@ export function ServiceConsole({
           <div className="hidden h-5 w-px bg-[#2b3236] sm:block" />
           <span className="hidden font-mono text-[12px] tracking-[0.14em] text-[#68716f] sm:inline">NS / {namespace}</span>
 
-          {mode === 'logs' && (
+          {(mode === 'history' || mode === 'logs') && (
             <>
               <div className="relative ml-auto">
                 <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-[#6b7472]" />
                 <input
                   value={keyword}
                   onChange={(event) => setKeyword(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter') return
+                    event.preventDefault()
+                    jumpMatch(event.shiftKey ? -1 : 1)
+                  }}
                   placeholder="检索日志"
-                  className="h-8 w-[180px] border border-[#343c41] bg-[#1a1f23] pl-7 pr-14 font-mono text-[12px] text-[#d5d9d8] outline-none transition-colors placeholder:text-[#5e6765] focus:border-[#d8401d]"
+                  className="h-8 w-[210px] border border-[#343c41] bg-[#1a1f23] pl-7 pr-[84px] font-mono text-[12px] text-[#d5d9d8] outline-none transition-colors placeholder:text-[#5e6765] focus:border-[#d8401d]"
                 />
                 {keyword && (
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[12px] text-[#7f8987]">
-                    {matchCount} 行
-                  </span>
+                  <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+                    <span className="mr-1 font-mono text-[12px] text-[#7f8987]">
+                      {matchedLines.length ? matchCursor + 1 : 0}/{matchedLines.length}
+                    </span>
+                    <button
+                      onClick={() => jumpMatch(-1)}
+                      disabled={matchedLines.length === 0}
+                      className="flex h-5 w-5 items-center justify-center text-[#7f8987] transition-colors hover:text-[#e7e2d5] disabled:opacity-40 disabled:hover:text-[#7f8987]"
+                      title="上一个匹配"
+                    >
+                      <ChevronUp size={12} />
+                    </button>
+                    <button
+                      onClick={() => jumpMatch(1)}
+                      disabled={matchedLines.length === 0}
+                      className="flex h-5 w-5 items-center justify-center text-[#7f8987] transition-colors hover:text-[#e7e2d5] disabled:opacity-40 disabled:hover:text-[#7f8987]"
+                      title="下一个匹配"
+                    >
+                      <ChevronDown size={12} />
+                    </button>
+                  </div>
                 )}
               </div>
-              <Tip content={paused ? '继续接收日志' : '暂停接收日志'}>
-                <button
-                  onClick={() => setPaused((value) => !value)}
-                  className={cn(
-                    'flex h-8 w-8 items-center justify-center border transition-colors',
-                    paused
-                      ? 'border-warn/60 bg-warn/15 text-[#e0b04a]'
-                      : 'border-[#343c41] text-[#8b9492] hover:border-[#59656b] hover:text-[#e7e2d5]',
-                  )}
-                >
-                  {paused ? <CirclePlay size={13} /> : <CirclePause size={13} />}
-                </button>
-              </Tip>
-              <Tip content={autoScroll ? '关闭自动滚动' : '开启自动滚动'}>
-                <button
-                  onClick={() => setAutoScroll((value) => !value)}
-                  className={cn(
-                    'flex h-8 w-8 items-center justify-center border transition-colors',
-                    autoScroll
-                      ? 'border-[#59656b] text-[#e7e2d5]'
-                      : 'border-[#343c41] text-[#8b9492] hover:border-[#59656b] hover:text-[#e7e2d5]',
-                  )}
-                >
-                  <ArrowDownToLine size={12} />
-                </button>
-              </Tip>
+              {mode === 'logs' && (
+                <>
+                  <Tip content={paused ? '继续接收日志' : '暂停接收日志'}>
+                    <button
+                      onClick={() => setPaused((value) => !value)}
+                      className={cn(
+                        'flex h-8 w-8 items-center justify-center border transition-colors',
+                        paused
+                          ? 'border-warn/60 bg-warn/15 text-[#e0b04a]'
+                          : 'border-[#343c41] text-[#8b9492] hover:border-[#59656b] hover:text-[#e7e2d5]',
+                      )}
+                    >
+                      {paused ? <CirclePlay size={13} /> : <CirclePause size={13} />}
+                    </button>
+                  </Tip>
+                  <Tip content={autoScroll ? '关闭自动滚动' : '开启自动滚动'}>
+                    <button
+                      onClick={() => setAutoScroll((value) => !value)}
+                      className={cn(
+                        'flex h-8 w-8 items-center justify-center border transition-colors',
+                        autoScroll
+                          ? 'border-[#59656b] text-[#e7e2d5]'
+                          : 'border-[#343c41] text-[#8b9492] hover:border-[#59656b] hover:text-[#e7e2d5]',
+                      )}
+                    >
+                      <ArrowDownToLine size={12} />
+                    </button>
+                  </Tip>
+                </>
+              )}
               <Tip content={wrap ? '关闭自动换行' : '开启自动换行'}>
                 <button
                   onClick={() => setWrap((value) => !value)}
@@ -702,7 +785,7 @@ export function ServiceConsole({
 
         {/* body */}
         <div className="relative flex min-h-0 flex-1 flex-col bg-[#0d1012]">
-          {mode === 'logs' ? (
+          {mode !== 'terminal' ? (
             <>
               <div
                 ref={logRef}
@@ -714,13 +797,16 @@ export function ServiceConsole({
                 {displayLines.map((line, index) => {
                   const trimmed = line.trim()
                   if (!trimmed) return <div key={index} className="h-2" />
-                  const matched = keyword && line.toLowerCase().includes(keyword.trim().toLowerCase())
+                  const matched = matchedSet.has(index)
+                  const active = matched && matchedLines[matchCursor] === index
                   return (
                     <div
                       key={index}
+                      data-line={index}
                       className={cn(
                         'whitespace-pre-wrap break-all border-l-2 border-transparent pl-2',
                         matched && 'border-signal/70 bg-signal/[0.06]',
+                        active && 'bg-signal/[0.18]',
                       )}
                     >
                       <span className="mr-4 inline-block w-10 select-none text-right text-[12px] text-[#4d5655]">
@@ -734,18 +820,28 @@ export function ServiceConsole({
                   <div className="flex h-full flex-col items-center justify-center gap-2 text-[#68716f]">
                     <ScrollText size={22} strokeWidth={1.2} />
                     <span className="font-mono text-[12px] tracking-[0.16em]">
-                      {podsQuery.isLoading || historyQuery.isLoading ? 'LOADING LOG STREAM…' : 'NO LOG OUTPUT'}
+                      {mode === 'history'
+                        ? historyQuery.isLoading
+                          ? 'LOADING HISTORY…'
+                          : 'NO HISTORY LOG'
+                        : podsQuery.isLoading || historyQuery.isLoading
+                          ? 'LOADING LOG STREAM…'
+                          : 'NO LOG OUTPUT'}
                     </span>
-                    <span className="text-[12px]">等待容器日志输出，或检查 Pod 是否正在运行。</span>
+                    <span className="text-[12px]">
+                      {mode === 'history'
+                        ? '当前 Pod / 容器没有可展示的历史日志。'
+                        : '等待容器日志输出，或检查 Pod 是否正在运行。'}
+                    </span>
                   </div>
                 )}
-                {paused && (
+                {paused && mode === 'logs' && (
                   <div className="sticky bottom-2 ml-auto w-fit border border-warn/50 bg-[#241b0b] px-2 py-1 font-mono text-[12px] tracking-widest text-[#e0b04a]">
                     STREAM PAUSED · {formatNumber(pendingRef.current.length, 0)} BYTES BUFFERED
                   </div>
                 )}
               </div>
-              {error && (
+              {error && mode === 'logs' && (
                 <div className="flex flex-none items-center gap-2 border-t border-signal/30 bg-signal/[0.08] px-4 py-1.5">
                   <PlugZap size={11} className="text-signal" />
                   <span className="text-[12px] text-[#e7b1a4]">{error}</span>
@@ -781,14 +877,18 @@ export function ServiceConsole({
         <footer className="flex h-7 flex-none items-center gap-3 border-t border-[#262d31] bg-[#14181b] px-4 font-mono text-[12px] tracking-[0.14em] text-[#5f6967]">
           <span className="flex items-center gap-1.5">
             <span className="h-1 w-1 bg-signal" />
-            {mode === 'logs' ? 'SOCKJS /api/gaop/logs' : 'SOCKJS /api/gaop/exec'}
+            {mode === 'history'
+              ? 'HISTORY /api/gaop/v1/service/logs'
+              : mode === 'logs'
+                ? 'SOCKJS /api/gaop/logs'
+                : 'SOCKJS /api/gaop/exec'}
           </span>
           <span className="hidden sm:inline">POD / {pod || '—'}</span>
           <span className="hidden sm:inline">NS / {namespace}</span>
-          {mode === 'logs' && <span>{formatNumber(displayLines.length, 0)} LINES</span>}
+          {mode !== 'terminal' && <span>{formatNumber(displayLines.length, 0)} LINES</span>}
           {mode === 'terminal' && <span>TTY / {EXEC_COLS}×{EXEC_ROWS}</span>}
           <span className="ml-auto flex items-center gap-2">
-            <span>{error ? 'CHECK CONNECTION' : 'SECURE CHANNEL'}</span>
+            <span>{error && mode === 'logs' ? 'CHECK CONNECTION' : 'SECURE CHANNEL'}</span>
             <span className="hidden md:inline">ESC 关闭</span>
           </span>
         </footer>

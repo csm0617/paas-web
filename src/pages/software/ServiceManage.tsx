@@ -342,8 +342,7 @@ export default function ServiceManagePage() {
   const [scaleValue, setScaleValue] = useState(1)
   const [consoleState, setConsoleState] = useState<{
     service: string
-    mode: 'logs' | 'terminal'
-    history?: boolean
+    mode: 'history' | 'logs' | 'terminal'
   } | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm, setCreateForm] = useState<CreateFormState>(emptyCreateForm)
@@ -844,7 +843,7 @@ export default function ServiceManagePage() {
                 { label: '版本切换', onSelect: () => openVersion(row) },
                 {
                   label: '历史日志',
-                  onSelect: () => setConsoleState({ service: serviceName(row), mode: 'logs', history: true }),
+                  onSelect: () => setConsoleState({ service: serviceName(row), mode: 'history' }),
                 },
                 { label: '实时日志', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'logs' }) },
                 { label: '终端登录', onSelect: () => setConsoleState({ service: serviceName(row), mode: 'terminal' }) },
@@ -1815,7 +1814,6 @@ export default function ServiceManagePage() {
           open={!!consoleState}
           serviceName={consoleState?.service || ''}
           initialMode={consoleState?.mode || 'logs'}
-          initialPaused={!!consoleState?.history}
           onClose={() => setConsoleState(null)}
         />
       </Suspense>
