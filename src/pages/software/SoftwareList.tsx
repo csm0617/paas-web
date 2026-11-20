@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, ArrowDown, ArrowUp, Check, ChevronDown, ChevronsUpDown, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Play, Plus, RefreshCw, Save, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
+import { AppWindow, ArrowDown, ArrowUp, Check, ChevronDown, ChevronsUpDown, CircleCheck, CircleX, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Play, Plus, RefreshCw, Save, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -31,6 +31,22 @@ import { AreaTrend } from '@/components/charts'
 const ServiceConsole = lazy(() =>
   import('@/components/console/ServiceConsole').then((module) => ({ default: module.ServiceConsole })),
 )
+
+interface ServiceEventItem {
+  reason?: string
+  message?: string
+  lastTimestamp?: string
+}
+
+const OK_EVENT_REASONS = [
+  'Created',
+  'Started',
+  'Pulling',
+  'Pulled',
+  'SuccessfulCreate',
+  'Scheduled',
+  'SuccessfulDelete',
+]
 
 interface MonitorPoint {
   timestamp?: string
@@ -469,6 +485,7 @@ export default function SoftwareListPage() {
   const [versionTag, setVersionTag] = useState('')
   const [versionCurrentTag, setVersionCurrentTag] = useState('')
   const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
+  const [eventTarget, setEventTarget] = useState('')
   const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
   const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
   const [consoleState, setConsoleState] = useState<{
@@ -916,6 +933,12 @@ export default function SoftwareListPage() {
         timeType: monitorRange,
       }),
     enabled: !!monitorTarget,
+  })
+
+  const serviceEventsQuery = useQuery({
+    queryKey: ['service-events', eventTarget],
+    queryFn: () => api.get<ServiceEventItem[]>('/v1/service/event', { name: eventTarget }),
+    enabled: !!eventTarget,
   })
 
   const versionTagsQuery = useQuery({
@@ -1515,7 +1538,19 @@ export default function SoftwareListPage() {
                                           <div className="leading-[1.5715]">
                                             <div className={cn('flex items-center justify-center gap-1 text-[14px]', status.tone)}>
                                               {status.text}
-                                              <Info size={12} />
+                                              <Tip content="点击查看服务详细事件">
+                                                <button
+                                                  type="button"
+                                                  aria-label="查看服务详细事件"
+                                                  className="inline-flex flex-none cursor-pointer items-center transition-colors hover:text-signal"
+                                                  onClick={(event) => {
+                                                    event.stopPropagation()
+                                                    setEventTarget(name)
+                                                  }}
+                                                >
+                                                  <Info size={12} />
+                                                </button>
+                                              </Tip>
                                             </div>
                                             <div className="text-[14px] text-ink">
                                               {status.ready}/{status.desired}
@@ -3093,6 +3128,46 @@ export default function SoftwareListPage() {
               onChange={setVersionTag}
             />
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!eventTarget}
+        onOpenChange={(open) => !open && setEventTarget('')}
+        title={`${eventTarget} 事件`}
+        width={1000}
+      >
+        <div className="max-h-[600px] overflow-auto px-1">
+          {serviceEventsQuery.isLoading ? (
+            <div className="py-16 text-center text-[14px] text-mute">加载中…</div>
+          ) : (serviceEventsQuery.data ?? []).length === 0 ? (
+            <div className="py-16 text-center text-[14px] text-mute">暂无事件</div>
+          ) : (
+            <div className="relative space-y-4 pl-5 before:absolute before:bottom-2 before:left-[5px] before:top-2 before:w-px before:bg-line">
+              {(serviceEventsQuery.data ?? []).map((event, index) => {
+                const ok = OK_EVENT_REASONS.includes(event.reason ?? '')
+                return (
+                  <div key={index} className="relative flex items-start gap-3 text-[14px]">
+                    <span className="absolute -left-5 top-[3px] bg-paper-2">
+                      {ok ? (
+                        <CircleCheck size={12} className="text-ok" />
+                      ) : (
+                        <CircleX size={12} className="text-danger" />
+                      )}
+                    </span>
+                    <span className={cn('w-[120px] flex-none', ok ? 'text-ok' : 'text-danger')}>
+                      {event.reason || '—'}
+                    </span>
+                    <span className="flex-none text-ink-3">消息：</span>
+                    <span className="min-w-0 flex-1 text-ink">{event.message || '—'}</span>
+                    <span className="mono flex-none text-[12px] text-mute">
+                      {event.lastTimestamp ? formatDate(event.lastTimestamp, true) : '--'}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </Modal>
 
