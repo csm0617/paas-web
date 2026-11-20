@@ -281,13 +281,10 @@ export default function BaseServicesPage() {
   const combined = monitorMode === '1'
   const cpuSeries = combined
     ? [{ name: 'CPU', points: sumTrend(monitorQuery.data?.cpu, 1000) }]
-    : monitorTrend(monitorQuery.data?.cpu, 1000, monitorPod).map((series) => ({ ...series, name: 'CPU' }))
+    : monitorTrend(monitorQuery.data?.cpu, 1000, monitorPod)
   const memorySeries = combined
     ? [{ name: '内存', points: sumTrend(monitorQuery.data?.memory, 1 / 1024 / 1024) }]
-    : monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024, monitorPod).map((series) => ({
-        ...series,
-        name: '内存',
-      }))
+    : monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024, monitorPod)
   const networkSeries = combined
     ? [
         { name: '网络-入站', points: sumTrend(monitorQuery.data?.inboundNetwork, 1 / 1024) },
@@ -296,11 +293,11 @@ export default function BaseServicesPage() {
     : [
         ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024, monitorPod).map((series) => ({
           ...series,
-          name: '网络-入站',
+          name: `${series.name}-入站`,
         })),
         ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024, monitorPod).map((series) => ({
           ...series,
-          name: '网络-出站',
+          name: `${series.name}-出站`,
         })),
       ]
   const diskSeries = combined
@@ -311,11 +308,11 @@ export default function BaseServicesPage() {
     : [
         ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024, monitorPod).map((series) => ({
           ...series,
-          name: '磁盘-读',
+          name: `${series.name}-读`,
         })),
         ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024, monitorPod).map((series) => ({
           ...series,
-          name: '磁盘-写',
+          name: `${series.name}-写`,
         })),
       ]
 
