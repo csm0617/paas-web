@@ -65,7 +65,7 @@ function thresholdLines(item: HpaItem) {
       ?.averageUtilization
     const label = name === 'memory' ? '内存' : 'CPU'
     const target = metric.resource?.target?.averageUtilization
-    return `${label}：${value != null ? `${value}%` : '--'} / ${target != null ? `${target}%` : '--'}`
+    return `${label}: ${value != null ? `${value}%` : '--'} / ${target != null ? `${target}%` : '--'}`
   })
 }
 
@@ -254,7 +254,7 @@ export default function AutoscalePage() {
       header: '序号',
       width: 80,
       align: 'center',
-      cell: (_row, index) => <span className="mono text-[12px] text-ink-3">{index + 1}</span>,
+      cell: (_row, index) => <span className="text-[14px] text-ink">{index + 1}</span>,
     },
     {
       key: 'name',
@@ -267,20 +267,20 @@ export default function AutoscalePage() {
       header: '服务标识',
       align: 'center',
       cell: (row) => (
-        <span className="mono text-[12px] text-ink-3">
+        <span className="text-[14px] text-ink">
           {(row.spec?.scaleTargetRef?.name || '').replace('-disabled', '') || '—'}
         </span>
       ),
     },
     {
       key: 'enabled',
-      header: '启用状态',
+      header: '开启状态',
       align: 'center',
       cell: (row) =>
         isDisabled(row) ? (
-          <span className="text-[14px] text-danger">禁用</span>
+          <span className="text-[14px] text-danger">已禁用</span>
         ) : (
-          <span className="text-[14px] text-ok">启用</span>
+          <span className="text-[14px] text-ok">已启用</span>
         ),
     },
     {
@@ -328,13 +328,13 @@ export default function AutoscalePage() {
             className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
             onClick={() => setEventsTarget(row)}
           >
-            缩容事件
+            伸缩事件
           </button>
           <button
             className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
             onClick={() => openEdit(row)}
           >
-            修改
+            编辑
           </button>
           <ActionMenu
             triggerText="更多"
@@ -380,6 +380,7 @@ export default function AutoscalePage() {
           rowKey={(row) => row.metadata?.name || targetOf(row)}
           loading={hpaQuery.isLoading}
           pageSize={12}
+          rowHeight={77}
           emptyTitle="暂无伸缩策略"
           emptyDescription="为关键服务创建基于 CPU 的伸缩策略，以应对流量波峰。"
         />
@@ -550,7 +551,7 @@ export default function AutoscalePage() {
       <Modal
         open={!!eventsTarget}
         onOpenChange={(open) => !open && setEventsTarget(null)}
-        title={`${eventsTarget?.metadata?.name || ''} 缩容事件`}
+        title={`${eventsTarget?.metadata?.name || ''} 伸缩事件`}
         width={1000}
         footer={
           <Button size="sm" onClick={() => setEventsTarget(null)}>
