@@ -15,6 +15,8 @@ const ServiceConsole = lazy(() =>
   import('@/components/console/ServiceConsole').then((module) => ({ default: module.ServiceConsole })),
 )
 
+const ServiceConfigPanel = lazy(() => import('@/pages/software/ServiceConfigPage'))
+
 const BASE_TYPE = 1
 
 interface MonitorPoint {
@@ -108,6 +110,7 @@ export default function BaseServicesPage() {
   const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
   const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
   const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
+  const [configTarget, setConfigTarget] = useState<ServiceItem | null>(null)
 
   const query = useQuery({
     queryKey: ['base-services'],
@@ -291,11 +294,7 @@ export default function BaseServicesPage() {
           <div className="flex items-center justify-center gap-2.5 text-[14px]">
             <button
               className="text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-              onClick={() =>
-                navigate(
-                  `/software/application/service-params?service=${encodeURIComponent(k8sName(row))}&from=base-service`,
-                )
-              }
+              onClick={() => setConfigTarget(row)}
             >
               配置
             </button>
@@ -497,6 +496,12 @@ export default function BaseServicesPage() {
           <Activity size={11} /> 指标来自 Prometheus，采样间隔约 1 分钟。
         </div>
       </Drawer>
+
+      {configTarget && (
+        <Suspense fallback={null}>
+          <ServiceConfigPanel service={k8sName(configTarget)} onClose={() => setConfigTarget(null)} />
+        </Suspense>
+      )}
 
       <Suspense fallback={null}>
         <ServiceConsole
