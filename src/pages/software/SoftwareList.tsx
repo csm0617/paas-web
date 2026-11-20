@@ -27,6 +27,7 @@ import {
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { AreaTrend } from '@/components/charts'
+import { DateTimeRangePicker } from '@/components/DateTimeRangePicker'
 
 const ServiceConsole = lazy(() =>
   import('@/components/console/ServiceConsole').then((module) => ({ default: module.ServiceConsole })),
@@ -3398,21 +3399,15 @@ export default function SoftwareListPage() {
           ))}
         </div>
         {monitorCustom && (
-          <div className="mb-4 flex items-center gap-2 text-[14px] text-ink-3">
-            <input
-              type="datetime-local"
-              step={1}
-              className="field h-8 w-[210px]"
-              value={monitorStart}
-              onChange={(event) => setMonitorStart(event.target.value)}
-            />
-            <span>至</span>
-            <input
-              type="datetime-local"
-              step={1}
-              className="field h-8 w-[210px]"
-              value={monitorEnd}
-              onChange={(event) => setMonitorEnd(event.target.value)}
+          <div className="mb-4">
+            <DateTimeRangePicker
+              start={monitorStart}
+              end={monitorEnd}
+              className="w-[380px]"
+              onChange={(start, end) => {
+                setMonitorStart(start)
+                setMonitorEnd(end)
+              }}
             />
           </div>
         )}

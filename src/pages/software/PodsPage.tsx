@@ -6,6 +6,7 @@ import { api, API_BASE, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { DataTable, type Column } from '@/components/DataTable'
 import { AreaTrend } from '@/components/charts'
+import { DateTimeRangePicker } from '@/components/DateTimeRangePicker'
 import { ActionMenu, Button, Modal, PageToolbar, Panel, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
@@ -595,21 +596,15 @@ export default function PodsPage() {
                   ))}
                 </div>
                 {customRange && (
-                  <div className="mb-4 flex items-center gap-2 text-[14px] text-ink-3">
-                    <input
-                      type="datetime-local"
-                      step={1}
-                      className="field h-8 w-[210px]"
-                      value={rangeStart}
-                      onChange={(event) => setRangeStart(event.target.value)}
-                    />
-                    <span>至</span>
-                    <input
-                      type="datetime-local"
-                      step={1}
-                      className="field h-8 w-[210px]"
-                      value={rangeEnd}
-                      onChange={(event) => setRangeEnd(event.target.value)}
+                  <div className="mb-4">
+                    <DateTimeRangePicker
+                      start={rangeStart}
+                      end={rangeEnd}
+                      className="w-[380px]"
+                      onChange={(start, end) => {
+                        setRangeStart(start)
+                        setRangeEnd(end)
+                      }}
                     />
                   </div>
                 )}
