@@ -63,6 +63,16 @@ function statusOf(service: ServiceItem) {
   return { label: 'STOPPED', tone: 'default' as const, ready, desired }
 }
 
+const MONITOR_RANGES = [
+  { key: 'ONE_HOURS', label: '最近1小时' },
+  { key: 'SIX_HOURS', label: '最近6小时' },
+  { key: 'TWENTY_FOUR_HOURS', label: '最近24小时' },
+  { key: 'SEVEN_DAY', label: '最近7天' },
+  { key: 'THIRTY_DAY', label: '最近30天' },
+] as const
+
+type MonitorRange = (typeof MONITOR_RANGES)[number]['key']
+
 interface ServiceEventItem {
   reason?: string
   message?: string
@@ -107,7 +117,14 @@ function repoPath(image: string) {
 }
 
 function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
-  return (list ?? []).slice(0, 4).map((series, index) => ({
+  const seen = new Set<string>()
+  const unique = (list ?? []).filter((series) => {
+    if (!series.podName) return true
+    if (seen.has(series.podName)) return false
+    seen.add(series.podName)
+    return true
+  })
+  return unique.slice(0, 4).map((series, index) => ({
     name: series.podName || `SERIES ${index + 1}`,
     points: (series.metrics ?? [])
       .filter((point) => point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)))
@@ -331,7 +348,10 @@ export default function ServiceManagePage() {
   const [scaleTarget, setScaleTarget] = useState<ServiceItem | null>(null)
   const [restartTarget, setRestartTarget] = useState<ServiceItem | null>(null)
   const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
-  const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
+  const [monitorRange, setMonitorRange] = useState<MonitorRange>('ONE_HOURS')
+  const [monitorCustom, setMonitorCustom] = useState(false)
+  const [monitorStart, setMonitorStart] = useState('')
+  const [monitorEnd, setMonitorEnd] = useState('')
   const [versionTarget, setVersionTarget] = useState<ServiceItem | null>(null)
   const [versionImage, setVersionImage] = useState('')
   const [versionTag, setVersionTag] = useState('')
@@ -372,15 +392,30 @@ export default function ServiceManagePage() {
   })
 
   const monitorQuery = useQuery({
-    queryKey: ['service-monitor', monitorTarget ? serviceName(monitorTarget) : '', monitorRange],
+    queryKey: [
+      'service-monitor',
+      monitorTarget ? serviceName(monitorTarget) : '',
+      monitorCustom ? `${monitorStart}~${monitorEnd}` : monitorRange,
+    ],
     queryFn: () =>
-      api.get<MonitorData>('/v1/pub/serviceMonitor', {
-        namespace: monitorTarget?.service?.metadata?.namespace || 'gaop-namespace',
-        name: monitorTarget ? serviceName(monitorTarget) : '',
-        queryTimeType: true,
-        timeType: monitorRange,
-      }),
-    enabled: !!monitorTarget,
+      api.get<MonitorData>(
+        '/v1/pub/serviceMonitor',
+        monitorCustom
+          ? {
+              namespace: monitorTarget?.service?.metadata?.namespace || 'gaop-namespace',
+              name: monitorTarget ? serviceName(monitorTarget) : '',
+              queryTimeType: false,
+              start: monitorStart ? new Date(monitorStart).toISOString() : undefined,
+              end: monitorEnd ? new Date(monitorEnd).toISOString() : undefined,
+            }
+          : {
+              namespace: monitorTarget?.service?.metadata?.namespace || 'gaop-namespace',
+              name: monitorTarget ? serviceName(monitorTarget) : '',
+              queryTimeType: true,
+              timeType: monitorRange,
+            },
+      ),
+    enabled: !!monitorTarget && (!monitorCustom || (!!monitorStart && !!monitorEnd)),
   })
 
   const versionTagsQuery = useQuery({
@@ -1736,24 +1771,57 @@ export default function ServiceManagePage() {
           </Button>
         }
       >
-        <div className="mb-4 flex w-fit border border-line">
-          {[
-            { key: 'ONE_HOURS' as const, label: '最近1小时' },
-            { key: 'SIX_HOURS' as const, label: '最近6小时' },
-          ].map((item) => (
+        <div className="mb-4 flex flex-wrap items-center">
+          <button
+            onClick={() => setMonitorCustom(true)}
+            className={cn(
+              'inline-flex h-7 items-center border px-3 text-[14px] transition-colors',
+              monitorCustom ? 'border-signal bg-[#1670c2] text-white' : 'border-[#2f6fa8] text-ink-3 hover:text-ink',
+            )}
+          >
+            自定义日期
+          </button>
+          {MONITOR_RANGES.map((item) => (
             <button
               key={item.key}
-              onClick={() => setMonitorRange(item.key)}
+              onClick={() => {
+                setMonitorCustom(false)
+                setMonitorRange(item.key)
+              }}
               className={cn(
-                'mono px-3 py-1.5 text-[12px] tracking-widest transition-colors',
-                monitorRange === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
+                '-ml-px inline-flex h-7 items-center border px-3 text-[14px] transition-colors',
+                !monitorCustom && monitorRange === item.key
+                  ? 'border-signal bg-[#1670c2] text-white'
+                  : 'border-[#2f6fa8] text-ink-3 hover:text-ink',
               )}
             >
               {item.label}
             </button>
           ))}
         </div>
-        {monitorQuery.isLoading ? (
+        {monitorCustom && (
+          <div className="mb-4 flex items-center gap-2 text-[14px] text-ink-3">
+            <input
+              type="datetime-local"
+              step={1}
+              className="field h-8 w-[210px]"
+              value={monitorStart}
+              onChange={(event) => setMonitorStart(event.target.value)}
+            />
+            <span>至</span>
+            <input
+              type="datetime-local"
+              step={1}
+              className="field h-8 w-[210px]"
+              value={monitorEnd}
+              onChange={(event) => setMonitorEnd(event.target.value)}
+            />
+          </div>
+        )}
+        <div className="mb-3 text-[14px] text-ink-3">时间间隔：1 分钟</div>
+        {monitorCustom && (!monitorStart || !monitorEnd) ? (
+          <div className="py-10 text-center text-[12px] text-mute">请选择起止时间</div>
+        ) : monitorQuery.isLoading ? (
           <div className="py-10 text-center text-[12px] text-mute">正在采集服务指标…</div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
