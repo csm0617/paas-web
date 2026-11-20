@@ -265,7 +265,6 @@ export function ServiceConsole({
   /* live logs socket (live view only) */
   useEffect(() => {
     if (!open || mode !== 'logs' || !pod || !container) return
-    if (historyQuery.isLoading) return
     setError(null)
     setConn('connecting')
     let socket: SockJsClient | null = null
@@ -286,8 +285,12 @@ export function ServiceConsole({
         setConn('open')
         setError(null)
       }
-      socket.onmessage = (event: MessageEvent) => {
-        const chunk = typeof event.data === 'string' ? stripAnsi(event.data) : ''
+      socket.onmessage = async (event: MessageEvent) => {
+        let raw: unknown = event.data
+        if (raw instanceof Blob) raw = await raw.text()
+        else if (raw instanceof ArrayBuffer) raw = new TextDecoder().decode(raw)
+        if (disposed) return
+        const chunk = typeof raw === 'string' ? stripAnsi(raw) : ''
         if (!chunk) return
         if (pausedRef.current) {
           pendingRef.current = appendCapped(pendingRef.current, chunk)
@@ -564,8 +567,8 @@ export function ServiceConsole({
     <div className="fixed inset-0 z-[95] flex bg-[#090b0d]/80 backdrop-blur-[3px]" role="dialog" aria-modal="true">
       <div
         className={cn(
-          'mx-auto flex h-full w-full flex-col border border-[#2b3236] bg-[#101417] shadow-[0_30px_80px_rgba(0,0,0,0.55)]',
-          maximized ? 'max-w-none' : 'max-w-[1560px] lg:my-4 lg:h-[calc(100%-32px)]',
+          'mx-auto flex w-full flex-col border border-[#2b3236] bg-[#101417] shadow-[0_30px_80px_rgba(0,0,0,0.55)]',
+          maximized ? 'h-full max-w-none' : 'my-auto h-[calc(100%-32px)] max-w-[1100px] lg:h-[78vh]',
         )}
       >
         {/* header */}
@@ -632,8 +635,8 @@ export function ServiceConsole({
             </button>
             <button
               onClick={() => setMaximized((value) => !value)}
-              className="hidden h-8 w-8 items-center justify-center border border-[#343c41] text-[#8b9492] transition-colors hover:border-[#59656b] hover:text-[#e7e2d5] lg:flex"
-              title={maximized ? '还原' : '最大化'}
+              className="flex h-8 w-8 items-center justify-center border border-[#343c41] text-[#8b9492] transition-colors hover:border-[#59656b] hover:text-[#e7e2d5]"
+              title={maximized ? '退出全屏' : '全屏'}
             >
               {maximized ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>
@@ -824,14 +827,18 @@ export function ServiceConsole({
                         ? historyQuery.isLoading
                           ? 'LOADING HISTORY…'
                           : 'NO HISTORY LOG'
-                        : podsQuery.isLoading || historyQuery.isLoading
+                        : podsQuery.isLoading
                           ? 'LOADING LOG STREAM…'
-                          : 'NO LOG OUTPUT'}
+                          : conn === 'open'
+                            ? 'WAITING FOR LOG PUSH…'
+                            : 'NO LOG OUTPUT'}
                     </span>
                     <span className="text-[12px]">
                       {mode === 'history'
                         ? '当前 Pod / 容器没有可展示的历史日志。'
-                        : '等待容器日志输出，或检查 Pod 是否正在运行。'}
+                        : conn === 'open'
+                          ? '已连接日志流，等待后端推送新的日志。'
+                          : '等待容器日志输出，或检查 Pod 是否正在运行。'}
                     </span>
                   </div>
                 )}
