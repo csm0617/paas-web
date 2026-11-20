@@ -743,7 +743,23 @@ export default function ServiceManagePage() {
             </div>
             <div className="flex items-center justify-center gap-1 text-[14px] text-ink">
               已重启 {row.restartCount ?? 0} 次
-              <Info size={12} />
+              <Tip
+                content={
+                  (row.restartCount ?? 0) > 0 ? '点击查看服务最近重启记录' : '服务最近没有重启'
+                }
+              >
+                <button
+                  type="button"
+                  aria-label="查看服务重启记录"
+                  className="inline-flex flex-none cursor-pointer items-center transition-colors hover:text-signal"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setRestartTarget(row)
+                  }}
+                >
+                  <Info size={12} />
+                </button>
+              </Tip>
             </div>
           </div>
         )

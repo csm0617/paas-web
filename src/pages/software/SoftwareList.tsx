@@ -486,6 +486,7 @@ export default function SoftwareListPage() {
   const [versionCurrentTag, setVersionCurrentTag] = useState('')
   const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
   const [eventTarget, setEventTarget] = useState('')
+  const [restartTarget, setRestartTarget] = useState<ServiceItem | null>(null)
   const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
   const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
   const [consoleState, setConsoleState] = useState<{
@@ -939,6 +940,15 @@ export default function SoftwareListPage() {
     queryKey: ['service-events', eventTarget],
     queryFn: () => api.get<ServiceEventItem[]>('/v1/service/event', { name: eventTarget }),
     enabled: !!eventTarget,
+  })
+
+  const restartQuery = useQuery({
+    queryKey: ['restart-info', restartTarget ? serviceNameOf(restartTarget) : ''],
+    queryFn: () =>
+      api.get<Array<{ podName?: string; createTime?: number; restartCount?: number }>>('/v1/service/restartInfo', {
+        serviceName: restartTarget ? serviceNameOf(restartTarget) : '',
+      }),
+    enabled: !!restartTarget,
   })
 
   const versionTagsQuery = useQuery({
@@ -1562,7 +1572,25 @@ export default function SoftwareListPage() {
                                             </div>
                                             <div className="flex items-center justify-center gap-1 text-[14px] text-ink">
                                               已重启 {service.restartCount ?? 0} 次
-                                              <Info size={12} />
+                                              <Tip
+                                                content={
+                                                  (service.restartCount ?? 0) > 0
+                                                    ? '点击查看服务最近重启记录'
+                                                    : '服务最近没有重启'
+                                                }
+                                              >
+                                                <button
+                                                  type="button"
+                                                  aria-label="查看服务重启记录"
+                                                  className="inline-flex flex-none cursor-pointer items-center transition-colors hover:text-signal"
+                                                  onClick={(event) => {
+                                                    event.stopPropagation()
+                                                    setRestartTarget(service)
+                                                  }}
+                                                >
+                                                  <Info size={12} />
+                                                </button>
+                                              </Tip>
                                             </div>
                                           </div>
                                         </td>
@@ -3130,6 +3158,39 @@ export default function SoftwareListPage() {
           </div>
         </div>
       </Modal>
+
+      <Drawer
+        open={!!restartTarget}
+        onOpenChange={(open) => !open && setRestartTarget(null)}
+        kicker="SERVICE / RESTART HISTORY"
+        title={restartTarget ? `${serviceNameOf(restartTarget)} 重启记录` : '重启记录'}
+        description="平台记录容器重启次数与时间，用于判断服务是否处于反复崩溃状态。"
+        width={560}
+        footer={
+          <Button size="sm" onClick={() => setRestartTarget(null)}>
+            关闭
+          </Button>
+        }
+      >
+        <div className="max-h-[360px] divide-y divide-line/60 overflow-y-auto border border-line">
+          {(restartQuery.data ?? []).map((item, index) => (
+            <div key={`${item.podName}-${item.createTime}-${index}`} className="flex items-center justify-between gap-3 px-3 py-2.5">
+              <div className="min-w-0">
+                <div className="truncate font-mono text-[12px] text-ink">{item.podName || '—'}</div>
+                <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{formatDate(item.createTime)}</div>
+              </div>
+              <Badge tone={Number(item.restartCount) > 5 ? 'bad' : Number(item.restartCount) > 0 ? 'warn' : 'default'}>
+                ×{item.restartCount ?? 0}
+              </Badge>
+            </div>
+          ))}
+          {(restartQuery.data ?? []).length === 0 && (
+            <div className="px-3 py-10 text-center text-[12px] text-mute">
+              {restartQuery.isLoading ? '正在读取重启记录…' : '暂无重启记录'}
+            </div>
+          )}
+        </div>
+      </Drawer>
 
       <Modal
         open={!!eventTarget}
