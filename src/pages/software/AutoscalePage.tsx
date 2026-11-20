@@ -1,16 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Activity, Plus } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { ServiceItem, ServiceList } from '@/types'
 import { DataTable, type Column } from '@/components/DataTable'
-import { ActionMenu, Button, Drawer, Field, Modal, PageToolbar, Panel, Select, useConfirm } from '@/components/ui'
+import { ActionMenu, Button, Modal, PageToolbar, Panel, Select, useConfirm } from '@/components/ui'
 import { toast } from '@/stores/toast'
 import { cn } from '@/lib/utils'
 
 const NAMESPACE = 'gaop-namespace'
 const HPA_PATH = `/k8s/apis/autoscaling/v2/namespaces/${NAMESPACE}/horizontalpodautoscalers`
+
+type ThresholdType = 'cpu' | 'memory'
+
+interface ThresholdRow {
+  id: number
+  type: ThresholdType
+  value: string
+}
+
+const THRESHOLD_OPTIONS = [
+  { value: 'cpu', label: 'CPU阈值' },
+  { value: 'memory', label: '内存阈值' },
+]
+
+let thresholdSeq = 1
+
+function defaultThresholds(): ThresholdRow[] {
+  return [{ id: thresholdSeq++, type: 'cpu', value: '80' }]
+}
 
 interface HpaItem {
   metadata?: { name?: string; creationTimestamp?: string }
@@ -28,11 +47,6 @@ interface HpaItem {
 
 function targetOf(item: HpaItem) {
   return item.spec?.scaleTargetRef?.name || item.metadata?.name || '—'
-}
-
-function cpuTarget(item: HpaItem) {
-  const metric = item.spec?.metrics?.find((entry) => entry.type === 'Resource' && entry.resource?.name === 'cpu')
-  return metric?.resource?.target?.averageUtilization
 }
 
 function isDisabled(item: HpaItem) {
@@ -55,12 +69,38 @@ function thresholdLines(item: HpaItem) {
   })
 }
 
+function PolicyField({
+  label,
+  required,
+  children,
+}: {
+  label?: string
+  required?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="w-[104px] flex-none text-right text-[14px] text-white">
+        {required && <span className="mr-1 text-[#ff5c5c]">*</span>}
+        {label}：
+      </div>
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  )
+}
+
 export default function AutoscalePage() {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<HpaItem | null>(null)
-  const [form, setForm] = useState({ service: '', min: '1', max: '3', cpu: '80' })
+  const [form, setForm] = useState({
+    name: '',
+    service: '',
+    min: '1',
+    max: '2',
+    thresholds: defaultThresholds(),
+  })
   const [keyword, setKeyword] = useState('')
   const [eventsTarget, setEventsTarget] = useState<HpaItem | null>(null)
 
@@ -108,29 +148,31 @@ export default function AutoscalePage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const name = form.name.trim()
       const target = form.service.trim()
-      if (!target) throw new Error('请选择目标服务')
+      if (!name) throw new Error('请输入策略名称')
+      if (!target) throw new Error('请选择服务标识')
+      if (form.thresholds.some((row) => !row.value.trim())) throw new Error('请填写阈值')
       const manifest = {
         apiVersion: 'autoscaling/v2',
         kind: 'HorizontalPodAutoscaler',
-        metadata: { name: target, namespace: NAMESPACE },
+        metadata: { name, namespace: NAMESPACE },
         spec: {
           scaleTargetRef: { apiVersion: 'apps/v1', kind: 'Deployment', name: target },
           minReplicas: Number(form.min) || 1,
-          maxReplicas: Number(form.max) || 3,
-          metrics: [
-            {
-              type: 'Resource',
-              resource: { name: 'cpu', target: { type: 'Utilization', averageUtilization: Number(form.cpu) || 80 } },
+          maxReplicas: Number(form.max) || 2,
+          metrics: form.thresholds.map((row) => ({
+            type: 'Resource',
+            resource: {
+              name: row.type,
+              target: { type: 'Utilization', averageUtilization: Number(row.value) || 80 },
             },
-          ],
+          })),
         },
       }
-      if (editing?.metadata?.name && editing.metadata.name !== target) {
-        await api.del(`${HPA_PATH}/${editing.metadata.name}`)
-      }
       if (editing?.metadata?.name) {
-        return api.put(`${HPA_PATH}/${editing.metadata.name}`, { ...manifest, metadata: { name: editing.metadata.name, namespace: NAMESPACE } })
+        if (editing.metadata.name !== name) await api.del(`${HPA_PATH}/${editing.metadata.name}`)
+        else return api.put(`${HPA_PATH}/${name}`, manifest)
       }
       return api.post(HPA_PATH, manifest)
     },
@@ -138,7 +180,7 @@ export default function AutoscalePage() {
       toast.success(editing ? '伸缩策略已更新' : '伸缩策略已创建')
       setCreateOpen(false)
       setEditing(null)
-      setForm({ service: '', min: '1', max: '3', cpu: '80' })
+      setForm({ name: '', service: '', min: '1', max: '2', thresholds: defaultThresholds() })
       queryClient.invalidateQueries({ queryKey: ['hpa-list'] })
     },
     onError: (error) => toast.error('保存失败', errorMessage(error)),
@@ -185,11 +227,19 @@ export default function AutoscalePage() {
 
   function openEdit(item: HpaItem) {
     setEditing(item)
+    const metrics = (item.spec?.metrics ?? []).filter((metric) => metric.type === 'Resource')
     setForm({
-      service: item.spec?.scaleTargetRef?.name || item.metadata?.name || '',
+      name: item.metadata?.name || '',
+      service: (item.spec?.scaleTargetRef?.name || '').replace('-disabled', ''),
       min: String(item.spec?.minReplicas ?? 1),
-      max: String(item.spec?.maxReplicas ?? 3),
-      cpu: String(cpuTarget(item) ?? 80),
+      max: String(item.spec?.maxReplicas ?? 2),
+      thresholds: metrics.length
+        ? metrics.map((metric) => ({
+            id: thresholdSeq++,
+            type: (metric.resource?.name === 'memory' ? 'memory' : 'cpu') as ThresholdType,
+            value: String(metric.resource?.target?.averageUtilization ?? 80),
+          }))
+        : defaultThresholds(),
     })
     setCreateOpen(true)
   }
@@ -248,7 +298,7 @@ export default function AutoscalePage() {
     },
     {
       key: 'min',
-      header: '最小实例',
+      header: '最小实例数',
       align: 'center',
       cell: (row) => (
         <span className="num text-[14px] text-ink">{Math.round(row.spec?.minReplicas ?? 0)}</span>
@@ -256,7 +306,7 @@ export default function AutoscalePage() {
     },
     {
       key: 'max',
-      header: '最大实例',
+      header: '最大实例数',
       align: 'center',
       cell: (row) => (
         <span className="num text-[14px] text-ink">{Math.round(row.spec?.maxReplicas ?? 0)}</span>
@@ -300,14 +350,14 @@ export default function AutoscalePage() {
   return (
     <div>
       <PageToolbar
-        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入策略名或服务名搜索' }}
+        search={{ value: keyword, onChange: setKeyword, placeholder: '请输入策略或服务名称搜索' }}
       >
         <Button
           size="sm"
           variant="signal"
           onClick={() => {
             setEditing(null)
-            setForm({ service: '', min: '1', max: '3', cpu: '80' })
+            setForm({ name: '', service: '', min: '1', max: '2', thresholds: defaultThresholds() })
             setCreateOpen(true)
           }}
         >
@@ -331,31 +381,47 @@ export default function AutoscalePage() {
         <Activity size={10} /> 依赖 metrics-server 提供容器 CPU 指标；指标缺失时水平伸缩不会触发。
       </div>
 
-      <Drawer
+      <Modal
         open={createOpen}
         onOpenChange={(open) => {
           setCreateOpen(open)
           if (!open) setEditing(null)
         }}
-        kicker="AUTOSCALING / POLICY"
-        title={editing ? '修改策略' : '创建策略'}
-        description="目标服务以 Deployment 名称标识。阈值表示容器平均 CPU 使用率，超过阈值时扩容。"
-        width={470}
+        title={editing ? '修改自动伸缩策略' : '创建自动伸缩策略'}
+        titleAlign="center"
+        headerClassName="h-[30px] border-b-0 bg-[#28538f] px-2.5 py-0"
+        bodyClassName="px-6 py-5"
+        width={560}
         footer={
-          <>
+          <div className="flex w-full items-center justify-center gap-3">
             <Button size="sm" onClick={() => setCreateOpen(false)}>
               取消
             </Button>
-            <Button size="sm" variant="signal" loading={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-              {editing ? '保存策略' : '创建策略'}
+            <Button
+              size="sm"
+              variant="signal"
+              loading={saveMutation.isPending}
+              disabled={!form.name.trim() || !form.service.trim()}
+              onClick={() => saveMutation.mutate()}
+            >
+              确定
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-3">
-          <Field label="目标服务" required hint="选择需要自动伸缩的 Deployment">
+          <PolicyField label="策略名称" required>
+            <input
+              className="field"
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+            />
+          </PolicyField>
+          <PolicyField label="服务标识" required>
             <Select
-              placeholder="请选择服务"
+              searchable
+              className="w-full"
+              placeholder="输入服务标识或关键字搜索"
               value={form.service}
               options={[
                 ...deploymentOptions.map((name) => ({ value: name, label: name })),
@@ -365,42 +431,101 @@ export default function AutoscalePage() {
               ]}
               onChange={(value) => setForm({ ...form, service: value })}
             />
-          </Field>
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="CPU 阈值" required>
-              <input
-                className="field"
-                type="number"
-                min={1}
-                max={100}
-                value={form.cpu}
-                onChange={(event) => setForm({ ...form, cpu: event.target.value })}
-              />
-            </Field>
-            <Field label="最小实例" required>
-              <input
-                className="field"
-                type="number"
-                min={1}
-                value={form.min}
-                onChange={(event) => setForm({ ...form, min: event.target.value })}
-              />
-            </Field>
-            <Field label="最大实例" required>
-              <input
-                className="field"
-                type="number"
-                min={1}
-                value={form.max}
-                onChange={(event) => setForm({ ...form, max: event.target.value })}
-              />
-            </Field>
-          </div>
-          <div className="mono border border-line bg-paper-2/40 px-3 py-2 text-[12px] leading-relaxed tracking-wider text-mute">
-            HPA 需要 metrics-server 支持；创建后在「工作负载」中可观察副本变化。
+          </PolicyField>
+          <PolicyField label="最小实例数" required>
+            <input
+              className="field"
+              type="number"
+              min={1}
+              value={form.min}
+              onChange={(event) => setForm({ ...form, min: event.target.value })}
+            />
+          </PolicyField>
+          <PolicyField label="最大实例数" required>
+            <input
+              className="field"
+              type="number"
+              min={1}
+              value={form.max}
+              onChange={(event) => setForm({ ...form, max: event.target.value })}
+            />
+          </PolicyField>
+          {form.thresholds.map((row, index) => (
+            <PolicyField key={row.id} label={index === 0 ? '阈值' : ''}>
+              <div className="flex items-center gap-2">
+                <Select
+                  className="w-[104px] flex-none"
+                  value={row.type}
+                  options={THRESHOLD_OPTIONS}
+                  onChange={(value) =>
+                    setForm({
+                      ...form,
+                      thresholds: form.thresholds.map((item) =>
+                        item.id === row.id ? { ...item, type: value as ThresholdType } : item,
+                      ),
+                    })
+                  }
+                />
+                <div className="flex min-w-0 flex-1 items-center">
+                  <input
+                    className="field rounded-r-none"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={row.value}
+                    onChange={(event) =>
+                      setForm({
+                        ...form,
+                        thresholds: form.thresholds.map((item) =>
+                          item.id === row.id ? { ...item, value: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                  <span className="flex h-[30px] w-8 flex-none items-center justify-center border border-l-0 border-line bg-paper-3 text-[14px] text-ink-3">
+                    %
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  disabled={form.thresholds.length === 1}
+                  className={cn(
+                    'flex-none text-[14px] transition-colors',
+                    form.thresholds.length === 1
+                      ? 'cursor-not-allowed text-mute'
+                      : 'text-[#ff7b7b] hover:text-[#ff9a9a]',
+                  )}
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      thresholds: form.thresholds.filter((item) => item.id !== row.id),
+                    })
+                  }
+                >
+                  删除
+                </button>
+              </div>
+            </PolicyField>
+          ))}
+          <div className="pl-[114px]">
+            <button
+              type="button"
+              className="text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  thresholds: [
+                    ...form.thresholds,
+                    { id: thresholdSeq++, type: 'cpu', value: '80' },
+                  ],
+                })
+              }
+            >
+              添加阈值
+            </button>
           </div>
         </div>
-      </Drawer>
+      </Modal>
 
       <Modal
         open={!!eventsTarget}
