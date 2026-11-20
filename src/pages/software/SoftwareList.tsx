@@ -1171,7 +1171,7 @@ export default function SoftwareListPage() {
                   </th>
                   <th style={{ width: 200 }}>关联席位</th>
                   <th style={{ width: 180 }}>更新时间</th>
-                  <th style={{ width: 150 }}>描述</th>
+                  <th style={{ width: 100 }}>描述</th>
                   <th style={{ width: 80 }}>置顶</th>
                   <th style={{ width: 180 }}>
                     <button
@@ -1258,11 +1258,7 @@ export default function SoftwareListPage() {
                           <span className="mx-auto block max-w-[130px] truncate text-[14px] text-ink">{item.desc || ''}</span>
                         </td>
                         <td className="text-center">
-                          {item.orderTop ? (
-                            <span className="inline-flex items-center rounded-[2px] border border-[#6b8098] px-1.5 py-0.5 text-[12px] text-[#c9d6e3]">
-                              已置顶
-                            </span>
-                          ) : null}
+                          {item.orderTop ? <Badge tone="info">已置顶</Badge> : null}
                         </td>
                         <td>
                           <span className="whitespace-nowrap text-[14px] text-ink">
