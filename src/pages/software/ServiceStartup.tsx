@@ -5,6 +5,7 @@ import type { ServiceItem, ServiceList } from '@/types'
 import { toast } from '@/stores/toast'
 import { Button, Modal, PageToolbar, Panel } from '@/components/ui'
 import { DataTable, type Column } from '@/components/DataTable'
+import { cn } from '@/lib/utils'
 
 function serviceName(service: ServiceItem) {
   return service.nameUs || service.nameFr
@@ -113,27 +114,21 @@ export default function ServiceStartupPage() {
         <Button
           size="sm"
           variant="signal"
-          onClick={() => {
-            if (selected.length === 0) {
-              toast.error('请先选择服务')
-              return
-            }
-            setDelayOpen(true)
-          }}
+          disabled={selected.length === 0}
+          onClick={() => setDelayOpen(true)}
         >
           设置延迟
         </Button>
         <Button
           size="sm"
-          className="border-[#a01820] bg-[#a01820] text-white hover:border-[#c03039] hover:bg-[#b8202a]"
+          disabled={selected.length === 0}
+          className={cn(
+            'border-[#a01820] bg-[#a01820] text-white hover:border-[#c03039] hover:bg-[#b8202a]',
+            selected.length === 0 &&
+              'border-[#1e3448] bg-[#122434] text-[#4f6a82] hover:border-[#1e3448] hover:bg-[#122434]',
+          )}
           loading={cancelMutation.isPending}
-          onClick={() => {
-            if (selected.length === 0) {
-              toast.error('请先选择服务')
-              return
-            }
-            cancelMutation.mutate()
-          }}
+          onClick={() => cancelMutation.mutate()}
         >
           取消延迟
         </Button>
