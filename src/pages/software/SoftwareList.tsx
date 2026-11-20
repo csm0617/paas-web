@@ -1324,7 +1324,7 @@ export default function SoftwareListPage() {
                     <Fragment key={item.id}>
                       <tr
                         onClick={() => setExpandedId(expanded ? null : item.id)}
-                        className={cn('cursor-pointer', expanded && 'bg-[#16395a]')}
+                        className={cn('h-[64px] cursor-pointer', expanded && 'bg-[#16395a]')}
                       >
                         <td onClick={(event) => event.stopPropagation()}>
                           <button
