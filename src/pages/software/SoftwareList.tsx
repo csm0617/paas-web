@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AppWindow, ArrowDown, ArrowUp, Check, ChevronDown, ChevronsUpDown, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Plus, RefreshCw, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
+import { AppWindow, ArrowDown, ArrowUp, Check, ChevronDown, ChevronsUpDown, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Play, Plus, RefreshCw, Save, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -23,6 +23,7 @@ import {
   Panel,
   SectionTitle,
   Select,
+  Tip,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
@@ -787,35 +788,59 @@ export default function SoftwareListPage() {
     onError: (error) => toast.error('截图上传失败', errorMessage(error)),
   })
 
-  const servicesQuery = useQuery({
-    queryKey: ['services'],
-    queryFn: () => api.get<ServiceList>('/v1/service', { page: 1, size: 100 }),
+  const settingsQuery = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => api.get<Array<{ key?: string; val?: string }>>('/settings'),
     enabled: minSetOpen,
+    retry: 0,
   })
-  const minSetTouched = useRef(false)
+  const [minSetSaving, setMinSetSaving] = useState(false)
+  const [minSetExecuting, setMinSetExecuting] = useState(false)
 
   useEffect(() => {
-    if (!minSetOpen || !servicesQuery.data || minSetTouched.current) return
-    setMinSetSelected((servicesQuery.data.services ?? []).map((item) => item.nameUs || item.nameFr))
-  }, [minSetOpen, servicesQuery.data])
+    if (!minSetOpen || settingsQuery.isLoading) return
+    const entry = (settingsQuery.data ?? []).find((item) => item.key === 'system.setting.min_software')
+    let saved: Record<string, boolean> = {}
+    try {
+      saved = entry?.val ? JSON.parse(entry.val) : {}
+    } catch {
+      saved = {}
+    }
+    setMinSetSelected(list.filter((item) => saved[item.key] !== false).map((item) => item.key))
+  }, [minSetOpen, settingsQuery.data, settingsQuery.isLoading, list])
 
-  const minSetMutation = useMutation({
-    mutationFn: async () => {
-      const services = servicesQuery.data?.services ?? []
-      const all = services.map((item) => item.nameUs || item.nameFr)
-      const stop = all.filter((name) => !minSetSelected.includes(name))
-      const start = all.filter((name) => minSetSelected.includes(name))
-      if (start.length) await api.put('/v1/service/start', start)
-      if (stop.length) await api.put('/v1/service/stop', stop)
-      return { start: start.length, stop: stop.length }
-    },
-    onSuccess: (result) => {
-      toast.success('最小运行集已应用', `启动 ${result.start} 个服务，停止 ${result.stop} 个服务`)
-      setMinSetOpen(false)
-      queryClient.invalidateQueries({ queryKey: ['services'] })
-    },
-    onError: (error) => toast.error('应用失败', errorMessage(error)),
-  })
+  function minSetPayload() {
+    const map: Record<string, boolean> = {}
+    list.forEach((item) => {
+      map[item.key] = minSetSelected.includes(item.key)
+    })
+    return JSON.stringify(map)
+  }
+
+  async function saveMinSet() {
+    setMinSetSaving(true)
+    try {
+      await api.post('/settings/setMinSoftware', { list: minSetPayload() })
+      toast.success('保存成功')
+    } catch (error) {
+      toast.error('保存失败', errorMessage(error))
+    } finally {
+      setMinSetSaving(false)
+    }
+  }
+
+  async function executeMinSet() {
+    setMinSetExecuting(true)
+    try {
+      await api.post('/settings/execute', { list: minSetPayload() })
+      toast.success('应用正在重启', '最小运行集将在数秒内生效')
+      queryClient.invalidateQueries({ queryKey: ['software'] })
+    } catch (error) {
+      toast.error('执行失败', errorMessage(error))
+    } finally {
+      setMinSetExecuting(false)
+    }
+  }
 
   function openSeats(item: Software) {
     setSeatTarget(item)
@@ -1091,11 +1116,7 @@ export default function SoftwareListPage() {
         <Button
           size="sm"
           variant="signal"
-          onClick={() => {
-            minSetTouched.current = false
-            setMinSetSelected([])
-            setMinSetOpen(true)
-          }}
+          onClick={() => setMinSetOpen(true)}
         >
           <List size={11} /> 运行最小集
         </Button>
@@ -2627,64 +2648,75 @@ export default function SoftwareListPage() {
       <Drawer
         open={minSetOpen}
         onOpenChange={setMinSetOpen}
-        kicker="SOFTWARE / MINIMAL SET"
-        title="运行最小集"
-        description="勾选需要保持运行的服务，未勾选的服务将被停止。用于在资源受限时收敛运行范围。"
-        width={560}
-        footer={
-          <>
-            <Button size="sm" onClick={() => setMinSetOpen(false)}>
-              取消
-            </Button>
-            <Button
-              size="sm"
-              variant="signal"
-              loading={minSetMutation.isPending}
-              onClick={() => minSetMutation.mutate()}
-            >
-              应用最小集
-            </Button>
-          </>
+        title={
+          <span className="flex items-center gap-1.5">
+            运行最小集
+            <Tip content="仅启动列表内勾选的应用，未勾选的应用将被停止。">
+              <Info size={13} className="text-mute" />
+            </Tip>
+          </span>
         }
+        width={720}
       >
-        <div className="mb-3 border-l-2 border-warn bg-warn/[0.06] px-3 py-2 text-[12px] leading-relaxed text-ink-3">
-          应用后，未勾选的服务将立即停止，可能导致依赖其的应用不可用。请确认影响范围后再执行。
+        <div className="mb-3 flex items-center gap-2.5">
+          <Button size="sm" variant="signal" loading={minSetSaving} onClick={saveMinSet}>
+            <Save size={11} /> 保存
+          </Button>
+          <Button size="sm" variant="signal" loading={minSetExecuting} onClick={executeMinSet}>
+            <Play size={11} /> 执行
+          </Button>
         </div>
-        <div className="max-h-[340px] space-y-1.5 overflow-y-auto">
-          {(servicesQuery.data?.services ?? []).map((service) => {
-            const name = service.nameUs || service.nameFr
-            const checked = minSetSelected.includes(name)
-            const running = (service.deployment?.status?.readyReplicas ?? 0) > 0
-            return (
-              <label
-                key={name}
-                className={cn(
-                  'flex cursor-pointer items-center gap-3 border px-3 py-2 transition-colors',
-                  checked ? 'border-signal bg-signal/[0.04]' : 'border-line hover:border-line-strong',
-                )}
-              >
-                <input
-                  type="checkbox"
-                  className="accent-[var(--color-signal)]"
-                  checked={checked}
-                  onChange={() => {
-                    minSetTouched.current = true
-                    setMinSetSelected((prev) =>
-                      prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name],
-                    )
-                  }}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="font-mono text-[12px] text-ink">{name}</div>
-                  <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">
-                    {service.deployment?.status?.readyReplicas ?? 0}/{service.deployment?.spec?.replicas ?? 0} READY
-                  </div>
-                </div>
-                <Badge tone={running ? 'ok' : 'default'}>{running ? 'RUNNING' : 'STOPPED'}</Badge>
-              </label>
-            )
-          })}
-          {servicesQuery.isLoading && <div className="py-6 text-center text-[12px] text-mute">正在读取服务…</div>}
+        <div className="table-scroll max-h-[560px] overflow-y-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th className="w-12">
+                  <input
+                    type="checkbox"
+                    className="accent-[var(--color-signal)]"
+                    checked={list.length > 0 && minSetSelected.length === list.length}
+                    onChange={(event) =>
+                      setMinSetSelected(event.target.checked ? list.map((item) => item.key) : [])
+                    }
+                  />
+                </th>
+                <th>软件名称</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((item) => {
+                const checked = minSetSelected.includes(item.key)
+                return (
+                  <tr key={item.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="accent-[var(--color-signal)]"
+                        checked={checked}
+                        onChange={() =>
+                          setMinSetSelected((prev) =>
+                            prev.includes(item.key)
+                              ? prev.filter((key) => key !== item.key)
+                              : [...prev, item.key],
+                          )
+                        }
+                      />
+                    </td>
+                    <td>
+                      <span className="text-[14px] text-ink">{item.name}</span>
+                    </td>
+                  </tr>
+                )
+              })}
+              {list.length === 0 && (
+                <tr>
+                  <td colSpan={2} className="py-8 text-center text-[14px] text-mute">
+                    暂无可配置的应用
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </Drawer>
 
