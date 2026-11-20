@@ -223,7 +223,9 @@ body {
   .btn:active {
     background: #14354f;
   }
-  .btn:disabled {
+  .btn:disabled,
+  .btn:disabled:hover,
+  .btn:disabled:active {
     background: #122434;
     border-color: #1e3448;
     color: #4f6a82;
