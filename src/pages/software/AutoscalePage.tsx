@@ -81,8 +81,12 @@ function PolicyField({
   return (
     <div className="flex items-center gap-2.5">
       <div className="w-[104px] flex-none text-right text-[14px] text-white">
-        {required && <span className="mr-1 text-[#ff5c5c]">*</span>}
-        {label}：
+        {label ? (
+          <>
+            {required && <span className="mr-1 text-[#ff5c5c]">*</span>}
+            {label}：
+          </>
+        ) : null}
       </div>
       <div className="min-w-0 flex-1">{children}</div>
     </div>
