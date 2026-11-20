@@ -1590,38 +1590,32 @@ export default function ServiceManagePage() {
         </button>
       </Modal>
 
-      <Drawer
+      <Modal
         open={!!restartTarget}
         onOpenChange={(open) => !open && setRestartTarget(null)}
-        kicker="SERVICE / RESTART HISTORY"
-        title={restartTarget ? `${serviceName(restartTarget)} 重启记录` : '重启记录'}
-        description="平台记录容器重启次数与时间，用于判断服务是否处于反复崩溃状态。"
-        width={560}
-        footer={
-          <Button size="sm" onClick={() => setRestartTarget(null)}>
-            关闭
-          </Button>
-        }
+        title={restartTarget ? `${serviceName(restartTarget)} 容器重启记录` : '容器重启记录'}
+        width={800}
       >
-        <div className="max-h-[360px] divide-y divide-line/60 overflow-y-auto border border-line">
-          {(restartQuery.data ?? []).map((item, index) => (
-            <div key={`${item.podName}-${item.createTime}-${index}`} className="flex items-center justify-between gap-3 px-3 py-2.5">
-              <div className="min-w-0">
-                <div className="truncate font-mono text-[12px] text-ink">{item.podName || '—'}</div>
-                <div className="mono mt-0.5 text-[12px] tracking-wider text-mute">{formatDate(item.createTime)}</div>
-              </div>
-              <Badge tone={Number(item.restartCount) > 5 ? 'bad' : Number(item.restartCount) > 0 ? 'warn' : 'default'}>
-                ×{item.restartCount ?? 0}
-              </Badge>
-            </div>
-          ))}
-          {(restartQuery.data ?? []).length === 0 && (
-            <div className="px-3 py-10 text-center text-[12px] text-mute">
-              {restartQuery.isLoading ? '正在读取重启记录…' : '暂无重启记录'}
+        <div className="max-h-[400px] overflow-auto px-1">
+          {restartQuery.isLoading ? (
+            <div className="py-16 text-center text-[14px] text-mute">正在读取重启记录…</div>
+          ) : (restartQuery.data ?? []).filter((item) => !!item.createTime).length === 0 ? (
+            <div className="py-16 text-center text-[14px] text-mute">暂无重启记录</div>
+          ) : (
+            <div className="relative space-y-4 pl-5 before:absolute before:bottom-2 before:left-[5px] before:top-2 before:w-px before:bg-line">
+              {(restartQuery.data ?? [])
+                .filter((item) => !!item.createTime)
+                .map((item, index) => (
+                  <div key={`${item.podName}-${item.createTime}-${index}`} className="relative text-[14px] text-ink">
+                    <span className="absolute -left-5 top-[6px] h-[7px] w-[7px] rounded-full bg-signal" />
+                    {formatDate(item.createTime)} 容器
+                    <span className="font-mono">{item.podName || '—'}</span>第 {item.restartCount ?? 0} 次重启
+                  </div>
+                ))}
             </div>
           )}
         </div>
-      </Drawer>
+      </Modal>
 
       <Modal
         open={!!versionTarget}
