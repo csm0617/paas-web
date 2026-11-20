@@ -512,7 +512,8 @@ export default function PodsPage() {
           selectable
           selectedKeys={selected}
           onSelectionChange={setSelected}
-          pageSize={12}
+          pageSize={10}
+          scrollBodyHeight="calc(100vh - 250px)"
           emptyTitle="暂无容器"
           emptyDescription="命名空间内没有正在运行的容器实例。"
         />

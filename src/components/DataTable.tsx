@@ -35,6 +35,7 @@ interface DataTableProps<T> {
   footer?: ReactNode
   className?: string
   hidePager?: boolean
+  scrollBodyHeight?: string
 }
 
 export function DataTable<T>({
@@ -55,6 +56,7 @@ export function DataTable<T>({
   footer,
   className,
   hidePager,
+  scrollBodyHeight,
 }: DataTableProps<T>) {
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null)
@@ -103,7 +105,7 @@ export function DataTable<T>({
 
   return (
     <div className={cn('w-full', className)}>
-      <div className="table-scroll">
+      <div className="table-scroll" style={scrollBodyHeight ? { maxHeight: scrollBodyHeight } : undefined}>
         <table className="data-table min-w-max">
           <thead>
             <tr>

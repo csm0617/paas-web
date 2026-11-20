@@ -333,7 +333,8 @@ body {
   .data-table {
     width: 100%;
     min-width: max-content;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 14px;
   }
   .table-scroll {
@@ -351,7 +352,7 @@ body {
     box-shadow: -8px 0 8px -8px rgba(0, 0, 0, 0.65);
   }
   .data-table thead th.is-sticky-right {
-    z-index: 2;
+    z-index: 3;
     background: #14293e;
   }
   .table-scroll::-webkit-scrollbar {
@@ -368,6 +369,9 @@ body {
     background: #4d7ba5;
   }
   .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     font-family: var(--font-sans);
     font-size: 14px;
     height: 30px;
