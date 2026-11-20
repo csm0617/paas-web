@@ -1171,7 +1171,7 @@ export default function SoftwareListPage() {
                   </th>
                   <th style={{ width: 200 }}>关联席位</th>
                   <th style={{ width: 180 }}>更新时间</th>
-                  <th style={{ width: 100 }}>描述</th>
+                  <th style={{ width: 150 }}>描述</th>
                   <th style={{ width: 80 }}>置顶</th>
                   <th style={{ width: 180 }}>
                     <button
