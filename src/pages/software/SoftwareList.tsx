@@ -87,9 +87,10 @@ function repoPath(image: string) {
   return first.includes('.') || first.includes(':') ? image.slice(slash + 1) : image
 }
 
-function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
+function monitorTrend(list: MonitorSeries[] | undefined, factor = 1, pod?: string) {
   const seen = new Set<string>()
-  const unique = (list ?? []).filter((series) => {
+  const source = pod ? (list ?? []).filter((series) => series.podName === pod) : (list ?? [])
+  const unique = source.filter((series) => {
     if (!series.podName) return true
     if (seen.has(series.podName)) return false
     seen.add(series.podName)
@@ -512,6 +513,8 @@ export default function SoftwareListPage() {
   const [monitorCustom, setMonitorCustom] = useState(false)
   const [monitorStart, setMonitorStart] = useState('')
   const [monitorEnd, setMonitorEnd] = useState('')
+  const [monitorMode, setMonitorMode] = useState<'1' | '2'>('1')
+  const [monitorPod, setMonitorPod] = useState('')
   const [consoleState, setConsoleState] = useState<{
     service: string
     mode: 'history' | 'logs' | 'terminal'
@@ -972,6 +975,28 @@ export default function SoftwareListPage() {
       ),
     enabled: !!monitorTarget && (!monitorCustom || (!!monitorStart && !!monitorEnd)),
   })
+
+  useEffect(() => {
+    if (!monitorTarget) return
+    setMonitorRange('ONE_HOURS')
+    setMonitorCustom(false)
+    setMonitorStart('')
+    setMonitorEnd('')
+    setMonitorMode('1')
+    setMonitorPod('')
+  }, [monitorTarget])
+
+  const monitorPods = Array.from(
+    new Set((monitorQuery.data?.cpu ?? []).map((series) => series.podName || '').filter(Boolean)),
+  )
+  const monitorPodKey = monitorPods.join('|')
+
+  useEffect(() => {
+    if (!monitorPods.length) return
+    setMonitorPod((prev) => (prev && monitorPods.includes(prev) ? prev : monitorPods[0]))
+  }, [monitorPodKey])
+
+  const activeMonitorPod = monitorMode === '2' ? monitorPod : undefined
 
   const serviceEventsQuery = useQuery({
     queryKey: ['service-events', eventTarget],
@@ -3318,30 +3343,74 @@ export default function SoftwareListPage() {
             />
           </div>
         )}
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-[14px] text-ink-3">
+            <span>容器实例：</span>
+            <Select
+              className="w-[300px]"
+              placeholder="暂无实例"
+              value={monitorPod}
+              disabled={monitorMode === '1'}
+              options={monitorPods.map((item) => ({ value: item, label: item }))}
+              onChange={setMonitorPod}
+            />
+          </div>
+          <div className="flex border border-line">
+            {(
+              [
+                { key: '1', label: '合并显示' },
+                { key: '2', label: '单独显示' },
+              ] as const
+            ).map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setMonitorMode(item.key)}
+                className={cn(
+                  'px-3 py-1 text-[14px] transition-colors',
+                  monitorMode === item.key ? 'bg-[#1670c2] text-white' : 'text-ink-3 hover:text-ink',
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="mb-3 text-[14px] text-ink-3">时间间隔：1 分钟</div>
         {monitorCustom && (!monitorStart || !monitorEnd) ? (
           <div className="py-10 text-center text-[12px] text-mute">请选择起止时间</div>
         ) : monitorQuery.isLoading ? (
           <div className="py-10 text-center text-[12px] text-mute">正在采集服务指标…</div>
+        ) : monitorQuery.data &&
+          !monitorQuery.data.cpu?.length &&
+          !monitorQuery.data.memory?.length &&
+          !monitorQuery.data.inboundNetwork?.length &&
+          !monitorQuery.data.outboundNetwork?.length &&
+          !monitorQuery.data.diskReadIo?.length &&
+          !monitorQuery.data.diskWriteIo?.length ? (
+          <div className="py-10 text-center text-[12px] text-mute">该时间范围内暂无监控数据</div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <div>
               <div className="label mb-2">CPU 使用量（m）</div>
-              <AreaTrend series={monitorTrend(monitorQuery.data?.cpu, 1000)} height={170} unit=" m" />
+              <AreaTrend series={monitorTrend(monitorQuery.data?.cpu, 1000, activeMonitorPod)} height={170} unit=" m" />
             </div>
             <div>
               <div className="label mb-2">内存使用量（MB）</div>
-              <AreaTrend series={monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024)} height={170} unit=" MB" />
+              <AreaTrend
+                series={monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024, activeMonitorPod)}
+                height={170}
+                unit=" MB"
+              />
             </div>
             <div>
               <div className="label mb-2">网络吞吐（KB/s）</div>
               <AreaTrend
                 series={[
-                  ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
+                  ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024, activeMonitorPod).map((series) => ({
                     ...series,
                     name: `${series.name}-入站`,
                   })),
-                  ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024).map((series) => ({
+                  ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024, activeMonitorPod).map((series) => ({
                     ...series,
                     name: `${series.name}-出站`,
                   })),
@@ -3354,11 +3423,11 @@ export default function SoftwareListPage() {
               <div className="label mb-2">磁盘 IO（KB/s）</div>
               <AreaTrend
                 series={[
-                  ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
+                  ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024, activeMonitorPod).map((series) => ({
                     ...series,
                     name: `${series.name}-读`,
                   })),
-                  ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024).map((series) => ({
+                  ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024, activeMonitorPod).map((series) => ({
                     ...series,
                     name: `${series.name}-写`,
                   })),
