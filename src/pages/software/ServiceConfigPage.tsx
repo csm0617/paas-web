@@ -956,6 +956,15 @@ export default function ServiceConfigPage({
     navigate(from === 'base-service' ? '/software/application/base-service' : '/software/application/service')
   }
 
+  useEffect(() => {
+    if (!selected) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closePanel()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selected, searchParams, onClose])
+
   function exportConfig() {
     if (!detail) return
     const payload = {
