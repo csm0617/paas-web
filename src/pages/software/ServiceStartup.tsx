@@ -113,17 +113,27 @@ export default function ServiceStartupPage() {
         <Button
           size="sm"
           variant="signal"
-          disabled={selected.length === 0}
-          onClick={() => setDelayOpen(true)}
+          onClick={() => {
+            if (selected.length === 0) {
+              toast.error('请先选择服务')
+              return
+            }
+            setDelayOpen(true)
+          }}
         >
           设置延迟
         </Button>
         <Button
           size="sm"
-          variant="danger"
-          disabled={selected.length === 0}
+          className="border-[#a01820] bg-[#a01820] text-white hover:border-[#c03039] hover:bg-[#b8202a]"
           loading={cancelMutation.isPending}
-          onClick={() => cancelMutation.mutate()}
+          onClick={() => {
+            if (selected.length === 0) {
+              toast.error('请先选择服务')
+              return
+            }
+            cancelMutation.mutate()
+          }}
         >
           取消延迟
         </Button>
