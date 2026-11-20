@@ -28,6 +28,30 @@ import { cn } from '@/lib/utils'
 
 const platformHost = (import.meta.env.VITE_PLATFORM_HOST as string | undefined) || '172.16.209.170'
 
+function downloadJson(payload: unknown, filename: string) {
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+function ProgressBar({ percent }: { percent: number }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="h-2 flex-1 overflow-hidden rounded-full border border-line bg-[#0d1f2f]">
+        <div
+          className="h-full bg-[#1670c2] transition-[width] duration-300"
+          style={{ width: `${Math.max(0, Math.min(100, percent))}%` }}
+        />
+      </div>
+      <span className="w-9 flex-none text-right text-[12px] text-ink-3">{percent}%</span>
+    </div>
+  )
+}
+
 interface SoftwareListResponse {
   softwareList: Software[]
   total: number
@@ -361,8 +385,17 @@ export default function SoftwareListPage() {
   const [sortField, setSortField] = useState<'key' | 'createdAt'>('key')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [authFilter, setAuthFilter] = useState<'all' | 'yes' | 'no'>('all')
+  const [importOpen, setImportOpen] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [replaceDatabase, setReplaceDatabase] = useState(false)
+  const [replaceConfigmap, setReplaceConfigmap] = useState(false)
+  const [importProgress, setImportProgress] = useState(0)
+  const [importing, setImporting] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [exportMode, setExportMode] = useState<'1' | '2'>('2')
+  const [exportScope, setExportScope] = useState<'1' | '2'>('1')
   const [exportIds, setExportIds] = useState<string[]>([])
+  const [exportProgress, setExportProgress] = useState(0)
   const [exporting, setExporting] = useState(false)
   const [shots, setShots] = useState<string[]>([])
   const [initialShots, setInitialShots] = useState<string[]>([])
@@ -382,7 +415,6 @@ export default function SoftwareListPage() {
   const [govTab, setGovTab] = useState<'auth' | 'gateway'>('auth')
   const [authCode, setAuthCode] = useState('')
   const [generatedCode, setGeneratedCode] = useState('')
-  const importRef = useRef<HTMLInputElement | null>(null)
 
   const query = useQuery({
     queryKey: ['software'],
@@ -815,12 +847,26 @@ export default function SoftwareListPage() {
     })
   }
 
-  async function importFile(file: File) {
-    const formData = new FormData()
-    formData.append('file', file)
+  function pickImportFile(file: File) {
+    const accepted = ['.zip', '.tar', '.gz', '.json']
+    if (!accepted.some((ext) => file.name.toLowerCase().endsWith(ext))) {
+      toast.error('不支持的文件类型', '请上传 .zip / .tar / .gz / .json 文件')
+      return
+    }
+    setImportFile(file)
+  }
+
+  async function runImport() {
+    if (!importFile) return
+    setImporting(true)
+    setImportProgress(0)
     const token = useAuthStore.getState().token
     try {
-      const response = await fetch(`${API_BASE}/v1/pub/import`, {
+      const formData = new FormData()
+      formData.append('file', importFile)
+      formData.append('replaceDatabase', String(replaceDatabase))
+      formData.append('replaceConfigmap', String(replaceConfigmap))
+      const response = await fetch(`${API_BASE}/v3/software/import`, {
         method: 'POST',
         credentials: 'include',
         headers: token ? { token } : undefined,
@@ -830,31 +876,81 @@ export default function SoftwareListPage() {
       if (!response.ok || (payload && typeof payload === 'object' && 'code' in payload && Number(payload.code) !== 0)) {
         throw new Error((payload && 'msg' in payload ? String(payload.msg) : '') || `导入失败 (${response.status})`)
       }
-      toast.success('应用导入已提交', '平台将在后台完成解包与注册')
-      queryClient.invalidateQueries({ queryKey: ['software'] })
+      const taskId = payload?.data?.taskId as string | undefined
+      if (!taskId) throw new Error('导入任务创建失败')
+      for (let attempt = 0; attempt < 600; attempt++) {
+        await new Promise((resolve) => window.setTimeout(resolve, 2000))
+        const status = await api.get<{ status?: string; current?: number; total?: number; message?: string }>(
+          '/v3/software/import/status',
+          { taskId },
+        )
+        if (status?.status === 'finished') {
+          setImportProgress(100)
+          toast.success('应用导入完成')
+          setImportOpen(false)
+          setImportFile(null)
+          setReplaceDatabase(false)
+          setReplaceConfigmap(false)
+          queryClient.invalidateQueries({ queryKey: ['software'] })
+          return
+        }
+        if (status?.status === 'failed') throw new Error(status.message || '导入任务执行失败')
+        if (status?.total) setImportProgress(Math.min(99, Math.round(((status.current ?? 0) / status.total) * 100)))
+      }
+      throw new Error('导入超时，请稍后在任务记录中查看')
     } catch (error) {
-      toast.error('导入失败', errorMessage(error))
+      toast.error('导入应用出现了错误', errorMessage(error))
+    } finally {
+      setImporting(false)
     }
   }
 
   async function runExport() {
-    if (exportIds.length === 0) return
+    const keys = exportScope === '2' ? exportIds : []
+    if (exportScope === '2' && keys.length === 0) {
+      toast.error('请选择需要导出的应用')
+      return
+    }
     setExporting(true)
+    setExportProgress(0)
     try {
-      const task = await api.post<{ taskId?: string }>('/v3/software/backup', exportIds)
+      if (exportMode === '1') {
+        const backup = await api.post<unknown>('/v1/software/backup', keys)
+        downloadJson(backup, '应用备份.json')
+        const hasConfig = await api.post<unknown>('/v1/software/existConfigmap', { type: 'software', key: keys })
+        if (hasConfig) {
+          const config = await api.post<unknown>('/v1/software/exportConfigmap', { type: 'software', key: keys })
+          downloadJson(config, '应用备份-服务配置.json')
+        }
+        toast.success('导出完成', '备份文件已开始下载')
+        setExportOpen(false)
+        setExportIds([])
+        return
+      }
+      const task = await api.post<{ taskId?: string }>('/v3/software/backup', keys)
       const taskId = task?.taskId
       if (!taskId) throw new Error('导出任务创建失败')
-      for (let attempt = 0; attempt < 80; attempt++) {
-        await new Promise((resolve) => window.setTimeout(resolve, 1500))
-        const status = await api.get<{ status?: string }>('/v3/software/backup/status', { taskId })
+      for (let attempt = 0; attempt < 600; attempt++) {
+        await new Promise((resolve) => window.setTimeout(resolve, 2000))
+        const status = await api.get<{ status?: string; current?: number; total?: number; message?: string }>(
+          '/v3/software/backup/status',
+          { taskId },
+        )
         if (status?.status === 'finished') {
-          window.open(`${API_BASE}/v3/software/backup/download?taskId=${taskId}`, '_blank', 'noopener')
+          setExportProgress(100)
+          const url = `${API_BASE}/v3/software/backup/download?taskId=${taskId}`
+          const link = document.createElement('a')
+          link.href = url
+          link.target = '_blank'
+          link.download = 'downloaded-file.zip'
+          link.click()
           toast.success('导出完成', '压缩包已开始下载')
           setExportOpen(false)
           setExportIds([])
           return
         }
-        if (status?.status === 'failed') throw new Error('导出任务执行失败')
+        if (status?.status === 'failed') throw new Error(status.message || '导出任务执行失败')
+        if (status?.total) setExportProgress(Math.min(99, Math.round(((status.current ?? 0) / status.total) * 100)))
       }
       throw new Error('导出超时，请稍后在备份记录中查看')
     } catch (error) {
@@ -966,25 +1062,27 @@ export default function SoftwareListPage() {
         <Button size="sm" variant="signal" onClick={openCreate}>
           <Plus size={12} /> 新增应用
         </Button>
-        <input
-          ref={importRef}
-          type="file"
-          accept=".zip,.tar,.gz,.json"
-          className="hidden"
-          onChange={(event) => {
-            const file = event.target.files?.[0]
-            if (file) importFile(file)
-            event.target.value = ''
+        <Button
+          size="sm"
+          variant="signal"
+          onClick={() => {
+            setImportFile(null)
+            setReplaceDatabase(false)
+            setReplaceConfigmap(false)
+            setImportProgress(0)
+            setImportOpen(true)
           }}
-        />
-        <Button size="sm" variant="signal" onClick={() => importRef.current?.click()}>
+        >
           <Upload size={11} /> 导入应用
         </Button>
         <Button
           size="sm"
           variant="signal"
           onClick={() => {
+            setExportMode('2')
+            setExportScope('1')
             setExportIds([])
+            setExportProgress(0)
             setExportOpen(true)
           }}
         >
@@ -2352,68 +2450,179 @@ export default function SoftwareListPage() {
         </div>
       </Modal>
 
-      <Drawer
-        open={exportOpen}
-        onOpenChange={setExportOpen}
-        kicker="SOFTWARE / EXPORT"
-        title="导出应用"
-        description="选择需要导出的应用，平台将打包应用信息与关联配置为压缩包。"
+      <Modal
+        open={importOpen}
+        onOpenChange={(open) => {
+          if (importing) return
+          setImportOpen(open)
+          if (!open) setImportFile(null)
+        }}
+        title="导入应用"
         width={560}
         footer={
           <>
-            <Button size="sm" onClick={() => setExportOpen(false)}>
+            <Button
+              size="sm"
+              disabled={importing}
+              onClick={() => {
+                setImportOpen(false)
+                setImportFile(null)
+              }}
+            >
+              取消
+            </Button>
+            <Button size="sm" variant="signal" disabled={!importFile} loading={importing} onClick={runImport}>
+              确定
+            </Button>
+          </>
+        }
+      >
+        <label
+          className="flex h-[200px] cursor-pointer flex-col items-center justify-center gap-2.5 border border-dashed border-line-strong bg-paper-2/40 text-center transition-colors hover:border-signal"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault()
+            const file = event.dataTransfer.files?.[0]
+            if (file) pickImportFile(file)
+          }}
+        >
+          <input
+            type="file"
+            accept=".zip,.tar,.gz,.json"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (file) pickImportFile(file)
+              event.target.value = ''
+            }}
+          />
+          <Upload size={28} className="text-[#4791d0]" />
+          <span className="text-[14px] text-ink-3">{importFile ? importFile.name : '点击或拖拽文件到该区域上传'}</span>
+          {importFile && <span className="text-[12px] text-mute">点击可重新选择文件</span>}
+        </label>
+        {importing && (
+          <div className="mt-3">
+            <ProgressBar percent={importProgress} />
+          </div>
+        )}
+        <div className="mt-3 flex flex-wrap items-center gap-6 text-[14px] text-ink-3">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              className="accent-[var(--color-signal)]"
+              checked={replaceDatabase}
+              onChange={(event) => setReplaceDatabase(event.target.checked)}
+            />
+            是否执行初始化 SQL
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              className="accent-[var(--color-signal)]"
+              checked={replaceConfigmap}
+              onChange={(event) => setReplaceConfigmap(event.target.checked)}
+            />
+            是否执行初始化 ConfigMap
+          </label>
+        </div>
+      </Modal>
+
+      <Modal
+        open={exportOpen}
+        onOpenChange={(open) => {
+          if (exporting) return
+          setExportOpen(open)
+          if (!open) setExportIds([])
+        }}
+        title="选择应用"
+        width={560}
+        footer={
+          <>
+            <Button size="sm" disabled={exporting} onClick={() => setExportOpen(false)}>
               取消
             </Button>
             <Button
               size="sm"
               variant="signal"
-              disabled={exportIds.length === 0}
               loading={exporting}
+              disabled={exportScope === '2' && exportIds.length === 0}
               onClick={runExport}
             >
-              <Download size={11} /> 开始导出
+              确定
             </Button>
           </>
         }
       >
-        <div className="max-h-[320px] space-y-1.5 overflow-y-auto">
-          {list.map((item) => {
-            const checked = exportIds.includes(item.id)
-            return (
-              <label
-                key={item.id}
-                className={cn(
-                  'flex cursor-pointer items-center gap-3 border px-3 py-2 transition-colors',
-                  checked ? 'border-signal bg-signal/[0.04]' : 'border-line hover:border-line-strong',
-                )}
-              >
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5">
+            <span className="w-[72px] flex-none text-right text-[14px] text-ink-3">导出方式：</span>
+            <Select
+              className="w-[200px]"
+              value={exportMode}
+              options={[
+                { value: '1', label: '旧方式' },
+                { value: '2', label: '新方式' },
+              ]}
+              onChange={(value) => setExportMode(value as '1' | '2')}
+            />
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="w-[72px] flex-none text-right text-[14px] text-ink-3">导出：</span>
+            <div className="flex items-center gap-6 text-[14px] text-ink">
+              <label className="flex cursor-pointer items-center gap-1.5">
                 <input
-                  type="checkbox"
+                  type="radio"
+                  name="export-scope"
                   className="accent-[var(--color-signal)]"
-                  checked={checked}
-                  onChange={() =>
-                    setExportIds((prev) =>
-                      prev.includes(item.id) ? prev.filter((id) => id !== item.id) : [...prev, item.id],
-                    )
-                  }
+                  checked={exportScope === '1'}
+                  onChange={() => setExportScope('1')}
                 />
-                <div className="flex h-7 w-7 flex-none items-center justify-center border border-line bg-paper-2">
-                  {item.icon ? (
-                    <img src={iconSrc(item.icon)} alt="" className="h-5 w-5 object-contain" />
-                  ) : (
-                    <span className="num text-[14px] text-mute">{item.name.slice(0, 1).toUpperCase()}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[14px] text-ink">{item.name}</div>
-                  <div className="mono mt-0.5 text-[12px] tracking-widest text-mute">KEY / {item.key}</div>
-                </div>
+                全部导出
               </label>
-            )
-          })}
-          {list.length === 0 && <div className="py-6 text-center text-[12px] text-mute">暂无可导出的应用</div>}
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="radio"
+                  name="export-scope"
+                  className="accent-[var(--color-signal)]"
+                  checked={exportScope === '2'}
+                  onChange={() => setExportScope('2')}
+                />
+                部分导出
+              </label>
+            </div>
+          </div>
+          {exportScope === '2' && (
+            <div className="flex items-start gap-2.5">
+              <span className="w-[72px] flex-none pt-1.5 text-right text-[14px] text-ink-3">应用列表：</span>
+              <div className="max-h-[220px] w-[280px] overflow-y-auto border border-line bg-paper-2/40">
+                {list.map((item) => {
+                  const checked = exportIds.includes(item.id)
+                  return (
+                    <label
+                      key={item.id}
+                      className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-[14px] text-ink-3 transition-colors hover:bg-[#142a3e] hover:text-ink"
+                    >
+                      <input
+                        type="checkbox"
+                        className="accent-[var(--color-signal)]"
+                        checked={checked}
+                        onChange={() =>
+                          setExportIds((prev) =>
+                            prev.includes(item.id) ? prev.filter((id) => id !== item.id) : [...prev, item.id],
+                          )
+                        }
+                      />
+                      <span className="truncate">{item.name}</span>
+                    </label>
+                  )
+                })}
+                {list.length === 0 && <div className="px-3 py-6 text-center text-[12px] text-mute">暂无可导出的应用</div>}
+              </div>
+            </div>
+          )}
+          {exporting && <ProgressBar percent={exportProgress} />}
         </div>
-      </Drawer>
+      </Modal>
 
       <Drawer
         open={minSetOpen}
