@@ -180,7 +180,7 @@ export function PageHeader({
   }
 }) {
   return (
-    <div className="mb-2.5 flex flex-wrap items-center gap-2">
+    <div className="mb-2.5 flex flex-wrap items-center gap-2 [&_.btn]:h-8 [&_.btn]:px-[15px]">
       <h1 className="flex-none text-[16px] font-semibold text-ink">{title}</h1>
       {meta && <div className="hidden flex-wrap items-center gap-x-3 gap-y-1 lg:flex">{meta}</div>}
       {description && (
@@ -189,11 +189,11 @@ export function PageHeader({
       <div className="ml-auto flex flex-wrap items-center gap-2">
         {toolbar}
         {search && (
-          <div className="flex h-[30px]">
+          <div className="flex h-8">
             <div className="relative">
               <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-mute" />
               <input
-                className="field h-[30px] rounded-r-none pl-8 text-[14px]"
+                className="field h-8 rounded-r-none pl-8 text-[14px]"
                 style={{ width: search.width ?? 220 }}
                 placeholder={search.placeholder ?? '请输入关键字搜索'}
                 value={search.value}
@@ -231,14 +231,14 @@ export function PageToolbar({
   extra?: ReactNode
 }) {
   return (
-    <div className="mb-2.5 flex flex-wrap items-center gap-2">
+    <div className="mb-2.5 flex flex-wrap items-center gap-2 [&_.btn]:h-8 [&_.btn]:px-[15px]">
       {children}
       <div className="ml-auto flex flex-wrap items-center gap-2">
         {extra}
         {search && (
-          <div className="flex h-[30px]">
+          <div className="flex h-8">
             <input
-              className="field h-[30px] rounded-r-none text-[14px]"
+              className="field h-8 rounded-r-none text-[14px]"
               style={{ width: search.width ?? 232 }}
               placeholder={search.placeholder ?? '请输入关键字搜索'}
               value={search.value}
