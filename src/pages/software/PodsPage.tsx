@@ -483,27 +483,21 @@ export default function PodsPage() {
         <Button
           size="sm"
           variant="signal"
-          onClick={() => {
-            if (selected.length === 0) {
-              toast.error('请先选择容器')
-              return
-            }
-            batch(false)
-          }}
+          disabled={selected.length === 0}
+          onClick={() => batch(false)}
         >
           重启容器
         </Button>
         <Button
           size="sm"
-          className="border-[#a01820] bg-[#a01820] text-white hover:border-[#c03039] hover:bg-[#b8202a]"
+          disabled={selected.length === 0}
+          className={cn(
+            'border-[#a01820] bg-[#a01820] text-white hover:border-[#c03039] hover:bg-[#b8202a]',
+            selected.length === 0 &&
+              'border-[#1e3448] bg-[#122434] text-[#4f6a82] hover:border-[#1e3448] hover:bg-[#122434]',
+          )}
           loading={deleteMutation.isPending}
-          onClick={() => {
-            if (selected.length === 0) {
-              toast.error('请先选择容器')
-              return
-            }
-            batch(true)
-          }}
+          onClick={() => batch(true)}
         >
           删除容器
         </Button>
