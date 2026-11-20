@@ -409,7 +409,6 @@ export default function AutoscalePage() {
               size="sm"
               variant="signal"
               loading={saveMutation.isPending}
-              disabled={!form.name.trim() || !form.service.trim()}
               onClick={() => saveMutation.mutate()}
             >
               确定
