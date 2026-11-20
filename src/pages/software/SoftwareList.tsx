@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AppWindow, ArrowDown, ArrowUp, Check, ChevronDown, ChevronsUpDown, Copy, Download, ExternalLink, Filter, Info, KeyRound, LayoutGrid, List, Network, Pin, Play, Plus, RefreshCw, Save, ShieldCheck, SquareChevronDown, SquareChevronRight, Trash2, Upload, Users, X } from 'lucide-react'
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage, API_BASE } from '@/lib/api'
@@ -26,6 +26,58 @@ import {
   Tip,
 } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { AreaTrend } from '@/components/charts'
+
+const ServiceConsole = lazy(() =>
+  import('@/components/console/ServiceConsole').then((module) => ({ default: module.ServiceConsole })),
+)
+
+interface MonitorPoint {
+  timestamp?: string
+  floatValue?: string | null
+  value?: string | null
+}
+
+interface MonitorSeries {
+  podName?: string
+  metrics?: MonitorPoint[]
+}
+
+interface MonitorData {
+  cpu?: MonitorSeries[]
+  memory?: MonitorSeries[]
+  outboundNetwork?: MonitorSeries[]
+  inboundNetwork?: MonitorSeries[]
+  diskReadIo?: MonitorSeries[]
+  diskWriteIo?: MonitorSeries[]
+}
+
+function repoPath(image: string) {
+  const slash = image.indexOf('/')
+  if (slash < 0) return image
+  const first = image.slice(0, slash)
+  return first.includes('.') || first.includes(':') ? image.slice(slash + 1) : image
+}
+
+function monitorTrend(list: MonitorSeries[] | undefined, factor = 1) {
+  return (list ?? []).slice(0, 4).map((series, index) => ({
+    name: series.podName || `SERIES ${index + 1}`,
+    points: (series.metrics ?? [])
+      .filter(
+        (point) =>
+          point.floatValue !== null && point.floatValue !== undefined && Number.isFinite(Number(point.floatValue)),
+      )
+      .map((point) => {
+        const value = Number(point.floatValue) * factor
+        const date = point.timestamp ? new Date(point.timestamp) : null
+        if (!date || Number.isNaN(date.getTime())) return { label: '', value, tip: '' }
+        const pad = (n: number) => String(n).padStart(2, '0')
+        const label = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+        const tip = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+        return { label, value, tip }
+      }),
+  }))
+}
 
 const platformHost = (import.meta.env.VITE_PLATFORM_HOST as string | undefined) || '172.16.209.170'
 
@@ -412,6 +464,17 @@ export default function SoftwareListPage() {
   const detailAppliedRef = useRef('')
   const [minSetOpen, setMinSetOpen] = useState(false)
   const [minSetSelected, setMinSetSelected] = useState<string[]>([])
+  const [versionTarget, setVersionTarget] = useState<ServiceItem | null>(null)
+  const [versionImage, setVersionImage] = useState('')
+  const [versionTag, setVersionTag] = useState('')
+  const [versionStrategy, setVersionStrategy] = useState<'1' | '2'>('2')
+  const [monitorTarget, setMonitorTarget] = useState<ServiceItem | null>(null)
+  const [monitorRange, setMonitorRange] = useState<'ONE_HOURS' | 'SIX_HOURS'>('ONE_HOURS')
+  const [consoleState, setConsoleState] = useState<{
+    service: string
+    mode: 'logs' | 'terminal'
+    history?: boolean
+  } | null>(null)
   const [govOpen, setGovOpen] = useState(false)
   const [govTab, setGovTab] = useState<'auth' | 'gateway'>('auth')
   const [authCode, setAuthCode] = useState('')
@@ -840,6 +903,64 @@ export default function SoftwareListPage() {
     } finally {
       setMinSetExecuting(false)
     }
+  }
+
+  const monitorQuery = useQuery({
+    queryKey: ['service-monitor', monitorTarget ? serviceNameOf(monitorTarget) : '', monitorRange],
+    queryFn: () =>
+      api.get<MonitorData>('/v1/pub/serviceMonitor', {
+        namespace: monitorTarget?.service?.metadata?.namespace || 'gaop-namespace',
+        name: monitorTarget ? serviceNameOf(monitorTarget) : '',
+        queryTimeType: true,
+        timeType: monitorRange,
+      }),
+    enabled: !!monitorTarget,
+  })
+
+  const versionTagsQuery = useQuery({
+    queryKey: ['version-tags', versionImage],
+    queryFn: () =>
+      api.get<{ list: Array<{ name: string }> }>('/v1/image/tagInfo', {
+        imageName: repoPath(versionImage),
+        page: 1,
+        size: 200,
+      }),
+    enabled: !!versionTarget && !!versionImage,
+  })
+
+  const versionMutation = useMutation({
+    mutationFn: async () => {
+      if (!versionTarget) throw new Error('未选择服务')
+      if (!versionImage.trim() || !versionTag.trim()) throw new Error('请填写镜像与版本')
+      return api.put('/v1/service/rollingUpdate', {
+        name: serviceNameOf(versionTarget),
+        version: `${versionImage.trim()}:${versionTag.trim()}`,
+        type: Number(versionStrategy),
+      })
+    },
+    onSuccess: () => {
+      toast.success('镜像版本已切换', 'Deployment 将触发滚动更新')
+      setVersionTarget(null)
+      queryClient.invalidateQueries({ queryKey: ['software'] })
+    },
+    onError: (error) => toast.error('版本切换失败', errorMessage(error)),
+  })
+
+  function openImageVersion(service: ServiceItem) {
+    const image =
+      service.deployment?.spec?.template?.spec?.containers?.[0]?.image ||
+      (typeof service.imageInfo === 'string' ? service.imageInfo : service.imageInfo?.image) ||
+      ''
+    const colon = image.lastIndexOf(':')
+    const slash = image.lastIndexOf('/')
+    if (colon > slash) {
+      setVersionImage(image.slice(0, colon))
+      setVersionTag(image.slice(colon + 1))
+    } else {
+      setVersionImage(image)
+      setVersionTag('')
+    }
+    setVersionTarget(service)
   }
 
   function openSeats(item: Software) {
@@ -1460,27 +1581,26 @@ export default function SoftwareListPage() {
                                             <ActionMenu
                                               triggerText="更多"
                                               items={[
+                                                { label: '版本切换', onSelect: () => openImageVersion(service) },
                                                 {
-                                                  label: '重启服务',
+                                                  label: '历史日志',
+                                                  onSelect: () =>
+                                                    setConsoleState({ service: name, mode: 'logs', history: true }),
+                                                },
+                                                {
+                                                  label: '实时日志',
+                                                  onSelect: () => setConsoleState({ service: name, mode: 'logs' }),
+                                                },
+                                                {
+                                                  label: '终端登录',
+                                                  onSelect: () => setConsoleState({ service: name, mode: 'terminal' }),
+                                                },
+                                                { label: '监控', onSelect: () => setMonitorTarget(service) },
+                                                {
+                                                  label: '重启',
+                                                  danger: true,
                                                   onSelect: () =>
                                                     serviceAction.mutate({ path: '/v1/service/reStart', names: [name] }),
-                                                },
-                                                {
-                                                  label: '查看服务',
-                                                  onSelect: () => navigate('/software/application/service'),
-                                                },
-                                                {
-                                                  label: '删除服务',
-                                                  danger: true,
-                                                  onSelect: async () => {
-                                                    const ok = await confirm({
-                                                      title: `删除服务「${name}」？`,
-                                                      description: '删除后将从集群移除对应工作负载，此操作不可恢复。',
-                                                      confirmText: '删除',
-                                                      danger: true,
-                                                    })
-                                                    if (ok) serviceAction.mutate({ path: '/v1/service', names: [name] })
-                                                  },
                                                 },
                                               ]}
                                             />
@@ -2904,6 +3024,164 @@ export default function SoftwareListPage() {
           </div>
         )}
       </Drawer>
+
+      <Drawer
+        open={!!versionTarget}
+        onOpenChange={(open) => !open && setVersionTarget(null)}
+        kicker="SERVICE / IMAGE VERSION"
+        title={versionTarget ? `${serviceNameOf(versionTarget)} 版本切换` : '版本切换'}
+        description="选择目标镜像与版本，平台将更新 Deployment 镜像并触发滚动更新。"
+        width={520}
+        footer={
+          <>
+            <Button size="sm" onClick={() => setVersionTarget(null)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="signal"
+              loading={versionMutation.isPending}
+              disabled={!versionImage.trim() || !versionTag.trim()}
+              onClick={() => versionMutation.mutate()}
+            >
+              切换版本
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Field label="镜像仓库" required hint="不含标签的镜像地址">
+            <input
+              className="field"
+              value={versionImage}
+              onChange={(event) => setVersionImage(event.target.value)}
+              placeholder="如：gaop/nginx"
+            />
+          </Field>
+          <Field label="镜像版本" required hint="从镜像仓库版本列表中选择，或手动输入">
+            <div className="flex gap-2">
+              <input
+                className="field flex-1"
+                value={versionTag}
+                onChange={(event) => setVersionTag(event.target.value)}
+                placeholder="如：alpine-arm64"
+              />
+              <Select
+                className="w-[180px]"
+                placeholder="选择已有版本"
+                value=""
+                options={(versionTagsQuery.data?.list ?? []).map((tag) => ({
+                  value: tag.name,
+                  label: tag.name,
+                }))}
+                onChange={(value) => {
+                  if (value) setVersionTag(value)
+                }}
+              />
+            </div>
+          </Field>
+          <Field label="滚动策略" required hint="先启动：新实例就绪后再停止旧实例；先停止：先停旧实例再启动新实例">
+            <Select
+              value={versionStrategy}
+              options={[
+                { value: '2', label: '先停止（FIRST STOP）' },
+                { value: '1', label: '先启动（FIRST START）' },
+              ]}
+              onChange={(value) => setVersionStrategy(value as '1' | '2')}
+            />
+          </Field>
+        </div>
+      </Drawer>
+
+      <Drawer
+        open={!!monitorTarget}
+        onOpenChange={(open) => !open && setMonitorTarget(null)}
+        kicker="SERVICE / MONITORING"
+        title={monitorTarget ? `${serviceNameOf(monitorTarget)} 资源监控` : '服务监控'}
+        description="按 Pod 展示 CPU、内存、网络与磁盘 IO 趋势。指标来自 Prometheus，采样间隔约 1 分钟。"
+        width={920}
+        footer={
+          <Button size="sm" onClick={() => setMonitorTarget(null)}>
+            关闭
+          </Button>
+        }
+      >
+        <div className="mb-4 flex w-fit border border-line">
+          {[
+            { key: 'ONE_HOURS' as const, label: '最近1小时' },
+            { key: 'SIX_HOURS' as const, label: '最近6小时' },
+          ].map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setMonitorRange(item.key)}
+              className={cn(
+                'mono px-3 py-1.5 text-[12px] tracking-widest transition-colors',
+                monitorRange === item.key ? 'bg-signal text-white' : 'text-mute hover:text-ink',
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        {monitorQuery.isLoading ? (
+          <div className="py-10 text-center text-[12px] text-mute">正在采集服务指标…</div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div>
+              <div className="label mb-2">CPU 使用量（m）</div>
+              <AreaTrend series={monitorTrend(monitorQuery.data?.cpu, 1000)} height={170} unit=" m" />
+            </div>
+            <div>
+              <div className="label mb-2">内存使用量（MB）</div>
+              <AreaTrend series={monitorTrend(monitorQuery.data?.memory, 1 / 1024 / 1024)} height={170} unit=" MB" />
+            </div>
+            <div>
+              <div className="label mb-2">网络吞吐（KB/s）</div>
+              <AreaTrend
+                series={[
+                  ...monitorTrend(monitorQuery.data?.inboundNetwork, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name}-入站`,
+                  })),
+                  ...monitorTrend(monitorQuery.data?.outboundNetwork, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name}-出站`,
+                  })),
+                ]}
+                height={170}
+                unit=" KB/s"
+              />
+            </div>
+            <div>
+              <div className="label mb-2">磁盘 IO（KB/s）</div>
+              <AreaTrend
+                series={[
+                  ...monitorTrend(monitorQuery.data?.diskReadIo, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name}-读`,
+                  })),
+                  ...monitorTrend(monitorQuery.data?.diskWriteIo, 1 / 1024).map((series) => ({
+                    ...series,
+                    name: `${series.name}-写`,
+                  })),
+                ]}
+                height={170}
+                unit=" KB/s"
+              />
+            </div>
+          </div>
+        )}
+      </Drawer>
+
+      <Suspense fallback={null}>
+        <ServiceConsole
+          open={!!consoleState}
+          serviceName={consoleState?.service || ''}
+          initialMode={consoleState?.mode || 'logs'}
+          initialPaused={!!consoleState?.history}
+          onClose={() => setConsoleState(null)}
+        />
+      </Suspense>
     </div>
   )
 }
