@@ -351,6 +351,10 @@ export default function AutoscalePage() {
     },
   ]
 
+  const nextThresholdType = THRESHOLD_OPTIONS.find(
+    (option) => !form.thresholds.some((item) => item.type === option.value),
+  )
+
   return (
     <div>
       <PageToolbar
@@ -460,7 +464,13 @@ export default function AutoscalePage() {
                 <Select
                   className="w-[104px] flex-none"
                   value={row.type}
-                  options={THRESHOLD_OPTIONS}
+                  options={THRESHOLD_OPTIONS.filter(
+                    (option) =>
+                      option.value === row.type ||
+                      !form.thresholds.some(
+                        (item) => item.id !== row.id && item.type === option.value,
+                      ),
+                  )}
                   onChange={(value) =>
                     setForm({
                       ...form,
@@ -514,16 +524,23 @@ export default function AutoscalePage() {
           <div className="pl-[114px]">
             <button
               type="button"
-              className="text-[14px] text-[#4aa3f0] transition-colors hover:text-[#7cc4ff]"
-              onClick={() =>
+              disabled={!nextThresholdType}
+              className={cn(
+                'text-[14px] transition-colors',
+                nextThresholdType
+                  ? 'text-[#4aa3f0] hover:text-[#7cc4ff]'
+                  : 'cursor-not-allowed text-mute',
+              )}
+              onClick={() => {
+                if (!nextThresholdType) return
                 setForm({
                   ...form,
                   thresholds: [
                     ...form.thresholds,
-                    { id: thresholdSeq++, type: 'cpu', value: '80' },
+                    { id: thresholdSeq++, type: nextThresholdType.value as ThresholdType, value: '80' },
                   ],
                 })
-              }
+              }}
             >
               添加阈值
             </button>
