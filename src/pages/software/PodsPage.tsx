@@ -334,11 +334,11 @@ export default function PodsPage() {
     const name = pod.metadata?.name
     if (!name) return
     const ok = await confirm({
-      title: `${force ? '强制删除' : '重新分配'}容器 ${name}？`,
+      title: `${force ? '删除' : '重启'}容器 ${name}？`,
       description: force
-        ? '强制删除后，所属 Deployment 会按副本数自动重建容器。'
-        : '重新分配将删除当前容器并由调度器重新创建。',
-      confirmText: force ? '强制删除' : '重新分配',
+        ? '删除后，所属 Deployment 会按副本数自动重建容器。'
+        : '重启将删除当前容器并由调度器重新创建。',
+      confirmText: force ? '删除' : '重启',
       danger: force,
     })
     if (ok) deleteMutation.mutate({ name, force })
@@ -347,9 +347,9 @@ export default function PodsPage() {
   async function batch(force: boolean) {
     if (selected.length === 0) return
     const ok = await confirm({
-      title: `${force ? '强制删除' : '重新分配'} ${selected.length} 个容器？`,
+      title: `${force ? '删除' : '重启'} ${selected.length} 个容器？`,
       description: '操作将对所选容器逐一执行，所属工作负载会自动重建。',
-      confirmText: force ? '强制删除' : '重新分配',
+      confirmText: force ? '删除' : '重启',
       danger: force,
     })
     if (!ok) return
@@ -465,8 +465,8 @@ export default function PodsPage() {
             <ActionMenu
               triggerText="更多"
               items={[
-                { label: '强制删除', danger: true, onSelect: () => remove(row, true) },
-                { label: '重新分配', onSelect: () => remove(row, false) },
+                { label: '删除容器', danger: true, onSelect: () => remove(row, true) },
+                { label: '重启容器', onSelect: () => remove(row, false) },
               ]}
             />
           </div>
@@ -483,18 +483,29 @@ export default function PodsPage() {
         <Button
           size="sm"
           variant="signal"
-          disabled={selected.length === 0 || deleteMutation.isPending}
-          onClick={() => batch(false)}
+          onClick={() => {
+            if (selected.length === 0) {
+              toast.error('请先选择容器')
+              return
+            }
+            batch(false)
+          }}
         >
-          批量重新分配
+          重启容器
         </Button>
         <Button
           size="sm"
-          variant="danger"
-          disabled={selected.length === 0 || deleteMutation.isPending}
-          onClick={() => batch(true)}
+          className="border-[#a01820] bg-[#a01820] text-white hover:border-[#c03039] hover:bg-[#b8202a]"
+          loading={deleteMutation.isPending}
+          onClick={() => {
+            if (selected.length === 0) {
+              toast.error('请先选择容器')
+              return
+            }
+            batch(true)
+          }}
         >
-          强制删除
+          删除容器
         </Button>
       </PageToolbar>
 
